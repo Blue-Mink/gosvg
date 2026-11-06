@@ -66,3 +66,17 @@
 - [ ] 开源准备：README / LICENSE / 示例
 - [ ] go vet：transform.go Matrix2D unkeyed fields 警告
 - [ ] （可选）stroke 轮廓算法自研，解决小半径退化
+
+### v3 锯齿优化（2026-11-07 用户反馈"边缘还有锯齿"后）
+- 填充器 vector→rasterx.Filler（与 fill 同一套扫描器，AA 与 fill 同水平；
+  两者与 cairosvg 对齐度差异实测 fill圆 0.9986 vs 0.9952）
+- 两个截断 bug（都改成四舍五入）：
+  1. internal/rasterx fill.go：CubeTo/QuadTo 的 lineF 回调 fixed.Int26_6(ex)
+     直接截断 float32，每个 flatten 顶点偏移 ±0.5 fixed，产生方向性噪声
+     （表现为红/绿差异像素随 flatten 段数翻转 459↔52）
+  2. path.go fpt：坐标量化截断，所有 path 几何向 -x/-y 系统偏移
+- tol 语义修复：flatten 容差从用户单位改为像素（原 0.01 用户单位=0.21px）
+- IoU 终值（cairosvg 512px）：path1 0.9987 / rock 0.9985 / circle 0.9978 /
+  country 0.9968 / blues 0.9962 / jazz 0.9959 / cn(fill) 0.9998；49ms/图
+- 结论：剩余差异 = rasterx AA 与 cairosvg 的亚像素舍入差（红绿平衡各~50px），
+  4x 边缘放大肉眼不可辨；已到该 AA 基线（fill 同为 0.9986）

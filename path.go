@@ -8,9 +8,9 @@ import (
 	"golang.org/x/image/math/fixed"
 )
 
-// fpt 把浮点坐标转成 fixed.Point26_6。
+// fpt 把浮点坐标转成 fixed.Point26_6（四舍五入；截断会引入 -x/-y 方向性偏移）。
 func fpt(x, y float64) fixed.Point26_6 {
-	return fixed.Point26_6{X: fixed.Int26_6(x * 64), Y: fixed.Int26_6(y * 64)}
+	return fixed.Point26_6{X: fixed.Int26_6(x*64 + 0.5), Y: fixed.Int26_6(y*64 + 0.5)}
 }
 
 // parsePathData 解析 SVG path 的 `d` 属性为 rasterx.Path。

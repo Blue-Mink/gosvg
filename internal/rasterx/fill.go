@@ -83,7 +83,7 @@ func (r *Filler) QuadBezier(b, c fixed.Point26_6) {
 func QuadTo(ax, ay, bx, by, cx, cy float32, LineTo func(dx, dy float32)) {
 	devsq := devSquared(ax, ay, bx, by, cx, cy)
 	if devsq >= 0.333 {
-		const tol = 3
+		const tol = 100
 		n := 1 + int(math.Sqrt(math.Sqrt(tol*float64(devsq))))
 		t, nInv := float32(0), 1/float32(n)
 		for i := 0; i < n-1; i++ {
@@ -110,7 +110,7 @@ func CubeTo(ax, ay, bx, by, cx, cy, dx, dy float32, LineTo func(ex, ey float32))
 		devsq = devsqAlt
 	}
 	if devsq >= 0.333 {
-		const tol = 3
+		const tol = 100
 		n := 1 + int(math.Sqrt(math.Sqrt(tol*float64(devsq))))
 		t, nInv := float32(0), 1/float32(n)
 		for i := 0; i < n-1; i++ {
@@ -164,7 +164,7 @@ func (r *Filler) QuadBezierF(sgm Rasterx, b, c fixed.Point26_6) {
 		float32(b.X), float32(b.Y),
 		float32(c.X), float32(c.Y),
 		func(dx, dy float32) {
-			sgm.lineF(fixed.Point26_6{X: fixed.Int26_6(dx), Y: fixed.Int26_6(dy)})
+			sgm.lineF(fixed.Point26_6{X: fixed.Int26_6(dx+0.5), Y: fixed.Int26_6(dy+0.5)})
 		})
 
 }
@@ -204,7 +204,7 @@ func (r *Filler) CubeBezierF(sgm Rasterx, b, c, d fixed.Point26_6) {
 		float32(c.X), float32(c.Y),
 		float32(d.X), float32(d.Y),
 		func(ex, ey float32) {
-			sgm.lineF(fixed.Point26_6{X: fixed.Int26_6(ex), Y: fixed.Int26_6(ey)})
+			sgm.lineF(fixed.Point26_6{X: fixed.Int26_6(ex+0.5), Y: fixed.Int26_6(ey+0.5)})
 		})
 }
 
