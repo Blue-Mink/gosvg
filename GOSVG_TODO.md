@@ -119,12 +119,30 @@
   （见下方"既有斜线 stroke AA 差异"，非 dash 引入）。
 - 单元测试 `dash_test.go` 14 项全绿。
 
-## 既有问题（非本轮引入）：斜线 stroke AA 比 cairosvg 略细
-- 现象：45° 斜线（polygon 菱形、无 dash）IoU 0.9698，红像素 860 均匀散布在 4 条边
-  （各 215），join 类型（miter/round/bevel）都同值 → 与 join 无关，是 stroke 精确轮廓
-  在斜线方向上的 AA 覆盖比 cairosvg 略低（约细 1px）。
-- dash 反而把闭合多边形抬到 0.9765（dash 段走开放 stroke，绕开闭合首尾）。
-- 待办：斜线 stroke AA 与 cairosvg 的差异值得单独排查（水平/垂直线满分，斜线差 ~3%）。
+## 既有问题（非本轮引入）：45° 斜线 stroke AA 比 cairosvg 略细（已排查定案）
+
+### 现象
+- 45° 斜线（polygon 菱形、无 dash）IoU 0.9698，红像素 860 均匀散布在 4 条边（各 215），
+  join 类型（miter/round/bevel）都同值 → 与 join 无关。
+- 单条 line `(50,5)→(95,50)`（斜率+1，中点半像素）0.9678；`(50,10)→(90,50)`（中点整数）满分。
+
+### 根源（2026-11-07 排查定案）
+- **vector.Rasterizer（internal/vector = x/image/vector 的 libart 扫描线 AA）对
+  "恰好穿过像素角的 45° 斜线"（c 整数相位）有 ±1px 覆盖歧义**。fill 和 stroke 都走
+  这个 rasterizer，所以**两者都受影响**（实证：fill 26.57° 斜线 offset 平行四边形
+  也是 0.9897，fill 45° 整数坐标菱形才满分）。
+- stroke 比 fill 更容易触发，是因为 stroke 的 offset 坐标含无理数（√2），fpt 四舍五入
+  后 c 变成"接近整数但非整数"的相位，恰好落在 AA 的歧义区。
+- 试验过"改 stroke 坐标量化为 fpt(用户)+TFixed(截断)"（对齐 fill 的 MatrixAdder）：
+  菱形 A 0.9698→0.9988，但 **cap_butt/cap_round（26.57°）从 1.0 掉到 0.9897**，
+  且 fill 用同路径对 26.57° 也 0.9897 → TFixed 截断是有偏的，引入更多回归，已回退。
+- cairo 用超采样，任何相位都精确。
+
+### 影响与决定
+- 实际图标（Lucide rock/country/blues/jazz/lucide）对账 0.9946~0.9985，45° 斜线相位
+  在真实图标里被曲线与多角度混合，**无显著影响**。
+- 修复只有超采样一条路（4x 内存/时间），对 1px 偏差收益有限 → **接受为 vector AA 的
+  已知边界**，不修。保持 fpt round（对称、盲点用例几乎全满分）优于 TFixed 截断。
 
 
 ## 参考 tdewolff/canvas 的调研结论（2026-11-07）
