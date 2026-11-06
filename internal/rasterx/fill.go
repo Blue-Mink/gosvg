@@ -164,7 +164,7 @@ func (r *Filler) QuadBezierF(sgm Rasterx, b, c fixed.Point26_6) {
 		float32(b.X), float32(b.Y),
 		float32(c.X), float32(c.Y),
 		func(dx, dy float32) {
-			sgm.lineF(fixed.Point26_6{X: fixed.Int26_6(dx+0.5), Y: fixed.Int26_6(dy+0.5)})
+			sgm.lineF(fixed.Point26_6{X: fixed.Int26_6(dx + 0.5), Y: fixed.Int26_6(dy + 0.5)})
 		})
 
 }
@@ -204,7 +204,7 @@ func (r *Filler) CubeBezierF(sgm Rasterx, b, c, d fixed.Point26_6) {
 		float32(c.X), float32(c.Y),
 		float32(d.X), float32(d.Y),
 		func(ex, ey float32) {
-			sgm.lineF(fixed.Point26_6{X: fixed.Int26_6(ex+0.5), Y: fixed.Int26_6(ey+0.5)})
+			sgm.lineF(fixed.Point26_6{X: fixed.Int26_6(ex + 0.5), Y: fixed.Int26_6(ey + 0.5)})
 		})
 }
 

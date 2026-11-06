@@ -14,7 +14,7 @@ import (
 )
 
 var (
-	fontOnce sync.Once
+	fontOnce   sync.Once
 	fontParsed *opentype.Font
 )
 

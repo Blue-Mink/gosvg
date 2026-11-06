@@ -49,13 +49,13 @@ func Parse(data []byte) (*Document, error) {
 
 // Document 是一份已解析的 SVG 文档。
 type Document struct {
-	root     *node
-	viewBox  [4]float64
-	hasVB    bool
-	width    float64
-	height   float64
-	defs     map[string]*node
-	grads    map[string]*node
+	root    *node
+	viewBox [4]float64
+	hasVB   bool
+	width   float64
+	height  float64
+	defs    map[string]*node
+	grads   map[string]*node
 	// err 记录解析期遇到的、可安全忽略的问题（供调试），不影响渲染。
 }
 
