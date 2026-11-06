@@ -6,6 +6,7 @@ import (
 	"math"
 
 	"github.com/Blue-Mink/gosvg/internal/rasterx"
+	"golang.org/x/image/math/fixed"
 )
 
 // Point 是 float64 像素坐标。
@@ -141,15 +142,19 @@ func distToSegment(p, a, b Point) float64 {
 // （胶囊体并集的边缘被相邻胶囊体双重覆盖，coverage 饱和成硬边，AA 渐变被抹平；
 //   精确轮廓的每条边是单条边链，像素 coverage 为真实部分值。）
 
-func emitArcDir(f *rasterx.Filler, cx, cy, a0, delta, r float64) {
-	n := int(math.Ceil(math.Abs(delta)*r/0.8)) + 1
+func emitArcDir(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, arcTol, cx, cy, a0, delta, r float64) {
+	step := 2 * math.Acos(1-arcTol/r)
+	if step <= 0 || step > 1 {
+		step = 1
+	}
+	n := int(math.Ceil(math.Abs(delta)/step)) + 1
 	for k := 1; k <= n; k++ {
 		a := a0 + delta*float64(k)/float64(n)
-		f.Line(fpt(cx+r*math.Cos(a), cy+r*math.Sin(a)))
+		f.Line(pt(cx+r*math.Cos(a), cy+r*math.Sin(a)))
 	}
 }
 
-func emitArcShort(f *rasterx.Filler, cx, cy, a0, a1, r float64) {
+func emitArcShort(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, arcTol, cx, cy, a0, a1, r float64) {
 	d := a1 - a0
 	for d > math.Pi {
 		d -= 2 * math.Pi
@@ -157,7 +162,7 @@ func emitArcShort(f *rasterx.Filler, cx, cy, a0, a1, r float64) {
 	for d <= -math.Pi {
 		d += 2 * math.Pi
 	}
-	emitArcDir(f, cx, cy, a0, d, r)
+	emitArcDir(f, pt, arcTol, cx, cy, a0, d, r)
 }
 
 // lineIntersect 直线 p+t·d 与 q+s·e 求交。
@@ -179,9 +184,53 @@ func segOf(a, b Point, u float64) segDir {
 	return segDir{dx / l, dy / l, -dy / l * u, dx / l * u}
 }
 
-// emitOffsetChain 沿链生成左偏移边（含顶点 join：凸→圆弧、凹→交点）。
+// emitJoin 处理顶点 pts[idx] 处 segs[prev]→segs[idx] 的 join。
+func emitJoin(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, arcTol float64, pts []Point, segs []segDir, idx, n int, u float64, join string) {
+	const miterLimit = 4.0
+	prev := (idx - 1 + n) % n
+	pv := segs[prev]
+	s := segs[idx]
+	P := pts[idx]
+	cross := pv.tx*s.ty - pv.ty*s.tx
+	dot := pv.tx*s.tx + pv.ty*s.ty
+	aj := math.Atan2(pv.ny, pv.nx)
+	ai := math.Atan2(s.ny, s.nx)
+	q2x, q2y := P.X+s.nx, P.Y+s.ny
+	switch {
+	case math.Abs(cross) < 1e-12:
+		if dot < 0 {
+			if join == "round" {
+				emitArcDir(f, pt, arcTol, P.X, P.Y, aj, -math.Pi, u)
+			} else {
+				f.Line(pt(q2x, q2y))
+			}
+		}
+	default:
+		X, Y, ok := lineIntersect(P.X+pv.nx, P.Y+pv.ny, pv.tx, pv.ty,
+			P.X+s.nx, P.Y+s.ny, s.tx, s.ty)
+		d := math.Hypot(X-P.X, Y-P.Y)
+		if ok && d < u*(1-1e-9) { // 凹：内交点
+			f.Line(pt(X, Y))
+		} else {
+			switch join {
+			case "bevel":
+				f.Line(pt(q2x, q2y))
+			case "miter":
+				if ok && d <= miterLimit*u {
+					f.Line(pt(X, Y))
+				} else {
+					f.Line(pt(q2x, q2y))
+				}
+			default:
+				emitArcShort(f, pt, arcTol, P.X, P.Y, aj, ai, u)
+			}
+		}
+	}
+}
+
+// emitOffsetChain 沿链生成左偏移边（含顶点 join）。
 // closed=true 时为完整环（含首顶点 join，终点回到起点）。返回最后法线角。
-func emitOffsetChain(f *rasterx.Filler, pts []Point, u float64, closed bool) float64 {
+func emitOffsetChain(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, arcTol float64, pts []Point, u float64, closed bool, join string) float64 {
 	n := len(pts)
 	segN := n - 1
 	if closed {
@@ -194,78 +243,84 @@ func emitOffsetChain(f *rasterx.Filler, pts []Point, u float64, closed bool) flo
 	lastAng := 0.0
 	for i := 0; i < segN; i++ {
 		s := segs[i]
-		if i > 0 || closed {
-			j := (i - 1 + segN) % segN
-			pv := segs[j]
-			P := pts[i]
-			cross := pv.tx*s.ty - pv.ty*s.tx
-			dot := pv.tx*s.tx + pv.ty*s.ty
-			aj := math.Atan2(pv.ny, pv.nx)
-			ai := math.Atan2(s.ny, s.nx)
-			switch {
-			case math.Abs(cross) < 1e-12:
-				if dot < 0 { // 折返：绕 P 半圆，经 -t_j
-					emitArcDir(f, P.X, P.Y, aj, -math.Pi, u)
-				}
-				// 同向共线：点几乎重合，不 emit
-			default:
-				X, Y, ok := lineIntersect(P.X+pv.nx, P.Y+pv.ny, pv.tx, pv.ty,
-					P.X+s.nx, P.Y+s.ny, s.tx, s.ty)
-				d := math.Hypot(X-P.X, Y-P.Y)
-				if ok && d < u*(1-1e-9) { // 凹：内交点
-					f.Line(fpt(X, Y))
-				} else { // 凸：短弧（miter 发散时也安全）
-					emitArcShort(f, P.X, P.Y, aj, ai, u)
-				}
-			}
+		if i > 0 {
+			emitJoin(f, pt, arcTol, pts, segs, i, segN, u, join)
 		}
 		b := pts[(i+1)%n]
-		f.Line(fpt(b.X+s.nx, b.Y+s.ny))
+		f.Line(pt(b.X+s.nx, b.Y+s.ny))
 		lastAng = math.Atan2(s.ny, s.nx)
+	}
+	if closed {
+		emitJoin(f, pt, arcTol, pts, segs, 0, segN, u, join)
 	}
 	return lastAng
 }
 
 // strokeExactPath 把一个子路径的精确 stroke 轮廓写入 filler。
-func strokeExactPath(f *rasterx.Filler, pts []Point, u float64, closed bool) {
+func strokeExactPath(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, arcTol float64, pts []Point, u float64, closed bool, cap, join string) {
 	n := len(pts)
 	if (closed && n < 3) || (!closed && n < 2) {
-		addCircle(f, pts[0], u)
+		if join == "round" {
+			addCircle(f, pt, pts[0], u)
+		}
 		return
 	}
 	if closed {
-		f.Start(fpt(pts[0].X+segOf(pts[0], pts[1], u).nx, pts[0].Y+segOf(pts[0], pts[1], u).ny))
-		emitOffsetChain(f, pts, u, true)
+		f.Start(pt(pts[0].X+segOf(pts[0], pts[1], u).nx, pts[0].Y+segOf(pts[0], pts[1], u).ny))
+		emitOffsetChain(f, pt, arcTol, pts, u, true, join)
 		f.Stop(true)
 		rev := make([]Point, n)
 		for i := range pts {
 			rev[i] = pts[n-1-i]
 		}
-		f.Start(fpt(rev[0].X+segOf(rev[0], rev[1], u).nx, rev[0].Y+segOf(rev[0], rev[1], u).ny))
-		emitOffsetChain(f, rev, u, true)
+		f.Start(pt(rev[0].X+segOf(rev[0], rev[1], u).nx, rev[0].Y+segOf(rev[0], rev[1], u).ny))
+		emitOffsetChain(f, pt, arcTol, rev, u, true, join)
 		f.Stop(true)
 		return
 	}
 	s0 := segOf(pts[0], pts[1], u)
-	f.Start(fpt(pts[0].X+s0.nx, pts[0].Y+s0.ny))
-	emitOffsetChain(f, pts, u, false)
+	f.Start(pt(pts[0].X+s0.nx, pts[0].Y+s0.ny))
+	emitOffsetChain(f, pt, arcTol, pts, u, false, join)
 	sl := segOf(pts[n-2], pts[n-1], u)
-	// capEnd：从 +n_last 经 +t_last 到 -n_last（delta=-π，中点=θ(n)-π/2=θ(t)）
-	emitArcDir(f, pts[n-1].X, pts[n-1].Y, math.Atan2(sl.ny, sl.nx), -math.Pi, u)
+	P0 := pts[0]
+	Pl := pts[n-1]
+	aN := math.Atan2(sl.ny, sl.nx)
+	aN0 := math.Atan2(s0.ny, s0.nx)
+	// ---- capEnd ----
+	switch cap {
+	case "square":
+		f.Line(pt(Pl.X+sl.nx+sl.tx*u, Pl.Y+sl.ny+sl.ty*u))
+		f.Line(pt(Pl.X-sl.nx+sl.tx*u, Pl.Y-sl.ny+sl.ty*u))
+		f.Line(pt(Pl.X-sl.nx, Pl.Y-sl.ny))
+	case "butt":
+		f.Line(pt(Pl.X-sl.nx, Pl.Y-sl.ny))
+	default: // round
+		emitArcDir(f, pt, arcTol, Pl.X, Pl.Y, aN, -math.Pi, u)
+	}
 	rev := make([]Point, n)
 	for i := range pts {
 		rev[i] = pts[n-1-i]
 	}
-	emitOffsetChain(f, rev, u, false)
-	// cap0：从 -n_0 经 -t_0 回 +n_0（delta=-π，中点=θ(n)+π/2=θ(-t)）
-	emitArcDir(f, pts[0].X, pts[0].Y, math.Atan2(s0.ny, s0.nx)+math.Pi, -math.Pi, u)
+	emitOffsetChain(f, pt, arcTol, rev, u, false, join)
+	// ---- cap0 ----
+	switch cap {
+	case "square":
+		f.Line(pt(P0.X-s0.nx-s0.tx*u, P0.Y-s0.ny-s0.ty*u))
+		f.Line(pt(P0.X+s0.nx-s0.tx*u, P0.Y+s0.ny-s0.ty*u))
+		f.Line(pt(P0.X+s0.nx, P0.Y+s0.ny))
+	case "butt":
+		f.Line(pt(P0.X+s0.nx, P0.Y+s0.ny))
+	default: // round
+		emitArcDir(f, pt, arcTol, P0.X, P0.Y, aN0+math.Pi, -math.Pi, u)
+	}
 	f.Stop(true)
 }
 
 func segs0N(pts []Point, u float64) segDir { return segOf(pts[0], pts[1], u) }
 
-func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D, halfWidth float64, c color.NRGBA, tol float64) {
-	subs := flattenPath(path, matrix, tol)
+func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D, halfWidth float64, c color.NRGBA, tol float64, linecap, linejoin string) {
+	// 用户空间 flatten（Identity），offset 在用户空间做，最终 Transform 到 device。
+	subs := flattenPath(path, rasterx.Identity, tol)
 	if len(subs) == 0 {
 		return
 	}
@@ -274,6 +329,10 @@ func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D
 	scanner := rasterx.NewScannerGV(b.Dx(), b.Dy(), img, b)
 	filler := rasterx.NewFiller(b.Dx(), b.Dy(), scanner)
 	filler.SetWinding(true) // non-zero
+	pt := func(x, y float64) fixed.Point26_6 {
+		tx, ty := matrix.Transform(x, y)
+		return fpt(tx, ty)
+	}
 
 	for _, pts := range subs {
 		// 去除相邻重复点
@@ -284,8 +343,8 @@ func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D
 			}
 		}
 		if len(dedup) < 2 {
-			if len(dedup) == 1 {
-				addCircle(filler, dedup[0], halfWidth)
+			if len(dedup) == 1 && linejoin == "round" {
+				addCircle(filler, pt, dedup[0], halfWidth)
 			}
 			continue
 		}
@@ -294,56 +353,17 @@ func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D
 		if closedP {
 			dedup = dedup[:len(dedup)-1]
 		}
-		strokeExactPath(filler, dedup, halfWidth, closedP)
+		strokeExactPath(filler, pt, tol, dedup, halfWidth, closedP, linecap, linejoin)
 	}
 
 	filler.SetColor(c)
 	filler.Draw()
 }
 
-// addCapsule 生成线段 [a,b] + 半宽 u 的胶囊体轮廓（round cap）。
-// 两端半圆分别绕「前进方向」（b 端）与「后退方向」（a 端），保证圆帽正确外扩。
-func addCapsule(f *rasterx.Filler, a, b Point, u float64) {
-	dx := b.X - a.X
-	dy := b.Y - a.Y
-	l := math.Hypot(dx, dy)
-	if l < 1e-9 {
-		addCircle(f, a, u)
-		return
-	}
-	nx := -dy / l * u // 法线
-	ny := dx / l * u
-	tx := dx / l * u // 切线（前进方向）
-	ty := dy / l * u
-
-	f.Start(fpt(a.X+nx, a.Y+ny))
-	f.Line(fpt(b.X+nx, b.Y+ny))
-	addHalfCircle(f, b, nx, ny, tx, ty, u) // b 端：+n → -n，绕前进方向
-	f.Line(fpt(a.X-nx, a.Y-ny))
-	addHalfCircle(f, a, -nx, -ny, -tx, -ty, u) // a 端：-n → +n，绕后退方向
-	f.Stop(true)
-}
-
-// addHalfCircle 从 c+(nx,ny) 到 c-(nx,ny) 的半圆，绕 c+(tx,ty) 方向。
-// 用两个 cubic bezier 精确近似（每个 90°，k=4/3·tan(π/8)），误差 ~0.0003·u。
-func addHalfCircle(f *rasterx.Filler, c Point, nx, ny, tx, ty, u float64) {
-	const k = 0.552284749831
-	// 第一个 90°：n 方向 → t 方向
-	c1 := Point{c.X + nx + k*tx, c.Y + ny + k*ty}
-	p1 := Point{c.X + tx, c.Y + ty}
-	c2 := Point{p1.X + k*nx, p1.Y + k*ny}
-	f.CubeBezier(fpt(c1.X, c1.Y), fpt(c2.X, c2.Y), fpt(p1.X, p1.Y))
-	// 第二个 90°：t 方向 → -n 方向
-	c3 := Point{p1.X - k*nx, p1.Y - k*ny}
-	p2 := Point{c.X - nx, c.Y - ny}
-	c4 := Point{p2.X + k*tx, p2.Y + k*ty}
-	f.CubeBezier(fpt(c3.X, c3.Y), fpt(c4.X, c4.Y), fpt(p2.X, p2.Y))
-}
-
 // addCircle 生成一个圆点（退化线段的 stroke）。
 // 方向必须与 addCapsule 一致（视觉逆时针，y 向下坐标系），否则与相邻
 // 胶囊体重叠处 non-zero winding 会抵消镂空。
-func addCircle(f *rasterx.Filler, c Point, u float64) {
+func addCircle(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, c Point, u float64) {
 	const k = 0.552284749831
 	// 4 个 90° 弧（视觉逆时针）：右 → 上 → 左 → 下。R(x,y)=(y,-x)。
 	dirs := [4][2]float64{{1, 0}, {0, -1}, {-1, 0}, {0, 1}}
@@ -356,10 +376,10 @@ func addCircle(f *rasterx.Filler, c Point, u float64) {
 		c1 := Point{p0.X + k*rx*u, p0.Y + k*ry*u}
 		c2 := Point{p1.X + k*nx*u, p1.Y + k*ny*u}
 		if first {
-			f.Start(fpt(p0.X, p0.Y))
+			f.Start(pt(p0.X, p0.Y))
 			first = false
 		}
-		f.CubeBezier(fpt(c1.X, c1.Y), fpt(c2.X, c2.Y), fpt(p1.X, p1.Y))
+		f.CubeBezier(pt(c1.X, c1.Y), pt(c2.X, c2.Y), pt(p1.X, p1.Y))
 	}
 	f.Stop(true)
 }

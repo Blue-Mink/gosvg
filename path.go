@@ -194,40 +194,55 @@ func takeArgs(fields []string, i *int, n int) []float64 {
 func tokenizePath(d string) []string {
 	var tokens []string
 	var cur strings.Builder
-	flush := func() {
-		if cur.Len() > 0 {
-			tokens = append(tokens, cur.String())
-			cur.Reset()
+	lastCmd := byte(0) // 最近一次指令字母
+	argPos := 0        // 当前指令已输出的参数索引（arc flag 切分用）
+	emit := func() {
+		if cur.Len() == 0 {
+			return
+		}
+		tok := cur.String()
+		cur.Reset()
+		tokens = append(tokens, tok)
+		c := tok[0]
+		if (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') {
+			lastCmd = c
+			argPos = 0
+		} else if lastCmd == 'A' || lastCmd == 'a' {
+			argPos = (argPos + 1) % 7
 		}
 	}
 	for _, r := range d {
 		switch {
 		case r == ',' || r == ' ' || r == '\t' || r == '\n' || r == '\r':
-			flush()
+			emit()
 		case (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z'):
-			// 指令字母：先结束当前数字 token，再作为独立 token。
-			flush()
+			emit()
 			cur.WriteRune(r)
-			flush()
+			emit()
 		case r == '-':
-			// 负号：如果 cur 里有数字，先 flush（区分 "1-2" 这种情况）
 			if cur.Len() > 0 {
-				flush()
+				emit()
 			}
 			cur.WriteRune(r)
 		case r == '.':
-			// 若当前数字已含小数点，说明是新数字（如 ".9.4" → ".9", ".4"）
 			if strings.ContainsRune(cur.String(), '.') {
-				flush()
+				emit()
 			}
 			cur.WriteRune(r)
 		case r >= '0' && r <= '9':
+			// arc 的 largeArc/sweep flag（参数索引 3、4）是单字符，
+			// 后面可能紧跟坐标数字（如 "0020" = flag 0 + x 20），需单独切分。
+			if (lastCmd == 'A' || lastCmd == 'a') && (argPos == 3 || argPos == 4) && cur.Len() == 0 {
+				cur.WriteRune(r)
+				emit()
+				continue
+			}
 			cur.WriteRune(r)
 		case r == 'e' || r == 'E':
 			cur.WriteRune(r)
 		}
 	}
-	flush()
+	emit()
 	return tokens
 }
 

@@ -4,9 +4,9 @@ import (
 	"image"
 	"image/color"
 	"math"
+	"strings"
 
 	"github.com/Blue-Mink/gosvg/internal/rasterx"
-	"golang.org/x/image/math/fixed"
 )
 
 // renderContext 是单次渲染的上下文，持有目标图像、光栅化器和累积的变换/透明度。
@@ -151,28 +151,38 @@ func (ctx *renderContext) renderShape(n *node, opacity float64) {
 	// 样式解析（继承父级 + 元素自身覆盖）
 	style := mergeStyle(ctx.style, n)
 
+	// currentColor 归一化为 color 属性（SVG 默认 black）。
+	fillStr, strokeStr := style.fill, style.stroke
+	if strings.EqualFold(fillStr, "currentColor") {
+		fillStr = style.color
+	}
+	if strings.EqualFold(strokeStr, "currentColor") {
+		strokeStr = style.color
+	}
+
 	// 填充
-	if c, ok := parseColor(style.fill); ok && c.A > 0 {
+	if c, ok := parseColor(fillStr); ok && c.A > 0 {
 		nonZero := style.fillRule != "evenodd"
 		ctx.fill(p, c, opacity*style.fillOpacity, nonZero)
 	}
 
 	// 描边
-	if c, ok := parseColor(style.stroke); ok && c.A > 0 && style.strokeWidth > 0 {
+	if c, ok := parseColor(strokeStr); ok && c.A > 0 && style.strokeWidth > 0 {
 		ctx.stroke(p, c, style.strokeWidth, style.linecap, style.linejoin, opacity*style.strokeOpacity)
 	}
 }
 
 // shapeStyle 是一次填充/描边所需的有效样式（继承父级后）。
 type shapeStyle struct {
-	fill         string
-	fillRule     string
-	fillOpacity  float64
-	stroke       string
-	strokeWidth  float64
+	fill          string
+	fillRule      string
+	fillOpacity   float64
+	stroke        string
+	strokeWidth   float64
 	strokeOpacity float64
-	linecap      string
-	linejoin     string
+	linecap       string
+	linejoin      string
+	color         string
 }
 
 // effectiveStyle 已废弃：样式继承由 defaultShapeStyle + mergeStyle 在遍历时累积。
@@ -186,6 +196,7 @@ func defaultShapeStyle() shapeStyle {
 		strokeOpacity: 1,
 		linecap:       "butt",
 		linejoin:      "miter",
+		color:         "black",
 	}
 }
 
@@ -216,6 +227,9 @@ func mergeStyle(base shapeStyle, n *node) shapeStyle {
 	if v, ok := n.attrs["stroke-linejoin"]; ok {
 		s.linejoin = v
 	}
+	if v, ok := n.attrs["color"]; ok {
+		s.color = v
+	}
 	return s
 }
 
@@ -239,28 +253,10 @@ func (ctx *renderContext) stroke(p rasterx.Path, c color.NRGBA, width float64, l
 	}
 	final := rasterx.ApplyOpacity(c, opacity)
 
-	// round cap + round join：走自研的「胶囊体并集」，内偏移退化处几何正确。
-	if linecap == "round" && linejoin == "round" {
-		strokeCapsules(ctx.img, p, ctx.matrix, width*scale/2, final, 0.01)
-		return
-	}
-
-	// 其余 cap/join 组合：回退 rasterx。
-	ctx.dasher.Clear()
-	capF := capFunc(linecap)
-	joinF := joinMode(linejoin)
-	ctx.dasher.SetStroke(
-		fixed.Int26_6(width*scale*64),
-		fixed.Int26_6(4*64),
-		capF, capF,
-		rasterx.RoundGap,
-		joinF,
-		nil, 0,
-	)
-	ma := &rasterx.MatrixAdder{Adder: ctx.dasher, M: ctx.matrix}
-	p.AddTo(ma)
-	ctx.dasher.SetColor(final)
-	ctx.dasher.Draw()
+	// 全部 cap/join 组合统一走精确轮廓（单条连续边，解析级 AA）。
+	// 用户空间 offset：halfWidth 传用户半宽 width/2，tol 换算到用户单位。
+	strokeCapsules(ctx.img, p, ctx.matrix, width/2, final, 0.01/scale, linecap, linejoin)
+	return
 }
 
 func capFunc(s string) rasterx.CapFunc {
