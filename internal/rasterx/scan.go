@@ -16,7 +16,7 @@ import (
 	"image/draw"
 
 	"golang.org/x/image/math/fixed"
-	"golang.org/x/image/vector"
+	"github.com/Blue-Mink/gosvg/internal/vector"
 )
 
 // At returns the color at the point x,y

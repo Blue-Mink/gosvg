@@ -137,6 +137,133 @@ func distToSegment(p, a, b Point) float64 {
 // 为什么填充器用 rasterx.Filler 而非 x/image/vector：两者是独立的光栅化实现，
 // 与 cairosvg 的 AA 对齐程度不同（实测 fill 圆 rasterx=0.9986 / vector=0.9952）。
 // stroke 与 fill 共用 rasterx 的扫描器，能把 stroke 的 AA 拉到与 fill 同一水平。
+// ---- 精确 stroke 轮廓：偏移线 + 圆弧 join，单条连续边 → 解析级 AA ----
+// （胶囊体并集的边缘被相邻胶囊体双重覆盖，coverage 饱和成硬边，AA 渐变被抹平；
+//   精确轮廓的每条边是单条边链，像素 coverage 为真实部分值。）
+
+func emitArcDir(f *rasterx.Filler, cx, cy, a0, delta, r float64) {
+	n := int(math.Ceil(math.Abs(delta)*r/0.8)) + 1
+	for k := 1; k <= n; k++ {
+		a := a0 + delta*float64(k)/float64(n)
+		f.Line(fpt(cx+r*math.Cos(a), cy+r*math.Sin(a)))
+	}
+}
+
+func emitArcShort(f *rasterx.Filler, cx, cy, a0, a1, r float64) {
+	d := a1 - a0
+	for d > math.Pi {
+		d -= 2 * math.Pi
+	}
+	for d <= -math.Pi {
+		d += 2 * math.Pi
+	}
+	emitArcDir(f, cx, cy, a0, d, r)
+}
+
+// lineIntersect 直线 p+t·d 与 q+s·e 求交。
+func lineIntersect(px, py, dx, dy, qx, qy, ex, ey float64) (float64, float64, bool) {
+	den := dx*ey - dy*ex
+	if math.Abs(den) < 1e-12 {
+		return 0, 0, false
+	}
+	t := ((qx-px)*ey - (qy-py)*ex) / den
+	return px + t*dx, py + t*dy, true
+}
+
+type segDir struct{ tx, ty, nx, ny float64 }
+
+func segOf(a, b Point, u float64) segDir {
+	dx := b.X - a.X
+	dy := b.Y - a.Y
+	l := math.Hypot(dx, dy)
+	return segDir{dx / l, dy / l, -dy / l * u, dx / l * u}
+}
+
+// emitOffsetChain 沿链生成左偏移边（含顶点 join：凸→圆弧、凹→交点）。
+// closed=true 时为完整环（含首顶点 join，终点回到起点）。返回最后法线角。
+func emitOffsetChain(f *rasterx.Filler, pts []Point, u float64, closed bool) float64 {
+	n := len(pts)
+	segN := n - 1
+	if closed {
+		segN = n
+	}
+	segs := make([]segDir, segN)
+	for i := 0; i < segN; i++ {
+		segs[i] = segOf(pts[i], pts[(i+1)%n], u)
+	}
+	lastAng := 0.0
+	for i := 0; i < segN; i++ {
+		s := segs[i]
+		if i > 0 || closed {
+			j := (i - 1 + segN) % segN
+			pv := segs[j]
+			P := pts[i]
+			cross := pv.tx*s.ty - pv.ty*s.tx
+			dot := pv.tx*s.tx + pv.ty*s.ty
+			aj := math.Atan2(pv.ny, pv.nx)
+			ai := math.Atan2(s.ny, s.nx)
+			switch {
+			case math.Abs(cross) < 1e-12:
+				if dot < 0 { // 折返：绕 P 半圆，经 -t_j
+					emitArcDir(f, P.X, P.Y, aj, -math.Pi, u)
+				}
+				// 同向共线：点几乎重合，不 emit
+			default:
+				X, Y, ok := lineIntersect(P.X+pv.nx, P.Y+pv.ny, pv.tx, pv.ty,
+					P.X+s.nx, P.Y+s.ny, s.tx, s.ty)
+				d := math.Hypot(X-P.X, Y-P.Y)
+				if ok && d < u*(1-1e-9) { // 凹：内交点
+					f.Line(fpt(X, Y))
+				} else { // 凸：短弧（miter 发散时也安全）
+					emitArcShort(f, P.X, P.Y, aj, ai, u)
+				}
+			}
+		}
+		b := pts[(i+1)%n]
+		f.Line(fpt(b.X+s.nx, b.Y+s.ny))
+		lastAng = math.Atan2(s.ny, s.nx)
+	}
+	return lastAng
+}
+
+// strokeExactPath 把一个子路径的精确 stroke 轮廓写入 filler。
+func strokeExactPath(f *rasterx.Filler, pts []Point, u float64, closed bool) {
+	n := len(pts)
+	if (closed && n < 3) || (!closed && n < 2) {
+		addCircle(f, pts[0], u)
+		return
+	}
+	if closed {
+		f.Start(fpt(pts[0].X+segOf(pts[0], pts[1], u).nx, pts[0].Y+segOf(pts[0], pts[1], u).ny))
+		emitOffsetChain(f, pts, u, true)
+		f.Stop(true)
+		rev := make([]Point, n)
+		for i := range pts {
+			rev[i] = pts[n-1-i]
+		}
+		f.Start(fpt(rev[0].X+segOf(rev[0], rev[1], u).nx, rev[0].Y+segOf(rev[0], rev[1], u).ny))
+		emitOffsetChain(f, rev, u, true)
+		f.Stop(true)
+		return
+	}
+	s0 := segOf(pts[0], pts[1], u)
+	f.Start(fpt(pts[0].X+s0.nx, pts[0].Y+s0.ny))
+	emitOffsetChain(f, pts, u, false)
+	sl := segOf(pts[n-2], pts[n-1], u)
+	// capEnd：从 +n_last 经 +t_last 到 -n_last（delta=-π，中点=θ(n)-π/2=θ(t)）
+	emitArcDir(f, pts[n-1].X, pts[n-1].Y, math.Atan2(sl.ny, sl.nx), -math.Pi, u)
+	rev := make([]Point, n)
+	for i := range pts {
+		rev[i] = pts[n-1-i]
+	}
+	emitOffsetChain(f, rev, u, false)
+	// cap0：从 -n_0 经 -t_0 回 +n_0（delta=-π，中点=θ(n)+π/2=θ(-t)）
+	emitArcDir(f, pts[0].X, pts[0].Y, math.Atan2(s0.ny, s0.nx)+math.Pi, -math.Pi, u)
+	f.Stop(true)
+}
+
+func segs0N(pts []Point, u float64) segDir { return segOf(pts[0], pts[1], u) }
+
 func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D, halfWidth float64, c color.NRGBA, tol float64) {
 	subs := flattenPath(path, matrix, tol)
 	if len(subs) == 0 {
@@ -149,19 +276,25 @@ func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D
 	filler.SetWinding(true) // non-zero
 
 	for _, pts := range subs {
-		if len(pts) == 1 {
-			// 仅 MoveTo 的子路径不产生绘制（SVG 规范：zero-length subpath
-			// 只有含线段命令时才渲染 cap）。
+		// 去除相邻重复点
+		dedup := pts[:0]
+		for i, p := range pts {
+			if i == 0 || math.Hypot(p.X-dedup[len(dedup)-1].X, p.Y-dedup[len(dedup)-1].Y) > 1e-9 {
+				dedup = append(dedup, p)
+			}
+		}
+		if len(dedup) < 2 {
+			if len(dedup) == 1 {
+				addCircle(filler, dedup[0], halfWidth)
+			}
 			continue
 		}
-		for i := 0; i < len(pts)-1; i++ {
-			a, bpt := pts[i], pts[i+1]
-			if math.Hypot(bpt.X-a.X, bpt.Y-a.Y) < 1e-9 {
-				addCircle(filler, bpt, halfWidth)
-				continue
-			}
-			addCapsule(filler, a, bpt, halfWidth)
+		closedP := math.Hypot(dedup[0].X-dedup[len(dedup)-1].X,
+			dedup[0].Y-dedup[len(dedup)-1].Y) < 1e-6 && len(dedup) > 3
+		if closedP {
+			dedup = dedup[:len(dedup)-1]
 		}
+		strokeExactPath(filler, dedup, halfWidth, closedP)
 	}
 
 	filler.SetColor(c)
