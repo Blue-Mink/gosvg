@@ -25,6 +25,20 @@
 - [x] text 渲染（goregular + opentype，anchor/baseline）
 - [x] defs/use 引用
 - [x] 与 cairosvg 对账（IoU + alphaAAD）
+- [x] **B 方案：自研胶囊体并集 stroke（cairo 级质量，2026-11-07 完成）**
+  - stroke 弃用 rasterx Stroker 的「整体偏移轮廓 + non-zero」（内偏移退化时
+    自交出错，flatten 精度实验证明与 tol 无关），改为每条 flatten 线段独立
+    生成「偏移矩形 + 两端半圆」的胶囊体，全部 non-zero 累积进一个
+    x/image/vector Rasterizer 填充——round join 由相邻端半圆自然重叠实现，
+    内偏移退化天然免疫。rasterx fork 进 internal/rasterx 继续负责 fill。
+  - 途中修掉 5 个 bug：半圆绕向（cap 覆盖反侧）、多子路径连线（子路径必须
+    独立不连线）、M-only 子路径不渲染、addCircle 与 addCapsule winding 方向
+    相反（同框抵消镂空）、vector 通用路径 alpha=0 幽灵 RGB 清理。
+  - 对账（cairosvg 512px IoU）：path1（小半径 arc，旧 0.9443）→ **0.9911**；
+    rock 0.9939 / country 0.9968 / blues 0.9961 / jazz 0.9944 / fill 0.9998；
+    多子路径 0.9997+、零长段 0.9879、circle_path 0.9950；47ms/图。
+  - 扇谷效应边界：凸曲线外侧相邻半圆交点内缩 ≈ R·tol/u（tol=0.01 时
+    <0.05px 亚像素级），再降 tol 收益递减（AA 算法差异成主导）。
 
 ## 与 cairosvg 对账结果（512×512）
 | SVG | IoU | alphaAAD | 备注 |
