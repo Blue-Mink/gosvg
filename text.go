@@ -100,15 +100,17 @@ func (ctx *renderContext) renderText(n *node, opacity float64) {
 		px -= widthPx
 	}
 
-	// dominant-baseline：把 y 从"基线"调整为"文字垂直中心"。
+	// dominant-baseline：把 y（指定的对齐点）换算成 font.Drawer 需要的基线位置。
+	// font.Metrics 的 Descent 为正值（基线到底部的距离），文字中心在基线上方
+	// (Ascent-Descent)/2 处；text-before-edge 的 y 指向文字上缘（基线下方 Ascent）。
 	switch baseline {
 	case "central", "middle":
 		m := face.Metrics()
-		shift := (m.Ascent + m.Descent) / 2 // descent 为负
-		py -= float64(shift) / 64
+		shift := (m.Ascent - m.Descent) / 2
+		py += float64(shift) / 64
 	case "text-before-edge", "hanging":
 		m := face.Metrics()
-		py -= float64(m.Ascent) / 64
+		py += float64(m.Ascent) / 64
 	}
 
 	dot := fixed.Point26_6{
