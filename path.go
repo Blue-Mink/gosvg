@@ -155,6 +155,16 @@ func isCmd(f string) bool {
 	return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')
 }
 
+// isExpEnd 判断 token 是否以科学计数法的指数标记 e/E 结尾
+// （用于决定紧跟着的 +/- 号是否属于当前数字，如 "1e-5"、"1e+5"）。
+func isExpEnd(s string) bool {
+	if s == "" {
+		return false
+	}
+	c := s[len(s)-1]
+	return c == 'e' || c == 'E'
+}
+
 func argCount(cmd byte) int {
 	switch cmd {
 	case 'M', 'L', 'T':
@@ -215,12 +225,23 @@ func tokenizePath(d string) []string {
 		switch {
 		case r == ',' || r == ' ' || r == '\t' || r == '\n' || r == '\r':
 			emit()
+		case r == 'e' || r == 'E':
+			// 科学计数法指数标记：属于当前数字 token（如 "1e-5"、"1e+5"）。
+			// 必须优先于指令字母分支——e/E 不是合法 path 指令字母。
+			cur.WriteRune(r)
 		case (r >= 'A' && r <= 'Z') || (r >= 'a' && r <= 'z'):
 			emit()
 			cur.WriteRune(r)
 			emit()
 		case r == '-':
-			if cur.Len() > 0 {
+			// 负号若紧跟科学计数法的 e/E（如 "1e-5"），属于当前数字 token，不要切分。
+			if cur.Len() > 0 && !isExpEnd(cur.String()) {
+				emit()
+			}
+			cur.WriteRune(r)
+		case r == '+':
+			// 正号只出现在科学计数法指数（如 "1e+5"），紧跟 e/E 时属于当前 token。
+			if cur.Len() > 0 && !isExpEnd(cur.String()) {
 				emit()
 			}
 			cur.WriteRune(r)
@@ -237,8 +258,6 @@ func tokenizePath(d string) []string {
 				emit()
 				continue
 			}
-			cur.WriteRune(r)
-		case r == 'e' || r == 'E':
 			cur.WriteRune(r)
 		}
 	}

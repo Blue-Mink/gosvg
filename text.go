@@ -4,6 +4,7 @@ import (
 	"image"
 	"image/color"
 	"math"
+	"strings"
 	"sync"
 
 	"github.com/Blue-Mink/gosvg/internal/rasterx"
@@ -50,18 +51,24 @@ func (ctx *renderContext) renderText(n *node, opacity float64) {
 		return
 	}
 
-	fontSize := parseFloatOr(n.attr("font-size"), 12)
+	fontSize := parseLengthOr(n.attr("font-size"), 12)
 	if fontSize <= 0 {
 		return
 	}
 	anchor := n.attr("text-anchor")
 	baseline := n.attr("dominant-baseline")
 
+	// 样式继承（与形状一致）：继承父级 fill，currentColor 归一化；不查 n.attr 裸取，
+	// 否则 <g fill="red"><text>…</text></g> 这类继承会失效。
+	style := mergeStyle(ctx.style, n)
+	fillStr := style.fill
+	if strings.EqualFold(fillStr, "currentColor") {
+		fillStr = style.color
+	}
 	c := color.NRGBA{0, 0, 0, 255}
-	if v, ok := parseColor(n.attr("fill")); ok {
+	if v, ok := parseColor(fillStr); ok {
 		c = v
 	}
-	fillOpacity := parseFloatOr(n.attr("fill-opacity"), 1)
 
 	x := parseFloatOr(n.attr("x"), 0)
 	y := parseFloatOr(n.attr("y"), 0)
@@ -110,7 +117,7 @@ func (ctx *renderContext) renderText(n *node, opacity float64) {
 	}
 	drawer := &font.Drawer{
 		Dst:  ctx.img,
-		Src:  image.NewUniform(rasterx.ApplyOpacity(c, opacity*fillOpacity*ctx.opacity)),
+		Src:  image.NewUniform(rasterx.ApplyOpacity(c, opacity*style.fillOpacity)),
 		Face: face,
 		Dot:  dot,
 	}

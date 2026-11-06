@@ -47,11 +47,10 @@ func (ctx *renderContext) renderMasked(n *node, maskID string, opacity float64) 
 func (ctx *renderContext) renderMaskImage(maskNode *node, w, h int) *image.NRGBA {
 	img := image.NewNRGBA(image.Rect(0, 0, w, h))
 	sub := &renderContext{
-		img:     img,
-		doc:     ctx.doc,
-		matrix:  ctx.matrix,
-		opacity: 1.0,
-		style:   defaultShapeStyle(),
+		img:    img,
+		doc:    ctx.doc,
+		matrix: ctx.matrix,
+		style:  defaultShapeStyle(),
 	}
 	sub.dasher = newDasherFor(img)
 	for _, c := range maskNode.children {
@@ -65,11 +64,10 @@ func (ctx *renderContext) renderMaskImage(maskNode *node, w, h int) *image.NRGBA
 func (ctx *renderContext) renderSubimage(n *node, opacity float64, w, h int) *image.NRGBA {
 	img := image.NewNRGBA(image.Rect(0, 0, w, h))
 	sub := &renderContext{
-		img:     img,
-		doc:     ctx.doc,
-		matrix:  ctx.matrix,
-		opacity: ctx.opacity,
-		style:   ctx.style,
+		img:    img,
+		doc:    ctx.doc,
+		matrix: ctx.matrix,
+		style:  ctx.style,
 	}
 	sub.dasher = newDasherFor(img)
 	_ = sub.renderNodeBare(n, opacity)

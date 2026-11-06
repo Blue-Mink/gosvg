@@ -21,16 +21,54 @@ func parseFloat(s string) (float64, bool) {
 	return f, true
 }
 
-// parseLength 解析带单位的长度（px 直接取值，其余单位近似按 1:1 处理，
-// 这是 SVG 子集的合理近似——本库主要处理 viewBox 内的用户单位）。
+// parseLength 解析带单位的长度值（px/pt/em/cm/mm/in/% 等）。
+// 本库主要处理 viewBox 内的用户单位，非 px 单位按数值部分 1:1 近似。
 func parseLength(s string) (float64, bool) {
 	s = strings.TrimSpace(s)
 	if s == "" {
 		return 0, false
 	}
-	s = strings.TrimSuffix(s, "px")
-	s = strings.TrimSuffix(s, "px")
-	return parseFloat(s)
+	// 剥离末尾的单位字母或百分号，只留数值部分。
+	i := len(s)
+	for i > 0 && (isUnitChar(s[i-1]) || s[i-1] == '%') {
+		i--
+	}
+	return parseFloat(s[:i])
+}
+
+// isUnitChar 判断字节是否为长度单位字符（a-z / A-Z）。
+func isUnitChar(b byte) bool {
+	return (b >= 'a' && b <= 'z') || (b >= 'A' && b <= 'Z')
+}
+
+// parseLengthOr 解析带单位的长度，失败返回 def。
+func parseLengthOr(s string, def float64) float64 {
+	if v, ok := parseLength(s); ok {
+		return v
+	}
+	return def
+}
+
+// parseStyle 解析 CSS 内联样式串 style="fill:red;stroke:blue;stroke-width:2"
+// 为属性表（key 已小写）。空声明/缺冒号的部分静默跳过。
+func parseStyle(s string) map[string]string {
+	out := map[string]string{}
+	for _, decl := range strings.Split(s, ";") {
+		decl = strings.TrimSpace(decl)
+		if decl == "" {
+			continue
+		}
+		kv := strings.SplitN(decl, ":", 2)
+		if len(kv) != 2 {
+			continue
+		}
+		k := strings.ToLower(strings.TrimSpace(kv[0]))
+		v := strings.TrimSpace(kv[1])
+		if k != "" && v != "" {
+			out[k] = v
+		}
+	}
+	return out
 }
 
 // parseColor 解析 SVG 颜色值，支持 #rgb / #rrggbb / #rgba / #rrggbbaa、

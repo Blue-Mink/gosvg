@@ -11,12 +11,11 @@ import (
 
 // renderContext 是单次渲染的上下文，持有目标图像、光栅化器和累积的变换/透明度。
 type renderContext struct {
-	img     *image.NRGBA
-	dasher  *rasterx.Dasher
-	doc     *Document
-	matrix  rasterx.Matrix2D
-	opacity float64
-	style   shapeStyle // 继承的表现样式（fill/stroke 等）
+	img    *image.NRGBA
+	dasher *rasterx.Dasher
+	doc    *Document
+	matrix rasterx.Matrix2D
+	style  shapeStyle // 继承的表现样式（fill/stroke 等）
 }
 
 func newRenderContext(width, height int, d *Document) *renderContext {
@@ -24,12 +23,11 @@ func newRenderContext(width, height int, d *Document) *renderContext {
 	scanner := rasterx.NewScannerGV(width, height, img, img.Bounds())
 	dasher := rasterx.NewDasher(width, height, scanner)
 	ctx := &renderContext{
-		img:     img,
-		dasher:  dasher,
-		doc:     d,
-		matrix:  rasterx.Identity,
-		opacity: 1.0,
-		style:   defaultShapeStyle(),
+		img:    img,
+		dasher: dasher,
+		doc:    d,
+		matrix: rasterx.Identity,
+		style:  defaultShapeStyle(),
 	}
 	ctx.matrix = ctx.viewBoxMatrix(width, height)
 	return ctx
@@ -73,50 +71,44 @@ func (ctx *renderContext) renderNode(n *node, opacity float64) error {
 }
 
 // renderNodeBare 不检查 mask，直接渲染元素及其子树。
+// transform / opacity / 样式继承对所有可渲染元素统一生效（含基本形状、text、use），
+// 而非仅 svg/g——否则 <rect transform=... opacity=.../> 这类元素级属性会被忽略。
 func (ctx *renderContext) renderNodeBare(n *node, opacity float64) error {
+	savedM := ctx.matrix
+	savedStyle := ctx.style
+
+	// transform 对所有可渲染元素生效。
+	if tr := n.attr("transform"); tr != "" {
+		ctx.matrix = ctx.matrix.Mult(parseTransform(tr))
+	}
+	// opacity 对所有可渲染元素生效：本节点有效透明度 = 父级累积 × 自身 opacity。
+	nodeOpacity := opacity
+	if o := parseFloatOr(n.attr("opacity"), 1); o != 1 {
+		nodeOpacity *= o
+	}
+	ctx.style = mergeStyle(ctx.style, n)
+
 	switch n.name {
 	case "svg", "g":
-		// 累积 transform / opacity / 样式，递归子元素。
-		savedM := ctx.matrix
-		savedOp := ctx.opacity
-		savedStyle := ctx.style
-		if tr := n.attr("transform"); tr != "" {
-			ctx.matrix = ctx.matrix.Mult(parseTransform(tr))
-		}
-		if o := parseFloatOr(n.attr("opacity"), 1); o != 1 {
-			ctx.opacity = ctx.opacity * o
-		}
-		ctx.style = mergeStyle(ctx.style, n)
 		for _, c := range n.children {
-			if err := ctx.renderNode(c, opacity*ctx.opacity); err != nil {
+			if err := ctx.renderNode(c, nodeOpacity); err != nil {
 				ctx.matrix = savedM
-				ctx.opacity = savedOp
 				ctx.style = savedStyle
 				return err
 			}
 		}
-		ctx.matrix = savedM
-		ctx.opacity = savedOp
-		ctx.style = savedStyle
-
-	case "defs":
-		// defs 内容不直接渲染。
-
+	case "defs", "mask", "lineargradient", "radialgradient":
+		// 定义类元素不直接渲染。
 	case "use":
-		ctx.renderUse(n, opacity)
-
-	case "mask":
-		// mask 定义由引用它的元素消费，本身不渲染。
-
+		ctx.renderUse(n, nodeOpacity)
 	case "text":
-		ctx.renderText(n, opacity)
-
-	case "lineargradient", "radialgradient":
-		// 渐变定义，不渲染。
-
+		ctx.renderText(n, nodeOpacity)
 	case "circle", "ellipse", "rect", "line", "path", "polygon", "polyline":
-		ctx.renderShape(n, opacity)
+		ctx.renderShape(n, nodeOpacity)
 	}
+
+	ctx.matrix = savedM
+	ctx.style = savedStyle
 	return nil
 }
 
@@ -185,7 +177,6 @@ type shapeStyle struct {
 	color         string
 }
 
-// effectiveStyle 已废弃：样式继承由 defaultShapeStyle + mergeStyle 在遍历时累积。
 // defaultShapeStyle 返回 SVG 规范默认的表现样式。
 func defaultShapeStyle() shapeStyle {
 	return shapeStyle{
@@ -257,26 +248,4 @@ func (ctx *renderContext) stroke(p rasterx.Path, c color.NRGBA, width float64, l
 	// 用户空间 offset：halfWidth 传用户半宽 width/2，tol 换算到用户单位。
 	strokeCapsules(ctx.img, p, ctx.matrix, width/2, final, 0.01/scale, linecap, linejoin)
 	return
-}
-
-func capFunc(s string) rasterx.CapFunc {
-	switch s {
-	case "round":
-		return rasterx.RoundCap
-	case "square":
-		return rasterx.SquareCap
-	default:
-		return rasterx.ButtCap
-	}
-}
-
-func joinMode(s string) rasterx.JoinMode {
-	switch s {
-	case "round":
-		return rasterx.Round
-	case "bevel":
-		return rasterx.Bevel
-	default:
-		return rasterx.MiterClip
-	}
 }

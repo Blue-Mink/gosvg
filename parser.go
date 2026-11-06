@@ -54,6 +54,13 @@ func parse(data []byte) (*node, error) {
 			for _, a := range t.Attr {
 				n.attrs[strings.ToLower(a.Name.Local)] = a.Value
 			}
+			// 内联 style 属性（style="fill:red;...")优先级高于 presentation 属性，
+			// 解析后覆盖同名属性。
+			if style := n.attrs["style"]; style != "" {
+				for k, v := range parseStyle(style) {
+					n.attrs[k] = v
+				}
+			}
 			if len(stack) == 0 {
 				if root != nil {
 					// 多根节点：只保留第一个，其余忽略。
@@ -96,8 +103,8 @@ func (d *Document) resolve() error {
 				d.hasVB = true
 			}
 		}
-		d.width = parseFloatOr(d.root.attr("width"), 0)
-		d.height = parseFloatOr(d.root.attr("height"), 0)
+		d.width = parseLengthOr(d.root.attr("width"), 0)
+		d.height = parseLengthOr(d.root.attr("height"), 0)
 	}
 
 	// 深度优先遍历，收集带 id 的元素（mask / gradient / 供 use 引用的形状）。

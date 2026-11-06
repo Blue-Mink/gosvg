@@ -80,3 +80,30 @@
   country 0.9968 / blues 0.9962 / jazz 0.9959 / cn(fill) 0.9998；49ms/图
 - 结论：剩余差异 = rasterx AA 与 cairosvg 的亚像素舍入差（红绿平衡各~50px），
   4x 边缘放大肉眼不可辨；已到该 AA 基线（fill 同为 0.9986）
+
+## 审计修复（2026-11-07，全面代码审查后）
+
+### 修复的渲染 bug
+1. text 的 opacity 被重复乘 ctx.opacity（`opacity*fillOpacity*ctx.opacity` → 0.5×0.5=0.25 而非 0.5）
+2. text 的 fill/fill-opacity 不继承父级样式（`<g fill="red"><text>…</text></g>` 失效）
+3. 基本形状/text 元素**自身**的 transform 属性被忽略（renderShape 不处理 transform）
+4. 基本形状/text 元素**自身**的 opacity 属性被忽略（mergeStyle 不处理 opacity）
+5. path 科学计数法：`e`/`E` 被误当指令字母切分；`1e-5` 被拆成 `1e`+`-5`
+6. width/height/font-size 带单位（`512px`、`12pt`）解析失败
+
+### 清理
+- 死代码：`parseLength`（重复 TrimSuffix）、`capFunc`/`joinMode`（stroke 改精确轮廓后废弃）
+- `renderContext.opacity` 字段（重构后无读取者）
+- `effectiveStyle` 残留注释
+
+### 新增能力
+- 内联 `style="fill:red;stroke:blue"`（优先级高于 presentation 属性）
+- `parseLength` 正确处理 px/pt/em/% 单位
+
+### 回归测试
+- `fix_test.go`：text opacity/fill 继承、shape transform/opacity、科学计数法、parseLength、内联 style
+  —— 旧字节 6 项全 FAIL → 新字节全 PASS（证明用例咬得住）
+
+### 未实现（已知边界，见 gosvg.go 包注释）
+- gradient（grads 已索引但未渲染，fill="url(#id)" 降级为不填充）
+- clip-path / stroke-dasharray / tspan / class 选择器 / <style> / preserveAspectRatio 非默认值 / mask-type=alpha
