@@ -318,7 +318,7 @@ func strokeExactPath(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, a
 
 func segs0N(pts []Point, u float64) segDir { return segOf(pts[0], pts[1], u) }
 
-func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D, halfWidth float64, c color.NRGBA, tol float64, linecap, linejoin string) {
+func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D, halfWidth float64, c color.NRGBA, tol float64, linecap, linejoin string, dasharray []float64, dashoffset float64) {
 	// 用户空间 flatten（Identity），offset 在用户空间做，最终 Transform 到 device。
 	subs := flattenPath(path, rasterx.Identity, tol)
 	if len(subs) == 0 {
@@ -333,6 +333,7 @@ func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D
 		tx, ty := matrix.Transform(x, y)
 		return fpt(tx, ty)
 	}
+	dashes := normalizeDashes(dasharray)
 
 	for _, pts := range subs {
 		// 去除相邻重复点
@@ -352,6 +353,22 @@ func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D
 			dedup[0].Y-dedup[len(dedup)-1].Y) < 1e-6 && len(dedup) > 3
 		if closedP {
 			dedup = dedup[:len(dedup)-1]
+		}
+
+		if len(dashes) > 0 {
+			// dash：闭合环展开成首尾相连的开放折线，切段后每段独立 stroke。
+			dashPts := dedup
+			if closedP {
+				dashPts = make([]Point, 0, len(dedup)+1)
+				dashPts = append(dashPts, dedup...)
+				dashPts = append(dashPts, dedup[0])
+			}
+			for _, seg := range dashSegments(dashPts, dashoffset, dashes, closedP) {
+				if len(seg) >= 2 {
+					strokeExactPath(filler, pt, tol, seg, halfWidth, false, linecap, linejoin)
+				}
+			}
+			continue
 		}
 		strokeExactPath(filler, pt, tol, dedup, halfWidth, closedP, linecap, linejoin)
 	}

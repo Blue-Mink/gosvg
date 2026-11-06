@@ -11,14 +11,15 @@
 //	     path / polygon / polyline / text / mask
 //	属性：viewBox / transform / fill / fill-rule / fill-opacity /
 //	     stroke / stroke-width / stroke-linecap / stroke-linejoin /
-//	     stroke-opacity / opacity / font-size / text-anchor /
-//	     dominant-baseline / color / currentColor / id / mask /
+//	     stroke-dasharray / stroke-dashoffset / stroke-opacity /
+//	     opacity / font-size / text-anchor / dominant-baseline /
+//	     color / currentColor / id / mask /
 //	     style（内联 CSS 声明，优先级高于 presentation 属性）
 //
 // 明确不支持的常见特性（命中时静默降级，不报错）：
 //
 //	gradient（linearGradient / radialGradient，fill="url(#id)" 降级为不填充）
-//	clip-path / stroke-dasharray / stroke-dashoffset / tspan
+//	clip-path / tspan
 //	class 选择器 / <style> 样式表元素
 //	preserveAspectRatio 的非默认值（仅支持 xMidYMid meet）
 //	mask-type="alpha"（仅支持默认 luminance）

@@ -6,8 +6,8 @@
 ## 支持范围（明确子集，不做完整 SVG）
 元素：svg / g / defs / use / circle / ellipse / rect / line / path / polygon / polyline / text / mask
 属性：viewBox / transform / fill / fill-rule / fill-opacity / stroke / stroke-width /
-      stroke-linecap / stroke-linejoin / stroke-opacity / opacity / font-size /
-      text-anchor / dominant-baseline / id / mask(url)
+      stroke-linecap / stroke-linejoin / stroke-dasharray / stroke-dashoffset /
+      stroke-opacity / opacity / font-size / text-anchor / dominant-baseline / id / mask(url)
 
 ## 底层
 - golang.org/x/image/vector : path fill/stroke 光栅化（AA）
@@ -106,4 +106,45 @@
 
 ### 未实现（已知边界，见 gosvg.go 包注释）
 - gradient（grads 已索引但未渲染，fill="url(#id)" 降级为不填充）
-- clip-path / stroke-dasharray / tspan / class 选择器 / <style> / preserveAspectRatio 非默认值 / mask-type=alpha
+- clip-path / tspan / class 选择器 / <style> / preserveAspectRatio 非默认值 / mask-type=alpha
+
+## stroke-dasharray / stroke-dashoffset（2026-11-07 完成）
+- 实现：`dash.go`（parseDashArray / normalizeDashes / dashSegments / dashRanges /
+  polylineLength / polylinePointAt / extractPolyline），参考 tdewolff/canvas `Path.Dash`。
+- 语义：奇数长度 dasharray 自动复制成偶数（SVG 规范）；dash 段在 flatten 后的折线上按弧长
+  切分，每段独立走 strokeExactPath（开放、沿用原 linecap/linejoin）；闭合子路径展开成环，
+  跨起点的 dash（offset 使 dash 越过路径起点）把首末两段合并。
+- 对账（cairosvg 512px IoU）：水平线/斜线/矩形/奇数数组/dashoffset **1.0000**，
+  round-cap **0.9998**，曲线 **0.9957**（flatten 正常差异），闭合多边形 **0.9765**
+  （见下方"既有斜线 stroke AA 差异"，非 dash 引入）。
+- 单元测试 `dash_test.go` 14 项全绿。
+
+## 既有问题（非本轮引入）：斜线 stroke AA 比 cairosvg 略细
+- 现象：45° 斜线（polygon 菱形、无 dash）IoU 0.9698，红像素 860 均匀散布在 4 条边
+  （各 215），join 类型（miter/round/bevel）都同值 → 与 join 无关，是 stroke 精确轮廓
+  在斜线方向上的 AA 覆盖比 cairosvg 略低（约细 1px）。
+- dash 反而把闭合多边形抬到 0.9765（dash 段走开放 stroke，绕开闭合首尾）。
+- 待办：斜线 stroke AA 与 cairosvg 的差异值得单独排查（水平/垂直线满分，斜线差 ~3%）。
+
+
+## 参考 tdewolff/canvas 的调研结论（2026-11-07）
+
+用户给的参考（gitcode 镜像 + github 原仓都是同一个 `tdewolff/canvas`）：
+
+- **定位相反**：tdewolff/canvas 是"全家桶"式多后端矢量库（PDF/SVG/EPS/OpenGL/Gio/Fyne/HTMLCanvas/WASM + 文本整形 HarfBuzz/FriBidi），go.mod 直接 require fyne、gioui、go-gl、freetype、oksvg、rasterx 等，**247 个 go.sum 依赖**。gosvg 的 go.mod 只有 `golang.org/x/image` 一个依赖——gosvg 的"零 cgo 零外部依赖"定位恰好是它的反面。**结论：只能当算法参考，绝不能当依赖。**
+- 有趣事实：tdewolff/canvas 自己都间接依赖 `srwiley/rasterx`（via oksvg）——和 gosvg 用的同一个 rasterx。
+- 它现在有完整 SVG 解析+渲染（svg.go 1532 行 + svg_parse_test.go），支持 linearGradient/radialGradient/marker/pattern/stroke-dasharray/clip-path/CSS `<style>`/class 选择器/tspan。
+
+### 算法对照结论（逐项核实过）
+| 领域 | tdewolff/canvas | gosvg 现状 | 结论 |
+|---|---|---|---|
+| arc→cubic | Maisonobe kappa（path_util.go `ellipseToCubicBeziers`） | `4/3·tan(dt/4)` | 圆已最优；椭圆 tdewolff 略准，但收益 <0.1%，不追 |
+| circle flatten | 直接解析式（path_util.go `flattenEllipticArc`） | cubic + de Casteljau | 已够好 |
+| stroke | 双偏移曲线 + settle（path_stroke.go `offset`/`Stroke`） | 精确轮廓（offset line + arc join） | 已 cairo 级 0.99+，不换 |
+| **stroke-dasharray/dashoffset** | `Path.Dash`（path.go:1856） | **未实现**（render.go `dasher` 字段闲置） | **可参考实现** |
+| gradient / clip-path / marker | 完整实现 | 未实现 | 后续按需参考 |
+
+### 下一步建议（按价值排序）
+1. **stroke-dasharray + dashoffset**（自包含、可对 cairosvg 验证，参考 `Path.Dash`）
+2. **gradient（linear/radial）**（最高价值但复杂：需在光栅器里做逐像素轴向插值 + gradientUnits）
+3. clip-path / marker（低频，往后放）

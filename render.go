@@ -160,21 +160,23 @@ func (ctx *renderContext) renderShape(n *node, opacity float64) {
 
 	// 描边
 	if c, ok := parseColor(strokeStr); ok && c.A > 0 && style.strokeWidth > 0 {
-		ctx.stroke(p, c, style.strokeWidth, style.linecap, style.linejoin, opacity*style.strokeOpacity)
+		ctx.stroke(p, c, style.strokeWidth, style.linecap, style.linejoin, style.strokeDasharray, style.strokeDashoffset, opacity*style.strokeOpacity)
 	}
 }
 
 // shapeStyle 是一次填充/描边所需的有效样式（继承父级后）。
 type shapeStyle struct {
-	fill          string
-	fillRule      string
-	fillOpacity   float64
-	stroke        string
-	strokeWidth   float64
-	strokeOpacity float64
-	linecap       string
-	linejoin      string
-	color         string
+	fill             string
+	fillRule         string
+	fillOpacity      float64
+	stroke           string
+	strokeWidth      float64
+	strokeOpacity    float64
+	linecap          string
+	linejoin         string
+	strokeDasharray  []float64
+	strokeDashoffset float64
+	color            string
 }
 
 // defaultShapeStyle 返回 SVG 规范默认的表现样式。
@@ -218,6 +220,16 @@ func mergeStyle(base shapeStyle, n *node) shapeStyle {
 	if v, ok := n.attrs["stroke-linejoin"]; ok {
 		s.linejoin = v
 	}
+	if v, ok := n.attrs["stroke-dasharray"]; ok {
+		if da, ok := parseDashArray(v); ok {
+			s.strokeDasharray = da
+		} else {
+			s.strokeDasharray = nil
+		}
+	}
+	if v, ok := n.attrs["stroke-dashoffset"]; ok {
+		s.strokeDashoffset = parseFloatOr(v, 0)
+	}
 	if v, ok := n.attrs["color"]; ok {
 		s.color = v
 	}
@@ -237,7 +249,7 @@ func (ctx *renderContext) fill(p rasterx.Path, c color.NRGBA, opacity float64, n
 }
 
 // stroke 用指定颜色和宽度描边路径。
-func (ctx *renderContext) stroke(p rasterx.Path, c color.NRGBA, width float64, linecap, linejoin string, opacity float64) {
+func (ctx *renderContext) stroke(p rasterx.Path, c color.NRGBA, width float64, linecap, linejoin string, dasharray []float64, dashoffset float64, opacity float64) {
 	scale := ctx.matrixScale()
 	if scale <= 0 {
 		scale = 1
@@ -246,6 +258,6 @@ func (ctx *renderContext) stroke(p rasterx.Path, c color.NRGBA, width float64, l
 
 	// 全部 cap/join 组合统一走精确轮廓（单条连续边，解析级 AA）。
 	// 用户空间 offset：halfWidth 传用户半宽 width/2，tol 换算到用户单位。
-	strokeCapsules(ctx.img, p, ctx.matrix, width/2, final, 0.01/scale, linecap, linejoin)
+	strokeCapsules(ctx.img, p, ctx.matrix, width/2, final, 0.01/scale, linecap, linejoin, dasharray, dashoffset)
 	return
 }
