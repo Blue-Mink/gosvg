@@ -92,6 +92,7 @@ func (ctx *renderContext) renderClipMask(clipNode, targetNode *node, w, h int) *
 		opts:    ctx.opts,
 		nesting: ctx.nesting + 1,
 		err:     ctx.err,
+		visible: ctx.visible,
 	}
 	sub.dasher = newDasherFor(img)
 	for _, c := range clipNode.children {

@@ -92,6 +92,7 @@ func (ctx *renderContext) renderMaskImage(maskNode, targetNode *node, w, h int) 
 		opts:    ctx.opts,
 		nesting: ctx.nesting + 1,
 		err:     ctx.err,
+		visible: ctx.visible,
 	}
 	sub.dasher = newDasherFor(img)
 	for _, c := range maskNode.children {
@@ -224,6 +225,7 @@ func (ctx *renderContext) renderSubimage(n *node, opacity float64, w, h int) *im
 		opts:    ctx.opts,
 		nesting: ctx.nesting + 1,
 		err:     ctx.err,
+		visible: ctx.visible,
 	}
 	sub.dasher = newDasherFor(img)
 	if err := sub.renderNodeBare(n, opacity); err != nil && ctx.err == nil {
