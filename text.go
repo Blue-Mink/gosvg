@@ -5,30 +5,12 @@ import (
 	"image/color"
 	"math"
 	"strings"
-	"sync"
 
 	"github.com/Blue-Mink/gosvg/internal/rasterx"
 	"golang.org/x/image/font"
-	"golang.org/x/image/font/gofont/goregular"
 	"golang.org/x/image/font/opentype"
 	"golang.org/x/image/math/fixed"
 )
-
-var (
-	fontOnce   sync.Once
-	fontParsed *opentype.Font
-)
-
-// loadFont 惰性加载内置的 Go Regular 字体（无外部字体依赖）。
-func loadFont() *opentype.Font {
-	fontOnce.Do(func() {
-		f, err := opentype.Parse(goregular.TTF)
-		if err == nil {
-			fontParsed = f
-		}
-	})
-	return fontParsed
-}
 
 // matrixScale 近似返回当前变换的等比缩放因子（取 x/y 缩放的平均）。
 func (ctx *renderContext) matrixScale() float64 {
@@ -46,7 +28,16 @@ func (ctx *renderContext) renderText(n *node, opacity float64) {
 	if text == "" {
 		return
 	}
+	// 字体解析：内置 Go Regular 为回退；命中 font-family（含系统字体、通用名、
+	// 逗号列表）则换用对应字型，字重/字型按 font-weight/font-style 择优。
 	f := loadFont()
+	if family := n.attr("font-family"); family != "" {
+		bold := weightIsBold(n.attr("font-weight"))
+		italic := isItalic(n.attr("font-style"))
+		if ff := resolveFont(family, bold, italic); ff != nil {
+			f = ff
+		}
+	}
 	if f == nil {
 		return
 	}

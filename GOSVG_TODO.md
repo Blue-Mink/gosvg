@@ -166,3 +166,20 @@
 1. **stroke-dasharray + dashoffset**（自包含、可对 cairosvg 验证，参考 `Path.Dash`）
 2. **gradient（linear/radial）**（最高价值但复杂：需在光栅器里做逐像素轴向插值 + gradientUnits）
 3. clip-path / marker（低频，往后放）
+
+## 系统字体支持 font-family（2026-11-07 完成，方案 B）
+- 动机：内置 Go Regular 的 0 天生是斜杠零、笔画偏细，与 cairosvg 用系统 DejaVu 渲染的
+  年代唱片标签（"80"/"90"）字形对不上。
+- 实现：`font.go`——`AddFontDir(dir)` 递归扫 .ttf/.otf，读 NameIDFamily/Subfamily
+  按 (family, 字重, 字型) 注册；`renderText` 解析 `font-family`（逗号列表、去引号、
+  CSS 通用名 sans-serif/serif/monospace → DejaVu 优先）+ `font-weight/font-style`
+  择优字型；未命中回退内置 Go Regular（不调用 AddFontDir 时行为与旧版字节一致）。
+- 字重判定：subfamily 名含 bold → bold，含 italic/oblique → italic（DejaVu 的
+  regular subfamily 是 "Book"，正确归为 regular）；font-weight 数值 ≥600 算粗体。
+- 回归 `font_test.go` 7 项全绿：字重/字型判定表、逗号列表拆分、未注册回退 nil、
+  双指针字型选择与逐级回退、通用名映射、**端到端**（未注册 = Go Regular 字节一致；
+  注册 DejaVu 后渲染字节改变 = 真换字体）。
+- 对比验证（80s 标签 SVG）：cairosvg 与 gosvg(DejaVu) 的 "80" 均为 DejaVu Sans Bold
+  无斜杠零，字形一致；Go Regular 回退列仍是斜杠零细体。
+- 边界（写进包注释）：引入"渲染结果取决于系统字体"的边界——不调用 AddFontDir 则
+  保持零依赖不变；.ttc 集合字体暂不支持。

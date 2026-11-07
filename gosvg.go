@@ -12,9 +12,15 @@
 //	属性：viewBox / transform / fill / fill-rule / fill-opacity /
 //	     stroke / stroke-width / stroke-linecap / stroke-linejoin /
 //	     stroke-dasharray / stroke-dashoffset / stroke-opacity /
-//	     opacity / font-size / text-anchor / dominant-baseline /
+//	     opacity / font-size / font-family / font-weight / font-style /
+//	     text-anchor / dominant-baseline /
 //	     color / currentColor / id / mask /
 //	     style（内联 CSS 声明，优先级高于 presentation 属性）
+//
+// 文字字体：默认用内置 Go Regular（零外部依赖）。可选调用 AddFontDir 注册
+// 系统字体目录（如 /usr/share/fonts/truetype/dejavu），命中 font-family
+// （含 CSS 通用名 sans-serif/serif/monospace 与逗号列表）则换用对应字型，
+// 字重/字型按 font-weight/font-style 择优；未命中回退内置字体。
 //
 // 明确不支持的常见特性（命中时静默降级，不报错）：
 //
