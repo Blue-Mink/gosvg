@@ -252,3 +252,11 @@
   x/y/width/height 区域（复用 applyMaskRegion）、多子元素并集。
 - renderNode 先 clip 后 mask；renderNodeBare 跳过 clippath 元素。
 - 测试 `clip_test.go` 3 项：基本裁剪、clipPathUnits obb、多子元素 union。
+
+## tspan（2026-11-07 完成）
+- 重构 `text.go`：`renderText` 拆成 `renderText`/`renderTextSpans`/`drawTextSpan`，
+  沿 x 游标排布「直接文本 + tspan 子元素」，支持嵌套。
+- tspan 支持样式继承覆盖（fill/font-size/font-family/font-weight/font-style/
+  text-anchor/dominant-baseline）、定位（x/y 绝对、dx/dy 相对）、绝对 x 重置游标。
+- drawTextSpan 返回用户空间宽度供游标前进。
+- 测试 `tspan_test.go` 5 项：仅 tspan、直接文本+tspan 共存、fill 继承、嵌套、x 偏移。
