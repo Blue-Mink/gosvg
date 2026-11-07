@@ -176,6 +176,8 @@ func (ctx *renderContext) renderShape(n *node, opacity float64) {
 	// 描边
 	if c, ok := parseColor(strokeStr); ok && c.A > 0 && style.strokeWidth > 0 {
 		ctx.stroke(p, c, style.strokeWidth, style.linecap, style.linejoin, style.miterLimit, style.strokeDasharray, style.strokeDashoffset, opacity*style.strokeOpacity)
+	} else if g := ctx.doc.resolveGradient(strokeStr); g != nil && style.strokeWidth > 0 {
+		ctx.strokeGradient(p, g, style.strokeWidth, style.linecap, style.linejoin, style.miterLimit, style.strokeDasharray, style.strokeDashoffset, opacity*style.strokeOpacity)
 	}
 }
 
@@ -268,16 +270,31 @@ func (ctx *renderContext) fill(p rasterx.Path, c color.NRGBA, opacity float64, n
 	rf.SetWinding(true)
 }
 
-// stroke 用指定颜色和宽度描边路径。
+// stroke 用指定纯色描边路径。
 func (ctx *renderContext) stroke(p rasterx.Path, c color.NRGBA, width float64, linecap, linejoin string, miterLimit float64, dasharray []float64, dashoffset float64, opacity float64) {
+	ctx.strokeColor(p, rasterx.ApplyOpacity(c, opacity), width, linecap, linejoin, miterLimit, dasharray, dashoffset)
+}
+
+// strokeGradient 用渐变描边路径（stroke="url(#id)"）。
+func (ctx *renderContext) strokeGradient(p rasterx.Path, g *rasterx.Gradient, width float64, linecap, linejoin string, miterLimit float64, dasharray []float64, dashoffset float64, opacity float64) {
+	// objectBoundingBox 用路径几何包围盒（不含 stroke 宽度）。
+	if g.Units == rasterx.ObjectBoundingBox {
+		if x, y, w, h, ok := pathBounds(p, ctx.matrix); ok {
+			g.Bounds.X, g.Bounds.Y, g.Bounds.W, g.Bounds.H = x, y, w, h
+		}
+	}
+	ctx.strokeColor(p, g.GetColorFunctionUS(opacity, ctx.matrix), width, linecap, linejoin, miterLimit, dasharray, dashoffset)
+}
+
+// strokeColor 通用描边：clr 可以是 color.Color 或 ColorFunc（渐变）。
+func (ctx *renderContext) strokeColor(p rasterx.Path, clr interface{}, width float64, linecap, linejoin string, miterLimit float64, dasharray []float64, dashoffset float64) {
 	scale := ctx.matrixScale()
 	if scale <= 0 {
 		scale = 1
 	}
-	final := rasterx.ApplyOpacity(c, opacity)
 
 	// 全部 cap/join 组合统一走精确轮廓（单条连续边，解析级 AA）。
 	// 用户空间 offset：halfWidth 传用户半宽 width/2，tol 换算到用户单位。
-	strokeCapsules(ctx.img, p, ctx.matrix, width/2, final, 0.01/scale, linecap, linejoin, miterLimit, dasharray, dashoffset)
+	strokeCapsules(ctx.img, p, ctx.matrix, width/2, clr, 0.01/scale, linecap, linejoin, miterLimit, dasharray, dashoffset)
 	return
 }

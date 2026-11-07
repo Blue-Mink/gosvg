@@ -238,3 +238,9 @@
 - even-odd 数学：winding 数 = ceil(|acc|/unit)，奇数→填充（alpha=部分覆盖），偶数→透明。
   unit = fxOne²（fixed）/ 1.0（floating）。
 - 测试 `evenodd_test.go` 4 项：同心矩形镂空、evenodd vs nonzero、winding=3 奇偶、evenodd+gradient。
+
+## gradient stroke（2026-11-07 完成）
+- stroke 也支持 url(#id) 渐变：`stroke` 拆成 `stroke`(纯色)/`strokeGradient`(渐变)/
+  `strokeColor`(通用，clr 可为 ColorFunc)；`strokeCapsules` 的 c 参数改 interface{}。
+- objectBoundingBox 用 pathBounds 算路径几何 bbox（不含 stroke 宽度）。
+- 测试 gradient_test.go +2：userSpaceOnUse 水平线、objectBoundingBox rect 描边。

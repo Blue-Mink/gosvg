@@ -97,3 +97,38 @@ func absInt(x int) int {
 	}
 	return x
 }
+
+// TestStrokeGradient 验证 stroke="url(#id)" 渐变描边（userSpaceOnUse）。
+func TestStrokeGradient(t *testing.T) {
+	data := []byte(`<svg viewBox="0 0 100 100"><defs><linearGradient id="g" gradientUnits="userSpaceOnUse" x1="10" y1="0" x2="90" y2="0"><stop offset="0" stop-color="#ff0000"/><stop offset="1" stop-color="#0000ff"/></linearGradient></defs><line x1="10" y1="50" x2="90" y2="50" stroke="url(#g)" stroke-width="10"/></svg>`)
+	img, err := Render(data, 100)
+	if err != nil {
+		t.Fatalf("render: %v", err)
+	}
+	left := img.NRGBAAt(20, 50)
+	right := img.NRGBAAt(80, 50)
+	if !(left.R > left.B) {
+		t.Errorf("stroke gradient 左端应偏红: %v", left)
+	}
+	if !(right.B > right.R) {
+		t.Errorf("stroke gradient 右端应偏蓝: %v", right)
+	}
+}
+
+// TestStrokeGradientObjectBoundingBox 验证 stroke 的 objectBoundingBox 渐变
+// （bbox 取路径几何包围盒，不含 stroke 宽度）。
+func TestStrokeGradientObjectBoundingBox(t *testing.T) {
+	data := []byte(`<svg viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff0000"/><stop offset="1" stop-color="#0000ff"/></linearGradient></defs><rect x="20" y="20" width="60" height="60" fill="none" stroke="url(#g)" stroke-width="5"/></svg>`)
+	img, err := Render(data, 100)
+	if err != nil {
+		t.Fatalf("render: %v", err)
+	}
+	left := img.NRGBAAt(22, 50)
+	right := img.NRGBAAt(78, 50)
+	if !(left.R > left.B) {
+		t.Errorf("rect stroke 左边缘应偏红: %v", left)
+	}
+	if !(right.B > right.R) {
+		t.Errorf("rect stroke 右边缘应偏蓝: %v", right)
+	}
+}

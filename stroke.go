@@ -2,7 +2,6 @@ package gosvg
 
 import (
 	"image"
-	"image/color"
 	"math"
 
 	"github.com/Blue-Mink/gosvg/internal/rasterx"
@@ -319,7 +318,7 @@ func strokeExactPath(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, a
 
 func segs0N(pts []Point, u float64) segDir { return segOf(pts[0], pts[1], u) }
 
-func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D, halfWidth float64, c color.NRGBA, tol float64, linecap, linejoin string, miterLimit float64, dasharray []float64, dashoffset float64) {
+func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D, halfWidth float64, clr interface{}, tol float64, linecap, linejoin string, miterLimit float64, dasharray []float64, dashoffset float64) {
 	// 用户空间 flatten（Identity），offset 在用户空间做，最终 Transform 到 device。
 	subs := flattenPath(path, rasterx.Identity, tol)
 	if len(subs) == 0 {
@@ -374,7 +373,7 @@ func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D
 		strokeExactPath(filler, pt, tol, dedup, halfWidth, closedP, linecap, linejoin, miterLimit)
 	}
 
-	filler.SetColor(c)
+	filler.SetColor(clr)
 	filler.Draw()
 }
 
