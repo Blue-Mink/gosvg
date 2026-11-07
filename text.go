@@ -106,12 +106,7 @@ func (ctx *renderContext) drawTextSpan(text string, style shapeStyle, opacity fl
 	}
 	// 字体解析：内置 Go Regular 为回退；命中 font-family（含系统字体、通用名、
 	// 逗号列表）则换用对应字型，字重/字型按 font-weight/font-style 择优。
-	f := loadFont()
-	if fontFamily != "" {
-		if ff := resolveFont(fontFamily, weightIsBold(fontWeight), isItalic(fontStyle)); ff != nil {
-			f = ff
-		}
-	}
+	f := resolveFace(fontFamily, fontWeight, fontStyle)
 	if f == nil {
 		return 0
 	}
@@ -177,4 +172,35 @@ func (ctx *renderContext) drawTextSpan(text string, style shapeStyle, opacity fl
 	drawer.DrawString(text)
 
 	return widthPx / scale
+}
+
+// MeasureText 测量文本在指定字号下的宽度（用户单位，即与 font-size 同单位）。
+// fontFamily 为空时用内置字体；需要字重/字型择优时用 MeasureTextEx。
+func MeasureText(text string, fontSize float64, fontFamily string) float64 {
+	return measureTextEx(text, fontSize, fontFamily, "", "")
+}
+
+// MeasureTextEx 测量文本宽度，可指定 font-family/font-weight/font-style。
+func MeasureTextEx(text string, fontSize float64, fontFamily, fontWeight, fontStyle string) float64 {
+	return measureTextEx(text, fontSize, fontFamily, fontWeight, fontStyle)
+}
+
+func measureTextEx(text string, fontSize float64, fontFamily, fontWeight, fontStyle string) float64 {
+	if text == "" || fontSize <= 0 {
+		return 0
+	}
+	f := resolveFace(fontFamily, fontWeight, fontStyle)
+	if f == nil {
+		return 0
+	}
+	face, err := opentype.NewFace(f, &opentype.FaceOptions{
+		Size:    fontSize,
+		DPI:     72,
+		Hinting: font.HintingFull,
+	})
+	if err != nil {
+		return 0
+	}
+	defer face.Close()
+	return float64(font.MeasureString(face, text)) / 64
 }

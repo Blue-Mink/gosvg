@@ -242,6 +242,18 @@ func resolveFont(family string, bold, italic bool) *opentype.Font {
 	return nil
 }
 
+// resolveFace 解析字体（内置 Go Regular + 可选系统字体），未找到返回 nil。
+// fontFamily 为空时直接返回内置字体；否则按 font-weight/font-style 择优。
+func resolveFace(fontFamily, fontWeight, fontStyle string) *opentype.Font {
+	f := loadFont()
+	if fontFamily != "" {
+		if ff := resolveFont(fontFamily, weightIsBold(fontWeight), isItalic(fontStyle)); ff != nil {
+			f = ff
+		}
+	}
+	return f
+}
+
 // weightIsBold 判断 font-weight 是否为粗体（bold/bolder/数值 ≥600）。
 func weightIsBold(w string) bool {
 	w = strings.ToLower(strings.TrimSpace(w))

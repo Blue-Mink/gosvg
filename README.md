@@ -44,6 +44,8 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 | `Parse(data []byte)` | 解析为可复用的 `*Document` |
 | `(*Document).Render(w, h int)` | 对已解析文档多次渲染 |
 | `AddFontDir(dir string) error` | 注册系统字体目录（可选，见[字体](#字体)） |
+| `MeasureText(text string, fontSize float64, fontFamily string) float64` | 测量文本宽度（用户单位），用于手动布局/居中 |
+| `MeasureTextEx(text, fontSize, family, weight, style)` | 带 font-weight/font-style 的文本测量 |
 
 ## 特性
 

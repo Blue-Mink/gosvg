@@ -283,3 +283,10 @@
 - node 加 inlineStyle 字段（parse 时内联 style 不再合并进 attrs，改由 applyCSS 统一合并），
   Document 加 cssRules 字段，resolve 解析 <style> 并在末尾 applyCSS。
 - 测试 css_test.go 6 项（class/type/id/特异性/内联优先/CSS 覆盖 presentation）。
+
+## MeasureText API（2026-11-07 完成）
+- 新增导出 `MeasureText(text, fontSize, fontFamily)` 与 `MeasureTextEx(text, fontSize,
+  fontFamily, fontWeight, fontStyle)`，返回用户单位宽度，供调用方手动布局/居中/换行。
+- 提取 `resolveFace(fontFamily, fontWeight, fontStyle)` 到 font.go，drawTextSpan 与
+  measureTextEx 共用，消除重复字体解析。
+- 测试 measure_test.go 4 项（正宽度/空文本/字号线性/与渲染边界一致）。
