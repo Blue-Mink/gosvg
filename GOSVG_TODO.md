@@ -290,3 +290,11 @@
 - 提取 `resolveFace(fontFamily, fontWeight, fontStyle)` 到 font.go，drawTextSpan 与
   measureTextEx 共用，消除重复字体解析。
 - 测试 measure_test.go 4 项（正宽度/空文本/字号线性/与渲染边界一致）。
+
+## marker 箭头（2026-11-07 完成）
+- 新增 `marker.go`：markerRef/renderMarkers/renderMarker。支持 marker-start/mid/end
+  在路径起点/中间顶点/终点放置 marker，orient=auto（沿切线）或显式角度，
+  markerUnits（strokeWidth 默认/userSpaceOnUse）、viewBox（等比 meet）、refX/refY 对齐。
+- 切线方向用 flattenPath（像素坐标）的相邻顶点 atan2；marker 渲染在 renderShape 末尾，
+  坐标变换 base（marker 坐标系→像素）+ Translate(-ref) + Rotate + Translate(pos)。
+- renderNodeBare 跳过 marker 元素。测试 marker_test.go 4 项（end/start/mid/无 stroke 回退）。

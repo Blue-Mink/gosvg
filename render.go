@@ -115,7 +115,7 @@ func (ctx *renderContext) renderNodeBare(n *node, opacity float64) error {
 				return err
 			}
 		}
-	case "defs", "mask", "clippath", "lineargradient", "radialgradient":
+	case "defs", "mask", "clippath", "lineargradient", "radialgradient", "marker", "style":
 		// 定义类元素不直接渲染。
 	case "use":
 		ctx.renderUse(n, nodeOpacity)
@@ -196,6 +196,9 @@ func (ctx *renderContext) renderShape(n *node, opacity float64) {
 	} else if g := ctx.doc.resolveGradient(strokeStr); g != nil && style.strokeWidth > 0 {
 		ctx.strokeGradient(p, g, style.strokeWidth, style.linecap, style.linejoin, style.miterLimit, style.strokeDasharray, style.strokeDashoffset, opacity*style.strokeOpacity)
 	}
+
+	// marker（箭头）
+	ctx.renderMarkers(n, p, style.strokeWidth, opacity)
 }
 
 // shapeStyle 是一次填充/描边所需的有效样式（继承父级后）。

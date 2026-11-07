@@ -9,7 +9,7 @@
 //
 //	元素：svg / g / defs / use / linearGradient / radialGradient / stop /
 //	     clipPath / circle / ellipse / rect / line / path / polygon /
-//	     polyline / text / tspan / mask / style
+//	     polyline / text / tspan / mask / marker / style
 //	属性：viewBox / preserveAspectRatio / transform / fill / fill-rule / fill-opacity /
 //	     stroke / stroke-width / stroke-linecap / stroke-linejoin /
 //	     stroke-miterlimit / stroke-dasharray / stroke-dashoffset /
@@ -19,6 +19,8 @@
 //	     text-anchor / dominant-baseline / color / currentColor /
 //	     id / class / mask / maskUnits / maskContentUnits /
 //	     clip-path / clipPathUnits /
+//	     marker-start / marker-mid / marker-end /
+//	     markerUnits / markerWidth / markerHeight / refX / refY / orient /
 //	     x / y / dx / dy（text 与 tspan 定位）/
 //	     style（内联 CSS 声明，优先级高于 presentation 属性）
 //
