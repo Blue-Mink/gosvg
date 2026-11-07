@@ -53,6 +53,10 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 | `MeasureText(text string, fontSize float64, fontFamily string) float64` | 测量文本宽度（用户单位），用于手动布局/居中 |
 | `MeasureTextEx(text, fontSize, family, weight, style)` | 带 font-weight/font-style 的文本测量 |
 | `ImageDecoder func(href string) (image.Image, error)` | 注入 `<image>` 位图解码（库零依赖，未注入则 `<image>` 跳过） |
+| `RenderWithOptions(ctx, data, w, h, opts)` | 带取消 / 尺寸上限 / 背景色的渲染入口 |
+| `RenderOptions{MaxDimension, Background}` | 渲染选项；`DefaultRenderOptions()` 取默认值 |
+| `(*Document).RenderWithOptions(ctx, w, h, opts)` | 已解析文档带选项渲染 |
+| `(*Document).Diagnostics() []string` | 渲染期跳过事件（去重、累计），用于排查「少了一块」 |
 
 ## 特性
 

@@ -12,9 +12,14 @@ import (
 // renderMasked 渲染带 mask 引用的元素：先把内容离屏渲染，再用 mask 的
 // 亮度（luminance）裁剪 alpha 后合成到主画布。
 func (ctx *renderContext) renderMasked(n *node, maskID string, opacity float64) {
+	if ctx.nesting >= maxNestingDepth {
+		ctx.doc.addDiagnostic("mask/clip nesting limit exceeded; skipped mask")
+		ctx.renderNodeBare(n, opacity)
+		return
+	}
 	maskNode := ctx.doc.defs[maskID]
 	if maskNode == nil {
-		// mask 缺失：按无 mask 直接渲染。
+		ctx.doc.addDiagnostic("mask reference not found: " + maskID)
 		ctx.renderNodeBare(n, opacity)
 		return
 	}
@@ -79,10 +84,14 @@ func (ctx *renderContext) renderMaskImage(maskNode, targetNode *node, w, h int) 
 	}
 
 	sub := &renderContext{
-		img:    img,
-		doc:    ctx.doc,
-		matrix: contentMatrix,
-		style:  defaultShapeStyle(),
+		img:     img,
+		doc:     ctx.doc,
+		matrix:  contentMatrix,
+		style:   defaultShapeStyle(),
+		ctx:     ctx.ctx,
+		opts:    ctx.opts,
+		nesting: ctx.nesting + 1,
+		err:     ctx.err,
 	}
 	sub.dasher = newDasherFor(img)
 	for _, c := range maskNode.children {
@@ -201,10 +210,14 @@ func (ctx *renderContext) elementBounds(n *node, m rasterx.Matrix2D, depth int) 
 func (ctx *renderContext) renderSubimage(n *node, opacity float64, w, h int) *image.NRGBA {
 	img := image.NewNRGBA(image.Rect(0, 0, w, h))
 	sub := &renderContext{
-		img:    img,
-		doc:    ctx.doc,
-		matrix: ctx.matrix,
-		style:  ctx.style,
+		img:     img,
+		doc:     ctx.doc,
+		matrix:  ctx.matrix,
+		style:   ctx.style,
+		ctx:     ctx.ctx,
+		opts:    ctx.opts,
+		nesting: ctx.nesting + 1,
+		err:     ctx.err,
 	}
 	sub.dasher = newDasherFor(img)
 	_ = sub.renderNodeBare(n, opacity)

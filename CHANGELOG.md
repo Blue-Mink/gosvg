@@ -30,4 +30,12 @@
 - `parseFloat` 拒绝 NaN/Inf、`parseLength` 单位白名单
 - 核对 `internal/rasterx/stroke.go` 依赖链并写入 `UPSTREAM.md`（经编译验证不能删）
 
-> 尚无正式 tag / release，版本号待定（见 `GOSVG_GAP_TODO.md` 档 2）。
+### 分支 `chore/close-gaps`（档 2 / 档 3）
+- 新增 `RenderWithOptions` / `Document.RenderWithOptions` / `RenderOptions`（旧 API 行为不变）
+- 新增 `Document.Diagnostics()` 观察渲染期跳过事件
+- 新增 `DefaultMaxDimension=8192` 尺寸上限与 `maxNestingDepth=32` 离屏嵌套上限
+- 档 2 其余项给出明确决策（module 路径保留、单位不换算、H-A 保持子集边界、tag 待合并后打）
+- 档 3 逐项给出替代方案与触发条件；新增 `OPEN_SOURCE_CHECKLIST.md`
+- 后续改动改走分支 + PR，main 不再直推
+
+> 尚无正式 tag / release；计划 PR 合并到 main 后打 `v0.1.0`。

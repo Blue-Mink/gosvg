@@ -14,6 +14,7 @@ var ImageDecoder func(href string) (image.Image, error)
 // renderImage 渲染 <image> 元素：解码位图并缩放到 x/y/width/height 矩形。
 func (ctx *renderContext) renderImage(n *node) {
 	if ImageDecoder == nil {
+		ctx.doc.addDiagnostic("<image> skipped: ImageDecoder not set")
 		return
 	}
 	href := n.attr("href")
@@ -21,10 +22,12 @@ func (ctx *renderContext) renderImage(n *node) {
 		href = n.attr("xlink:href")
 	}
 	if href == "" {
+		ctx.doc.addDiagnostic("<image> skipped: empty href")
 		return
 	}
 	src, err := ImageDecoder(href)
 	if err != nil || src == nil {
+		ctx.doc.addDiagnostic("<image> skipped: decoder failed")
 		return
 	}
 

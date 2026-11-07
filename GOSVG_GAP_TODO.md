@@ -35,26 +35,53 @@
   `go test ./...` 的像素哈希不同（`bb150194…` vs `dc09dbc6…`），其余 6 个纯图形样例一致。
   当前处置：golden 基线排除 `s60s`。彻底修复需给字体注册加隔离 / `Reset`（并入档 2 F4）。
 
-## 档 2 — 需用户拍板（本轮未动）
+## 档 2 — 已处置（分支 `chore/close-gaps`）
 
-| 项 | 需要决定 |
-|---|---|
-| A5/E1 module 路径 | `go.mod` 保留 `github.com/Blue-Mink/gosvg`（当前选择）还是改为私有 Gitea vanity 路径？改路径是破坏性变更 |
-| E1 开源收尾 | GitHub `Blue-Mink/gosvg` 是否已存在、`go get` 是否可用（本环境外网不可达，无法验证） |
-| A3/G4 单位语义 | 是否真做 `pt/cm/mm/in/em/%` 换算？会改变渲染字节与既有 IoU |
-| B1 Diagnostics 形态 | `Document.Diagnostics()` / `RenderResult.Warnings` / `--strict` 三选一 |
-| F1/F2 API 扩展 | 是否新增 `RenderWithOptions(ctx, data, opts)`（保留旧签名）；渲染选项（背景色/超采样/尺寸上限） |
-| G1/G2 资源上限 | 最大尺寸（如 8192²）、超限返回错误还是 clamp、mask/clip 嵌套层数上限 |
-| H-A 子集内语义 | `clip-rule` / `vector-effect` / `<image>` 的 `preserveAspectRatio` / `auto-start-reverse` / CSS `inherit` / `use` 的 width/height 是否实现 |
-| E3 版本发布 | 是否打首个 tag / release、版本号 |
-| 分支策略 | 直推 main 还是走分支 + 合并 |
+| 项 | 处置结论 | 落地 |
+|---|---|---|
+| A5/E1 module 路径 | **保留** `github.com/Blue-Mink/gosvg` | 改 module 路径是破坏性变更，且用户约束「不推外部 Git」；README 已补 `replace` / `GOPRIVATE` 说明 |
+| E1 开源收尾 | **不推，留清单** | 新增 `OPEN_SOURCE_CHECKLIST.md`，逐项列出推送外部 Git 前要做的检查 |
+| A3/G4 单位语义 | **不真换算**，保持 1:1 近似 | 真换算会改变渲染字节与既有 IoU；决策已写进 `GOSVG_TODO.md` 与 `style.go` 注释 |
+| B1 Diagnostics 形态 | 选 `Document.Diagnostics() []string` | 纯加法、不改签名、累计去重、并发安全；覆盖主要跳过点 |
+| F1/F2 API 扩展 | 新增 `RenderWithOptions` + `RenderOptions`，旧 API 不变 | `MaxDimension` / `Background` / context 取消；**超采样不做**（会改渲染管线与 golden 基线） |
+| G1/G2 资源上限 | `DefaultMaxDimension=8192`、`maxNestingDepth=32` | 超限返回 `UnsupportedError`；离屏嵌套逐层 +1，并在 3 个子 `renderContext` 里继承 ctx/opts/nesting/err |
+| H-A 子集内语义 | **保持为明确子集边界，不实现** | 逐项理由与复杂度见下表 |
+| E3 版本发布 | **合并 PR 后再打 `v0.1.0`** | 不在分支上打 tag，避免 tag 指向未合并的提交 |
+| 分支策略 | **已改为分支流** | 新建 `chore/close-gaps`，后续改动走分支 + PR，main 不再直推 |
 
-## 档 3 — 本地补不了 / 受约束，只能留档
+### H-A 逐项决策（为什么不实现）
 
-- **E1**：用户约束「不推外部 Git」，GitHub 侧状态无法验证 → 文档标注为未来事项。
-- **C4**：ARM64 **真机测试**需 arm64 runner 或 qemu，.15 只有 x86_64；当前只能保证交叉编译通过。
-- **C1**：CI 内跑 cairosvg 对账需 Python + cairosvg；当前用「gosvg 自身像素哈希」做回归，
-  IoU 表仍是本地一次性数据。
-- **D4**：`go 1.27.3` 的低版本兼容性无低版本 Go 环境可验。
-- **H-B**：`filter` / `pattern` / `foreignObject` / 动画等属**明确子集边界**，按项目定位不补，
-  只需在 A2 声明（已完成）。
+| 特性 | 决策 | 理由 |
+|---|---|---|
+| `clip-rule` | 不实现 | 需把 fill-rule 语义接进 clip 光栅路径，会动 clip 相关对账 |
+| `vector-effect="non-scaling-stroke"` | 不实现 | stroke 宽度在 viewBox 变换里统一缩放，单独豁免要改 stroke 管线 |
+| `<image>` 的 `preserveAspectRatio` | 不实现 | 需把 meet/slice 裁剪逻辑引入 image 缩放路径 |
+| `marker orient="auto-start-reverse"` | 不实现 | 需在起点反转切线，牵动 `renderMarkers` |
+| CSS `inherit` | 不实现 | CSS 级联层需引入「继承值」概念，超出简单选择器子集 |
+| `use` 的 `width/height` | 不实现 | 需按 symbol/view 语义做视口裁剪，牵动 `renderUse` |
+| 长度单位真换算 / `%` 基准 | 不实现 | 会改变现有全部含单位样例的渲染字节与 IoU 表 |
+
+> 共同理由：这些都属于**扩大子集**，会改变渲染结果、要求重跑 cairosvg 对账与 golden
+> 基线，已超出「零决策、不破坏语义」的补齐范围。需要哪个请单独点名，单独做。
+
+## 档 3 — 处置结论与触发条件
+
+| 项 | 当前处置 | 触发条件 / 具体做法 |
+|---|---|---|
+| E1 GitHub 侧确认与推送 | `OPEN_SOURCE_CHECKLIST.md` 留清单 | 用户解除「不推外部 Git」后：按清单核 → 建外部仓 → 加 remote → push main + tag |
+| C4 ARM64 真机测试 | CI 已有 `GOARCH=arm64 go build ./...` 交叉编译门禁 | 有 arm64 runner 时加 job `runs-on: [self-hosted, linux, arm64]` + `go test ./...`；或用 `qemu-user-static` 跑交叉编译出的测试二进制。当前 .15 只有 x86_64，**不引入外部 action** 以保持 CI 稳定 |
+| C1 CI 内 cairosvg 对账 | `testdata/golden.sha256` 做 gosvg 自身像素哈希回归 | 愿意加 CI 依赖时：`apt install python3-cairosvg` + 补一个 IoU 脚本（仓库暂无），把 512px 对账表变成门禁 |
+| D4 低版本 Go 兼容 | **决策：锁定 Go 1.27，不追求低版本兼容** | `go.mod` 声明 `go 1.27.3`；若未来要降级，下调 go 指令并给 CI 加版本矩阵（`1.26.x` 等）验证 |
+| H-B（filter/pattern/foreignObject/动画） | **明确子集边界，不补** | 已在 README / 包注释 / `GOSVG_TODO.md` 三处声明，无需动作 |
+
+> 档 3 的共同点：不是「做不到」，而是**受用户约束或缺少外部条件**。每项都给了替代
+> 方案与触发条件，条件满足时可直接按表推进，不需要重新讨论范围。
+
+## 本轮（分支 `chore/close-gaps`）
+
+- 档 2 的可落地项已实现：`RenderWithOptions` / `RenderOptions` / `Diagnostics` / 尺寸与嵌套上限。
+- 默认路径渲染字节不变（旧 API 转调新入口、零值选项等价于原行为），
+  `testdata/golden.sha256` 不重生成；由 `go test ./...` 验证。
+- 所有改动走分支 + PR，main 不直接推。
+- 已推到 main 的第一批 6 个 commit 保留（未改写已发布历史）；若要连第一批也撤回，
+  需要 force push 回退 main，须用户另行点名授权。
