@@ -1,6 +1,7 @@
 package gosvg
 
 import (
+	"context"
 	"image"
 	"image/color"
 	"math"
@@ -18,6 +19,11 @@ type renderContext struct {
 	style       shapeStyle // 继承的表现样式（fill/stroke 等）
 	useDepth    int        // <use> 嵌套深度（防循环引用栈溢出）
 	markerDepth int        // marker 嵌套深度（防 marker 循环引用栈溢出）
+
+	ctx     context.Context // 取消信号（可为 nil）
+	opts    RenderOptions   // 本次渲染选项
+	nesting int             // 离屏（mask/clip）嵌套层数
+	err     error           // 首个取消错误，供所有递归分支快速返回
 }
 
 func newRenderContext(width, height int, d *Document) *renderContext {
@@ -30,6 +36,8 @@ func newRenderContext(width, height int, d *Document) *renderContext {
 		doc:    d,
 		matrix: rasterx.Identity,
 		style:  defaultShapeStyle(),
+		ctx:    context.Background(),
+		opts:   DefaultRenderOptions(),
 	}
 	ctx.matrix = ctx.viewBoxMatrix(width, height)
 	return ctx
@@ -76,6 +84,15 @@ func (ctx *renderContext) viewBoxMatrix(w, h int) rasterx.Matrix2D {
 
 // renderNode 渲染入口：先处理 clip-path，再处理 mask，最后走裸渲染。
 func (ctx *renderContext) renderNode(n *node, opacity float64) error {
+	if ctx.err != nil {
+		return ctx.err
+	}
+	if ctx.ctx != nil {
+		if err := ctx.ctx.Err(); err != nil {
+			ctx.err = err
+			return err
+		}
+	}
 	// clip-path 处理：带 clip 引用的元素，离屏渲染 + 形状 alpha 裁剪。
 	if id := clipPathRef(n.attr("clip-path")); id != "" && n.name != "clippath" {
 		ctx.renderClipped(n, id, opacity)
@@ -126,6 +143,9 @@ func (ctx *renderContext) renderNodeBare(n *node, opacity float64) error {
 		ctx.renderText(n, nodeOpacity)
 	case "circle", "ellipse", "rect", "line", "path", "polygon", "polyline":
 		ctx.renderShape(n, nodeOpacity)
+	default:
+		// 超出子集的元素静默跳过，但留下可观察的诊断。
+		ctx.doc.addDiagnostic("unsupported element skipped: " + n.name)
 	}
 
 	ctx.matrix = savedM
@@ -164,7 +184,11 @@ func (ctx *renderContext) renderUse(n *node, opacity float64) {
 			}
 			ctx.renderNode(target, opacity)
 			ctx.matrix = savedM
+		} else {
+			ctx.doc.addDiagnostic("use reference not found: " + id)
 		}
+	} else {
+		ctx.doc.addDiagnostic("use skipped: invalid href")
 	}
 }
 

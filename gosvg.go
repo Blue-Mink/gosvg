@@ -52,7 +52,9 @@
 package gosvg
 
 import (
+	"context"
 	"image"
+	"sync"
 )
 
 // Render 把 SVG 数据渲染成一张 size×size 的透明底 NRGBA 位图。
@@ -63,11 +65,23 @@ func Render(data []byte, size int) (*image.NRGBA, error) {
 
 // RenderTo 把 SVG 数据渲染成 width×height 的透明底 NRGBA 位图。
 func RenderTo(data []byte, width, height int) (*image.NRGBA, error) {
+	return RenderWithOptions(context.Background(), data, width, height, DefaultRenderOptions())
+}
+
+// RenderWithOptions 用 ctx 与 opts 渲染 SVG。ctx 取消时返回 ctx.Err()；
+// opts 为零值时等价于默认选项。旧的 Render / RenderTo 内部转调本函数，行为不变。
+func RenderWithOptions(ctx context.Context, data []byte, width, height int, opts RenderOptions) (*image.NRGBA, error) {
+	if err := validateSize(width, height, opts); err != nil {
+		return nil, err
+	}
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	doc, err := Parse(data)
 	if err != nil {
 		return nil, err
 	}
-	return doc.Render(width, height)
+	return doc.render(ctx, width, height, opts)
 }
 
 // Parse 解析 SVG 数据，返回可复用的 Document（可对不同尺寸多次渲染）。
@@ -94,20 +108,69 @@ type Document struct {
 	grads    map[string]*node
 	par      preserveAspect // preserveAspectRatio 解析结果
 	cssRules []cssRule      // <style> 元素解析出的 CSS 规则
-	// err 记录解析期遇到的、可安全忽略的问题（供调试），不影响渲染。
+
+	diagMu   sync.Mutex      // 保护下面两个诊断字段
+	diagSeen map[string]bool // 跳过事件去重
+	diags    []string        // 渲染期跳过事件（累计）
 }
 
-// Render 把文档渲染成 width×height 的 NRGBA 位图。
+// Render 把文档渲染成 width×height 的 NRGBA 位图（默认选项）。
 func (d *Document) Render(width, height int) (*image.NRGBA, error) {
-	if width <= 0 || height <= 0 {
-		return nil, &UnsupportedError{"non-positive size"}
-	}
-	ctx := newRenderContext(width, height, d)
-	if err := ctx.renderNode(d.root, 1.0); err != nil {
+	return d.RenderWithOptions(context.Background(), width, height, DefaultRenderOptions())
+}
+
+// RenderWithOptions 用 ctx 与 opts 渲染已解析的文档，可对不同尺寸多次调用。
+func (d *Document) RenderWithOptions(ctx context.Context, width, height int, opts RenderOptions) (*image.NRGBA, error) {
+	if err := validateSize(width, height, opts); err != nil {
 		return nil, err
 	}
-	clearGhostRGB(ctx.img)
-	return ctx.img, nil
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+	return d.render(ctx, width, height, opts)
+}
+
+func (d *Document) render(ctx context.Context, width, height int, opts RenderOptions) (*image.NRGBA, error) {
+	rctx := newRenderContext(width, height, d)
+	rctx.ctx = ctx
+	rctx.opts = opts
+	if opts.Background != nil {
+		fillBackground(rctx.img, opts.Background)
+	}
+	if err := rctx.renderNode(d.root, 1.0); err != nil {
+		return nil, err
+	}
+	if rctx.err != nil {
+		return nil, rctx.err
+	}
+	clearGhostRGB(rctx.img)
+	return rctx.img, nil
+}
+
+// addDiagnostic 记录一次渲染期跳过事件（按文本去重，并发安全）。
+func (d *Document) addDiagnostic(s string) {
+	d.diagMu.Lock()
+	defer d.diagMu.Unlock()
+	if d.diagSeen == nil {
+		d.diagSeen = map[string]bool{}
+	}
+	if d.diagSeen[s] {
+		return
+	}
+	d.diagSeen[s] = true
+	d.diags = append(d.diags, s)
+}
+
+// Diagnostics 返回本 Document 渲染过程中遇到的跳过事件（按文本去重）。
+// 这是只读观察通道，不改变渲染结果；事件为累计值，多次 Render 不清空。
+// 覆盖主要跳过点（未识别元素、image/mask/clip/use/marker/gradient 引用缺失、
+// 嵌套超限），并非穷尽所有静默分支。
+func (d *Document) Diagnostics() []string {
+	d.diagMu.Lock()
+	defer d.diagMu.Unlock()
+	out := make([]string, len(d.diags))
+	copy(out, d.diags)
+	return out
 }
 
 // clearGhostRGB 清除 alpha=0 像素上的残留 RGB。

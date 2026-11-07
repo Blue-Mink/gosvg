@@ -21,8 +21,14 @@ func clipPathRef(attr string) string {
 // 形状的 alpha 裁剪后合成。与 mask 不同，clip 只用形状覆盖（alpha），不做
 // 亮度换算。
 func (ctx *renderContext) renderClipped(n *node, clipID string, opacity float64) {
+	if ctx.nesting >= maxNestingDepth {
+		ctx.doc.addDiagnostic("mask/clip nesting limit exceeded; skipped clip")
+		ctx.renderNodeBare(n, opacity)
+		return
+	}
 	clipNode := ctx.doc.defs[clipID]
 	if clipNode == nil || clipNode.name != "clippath" {
+		ctx.doc.addDiagnostic("clip-path reference not found: " + clipID)
 		ctx.renderNodeBare(n, opacity)
 		return
 	}
@@ -78,10 +84,14 @@ func (ctx *renderContext) renderClipMask(clipNode, targetNode *node, w, h int) *
 	}
 
 	sub := &renderContext{
-		img:    img,
-		doc:    ctx.doc,
-		matrix: contentMatrix,
-		style:  defaultShapeStyle(),
+		img:     img,
+		doc:     ctx.doc,
+		matrix:  contentMatrix,
+		style:   defaultShapeStyle(),
+		ctx:     ctx.ctx,
+		opts:    ctx.opts,
+		nesting: ctx.nesting + 1,
+		err:     ctx.err,
 	}
 	sub.dasher = newDasherFor(img)
 	for _, c := range clipNode.children {

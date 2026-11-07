@@ -44,6 +44,7 @@ func (d *Document) resolveGradient(fill string) *rasterx.Gradient {
 	}
 	gn := d.grads[id]
 	if gn == nil {
+		d.addDiagnostic("gradient reference not found: " + id)
 		return nil
 	}
 	return d.buildGradient(gn, nil)

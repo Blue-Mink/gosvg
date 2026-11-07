@@ -66,6 +66,7 @@ func (ctx *renderContext) renderMarker(ref string, px, py, angle, strokeWidth, o
 
 	m := ctx.doc.defs[ref]
 	if m == nil || m.name != "marker" {
+		ctx.doc.addDiagnostic("marker reference not found: " + ref)
 		return
 	}
 	units := strings.ToLower(m.attr("markerunits"))
