@@ -61,8 +61,13 @@ func (ctx *renderContext) viewBoxMatrix(w, h int) rasterx.Matrix2D {
 	return rasterx.Identity.Translate(tx, ty).Scale(s, s)
 }
 
-// renderNode 渲染入口：先处理 mask 引用，再走裸渲染。
+// renderNode 渲染入口：先处理 clip-path，再处理 mask，最后走裸渲染。
 func (ctx *renderContext) renderNode(n *node, opacity float64) error {
+	// clip-path 处理：带 clip 引用的元素，离屏渲染 + 形状 alpha 裁剪。
+	if id := clipPathRef(n.attr("clip-path")); id != "" && n.name != "clippath" {
+		ctx.renderClipped(n, id, opacity)
+		return nil
+	}
 	// mask 处理：带 mask 引用的元素，离屏渲染 + 亮度合成。
 	if id := maskRef(n.attr("mask")); id != "" && n.name != "mask" {
 		ctx.renderMasked(n, id, opacity)
@@ -98,7 +103,7 @@ func (ctx *renderContext) renderNodeBare(n *node, opacity float64) error {
 				return err
 			}
 		}
-	case "defs", "mask", "lineargradient", "radialgradient":
+	case "defs", "mask", "clippath", "lineargradient", "radialgradient":
 		// 定义类元素不直接渲染。
 	case "use":
 		ctx.renderUse(n, nodeOpacity)

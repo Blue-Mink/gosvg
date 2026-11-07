@@ -8,8 +8,8 @@
 // 支持的 SVG 子集：
 //
 //	元素：svg / g / defs / use / linearGradient / radialGradient / stop /
-//	     circle / ellipse / rect / line / path / polygon / polyline /
-//	     text / mask
+//	     clipPath / circle / ellipse / rect / line / path / polygon /
+//	     polyline / text / mask
 //	属性：viewBox / transform / fill / fill-rule / fill-opacity /
 //	     stroke / stroke-width / stroke-linecap / stroke-linejoin /
 //	     stroke-miterlimit / stroke-dasharray / stroke-dashoffset /
@@ -18,6 +18,7 @@
 //	     font-size / font-family / font-weight / font-style /
 //	     text-anchor / dominant-baseline / color / currentColor /
 //	     id / mask / maskUnits / maskContentUnits /
+//	     clip-path / clipPathUnits /
 //	     style（内联 CSS 声明，优先级高于 presentation 属性）
 //
 // 文字字体：默认用内置 Go Regular（零外部依赖）。可选调用 AddFontDir 注册
@@ -31,7 +32,7 @@
 //
 // 明确不支持的常见特性（命中时静默降级，不报错）：
 //
-//	clip-path / tspan
+//	tspan
 //	class 选择器 / <style> 样式表元素
 //	preserveAspectRatio 的非默认值（仅支持 xMidYMid meet）
 //	mask-type="alpha"（仅支持默认 luminance）

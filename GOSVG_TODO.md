@@ -244,3 +244,11 @@
   `strokeColor`(通用，clr 可为 ColorFunc)；`strokeCapsules` 的 c 参数改 interface{}。
 - objectBoundingBox 用 pathBounds 算路径几何 bbox（不含 stroke 宽度）。
 - 测试 gradient_test.go +2：userSpaceOnUse 水平线、objectBoundingBox rect 描边。
+
+## clip-path（2026-11-07 完成）
+- 新增 `clip.go`：`renderClipped` / `renderClipMask` / `clipPathRef`。
+- 语义：clip 用形状覆盖（alpha）裁剪，不做亮度换算（区别于 mask 的 luminance）。
+- 支持 clipPathUnits（userSpaceOnUse 默认 / objectBoundingBox）、clipPath 自身 transform、
+  x/y/width/height 区域（复用 applyMaskRegion）、多子元素并集。
+- renderNode 先 clip 后 mask；renderNodeBare 跳过 clippath 元素。
+- 测试 `clip_test.go` 3 项：基本裁剪、clipPathUnits obb、多子元素 union。
