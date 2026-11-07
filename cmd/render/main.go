@@ -20,12 +20,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "read:", err)
 		os.Exit(1)
 	}
-	size := 512
-	if len(os.Args) > 3 {
-		if v, err := strconv.Atoi(os.Args[3]); err == nil && v > 0 {
-			size = v
-		}
-	}
+	size := parseSize(os.Args, 512)
 	img, err := gosvg.Render(data, size)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "render:", err)
@@ -41,4 +36,14 @@ func main() {
 		fmt.Fprintln(os.Stderr, "encode:", err)
 		os.Exit(1)
 	}
+}
+
+// parseSize 从 CLI 参数取渲染尺寸；非法或非正一律回退默认值。
+func parseSize(args []string, def int) int {
+	if len(args) > 3 {
+		if v, err := strconv.Atoi(args[3]); err == nil && v > 0 {
+			return v
+		}
+	}
+	return def
 }

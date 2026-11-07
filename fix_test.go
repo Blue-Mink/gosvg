@@ -268,3 +268,31 @@ func TestMergeStyleMiterLimit(t *testing.T) {
 		t.Errorf("default miterLimit = %v, want 4", s.miterLimit)
 	}
 }
+
+// TestParseFloatRejectsNonFinite：NaN / ±Inf 不能进入坐标与矩阵运算。
+func TestParseFloatRejectsNonFinite(t *testing.T) {
+	for _, s := range []string{"NaN", "nan", "Inf", "+Inf", "-Inf", "1e309", "-1e309"} {
+		if v, ok := parseFloat(s); ok {
+			t.Errorf("parseFloat(%q) = %v, true; want false", s, v)
+		}
+	}
+	for _, s := range []string{"3.5", "1e-5", "-20", ".9"} {
+		if _, ok := parseFloat(s); !ok {
+			t.Errorf("parseFloat(%q) = false; want true", s)
+		}
+	}
+}
+
+// TestParseLengthRejectsUnknownUnit：未知单位后缀不能再被当成合法长度。
+func TestParseLengthRejectsUnknownUnit(t *testing.T) {
+	for _, s := range []string{"12abc", "10foo", "5pxx", "1e3zw"} {
+		if v, ok := parseLength(s); ok {
+			t.Errorf("parseLength(%q) = %v, true; want false", s, v)
+		}
+	}
+	for _, s := range []string{"512px", "12pt", "2em", "50%", "3.5", "1e-5"} {
+		if _, ok := parseLength(s); !ok {
+			t.Errorf("parseLength(%q) = false; want true", s)
+		}
+	}
+}

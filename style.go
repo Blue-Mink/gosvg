@@ -19,11 +19,23 @@ func parseFloat(s string) (float64, bool) {
 	if err != nil {
 		return 0, false
 	}
+	// NaN / ±Inf 会让坐标、线宽与矩阵运算失去意义，一律拒绝。
+	if math.IsNaN(f) || math.IsInf(f, 0) {
+		return 0, false
+	}
 	return f, true
 }
 
-// parseLength 解析带单位的长度值（px/pt/em/cm/mm/in/% 等）。
-// 本库主要处理 viewBox 内的用户单位，非 px 单位按数值部分 1:1 近似。
+// svgLengthUnits 是允许出现在长度数值后的单位后缀。
+// 本库只处理 viewBox 内的用户单位：所有单位统一剥离后按数值部分 1:1 近似，
+// 不做物理单位换算（12pt 按 12 处理），% 也不按父值/视口基准解析。
+var svgLengthUnits = map[string]bool{
+	"px": true, "pt": true, "pc": true, "cm": true, "mm": true, "in": true,
+	"em": true, "ex": true, "rem": true, "q": true, "ch": true,
+	"vw": true, "vh": true, "vmin": true, "vmax": true,
+}
+
+// parseLength 解析带单位的长度值；未知后缀（如 "12abc"）视为非法。
 func parseLength(s string) (float64, bool) {
 	s = strings.TrimSpace(s)
 	if s == "" {
@@ -33,6 +45,11 @@ func parseLength(s string) (float64, bool) {
 	i := len(s)
 	for i > 0 && (isUnitChar(s[i-1]) || s[i-1] == '%') {
 		i--
+	}
+	if unit := strings.ToLower(s[i:]); unit != "" && unit != "%" {
+		if !svgLengthUnits[unit] {
+			return 0, false
+		}
 	}
 	return parseFloat(s[:i])
 }
