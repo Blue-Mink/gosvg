@@ -86,7 +86,7 @@ func parse(data []byte) (*node, error) {
 		}
 	}
 	if root == nil {
-		return nil, &UnsupportedError{"empty document"}
+		return nil, &UnsupportedError{Feature: "empty document", Code: CodeEmptyDocument, Err: ErrEmptyDocument}
 	}
 	return root, nil
 }

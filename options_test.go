@@ -2,6 +2,7 @@ package gosvg
 
 import (
 	"context"
+	"errors"
 	"image/color"
 	"strings"
 	"testing"
@@ -203,5 +204,31 @@ func TestCancelDuringRender(t *testing.T) {
 	_, err := RenderWithOptions(ctx, data, 32, 32, DefaultRenderOptions())
 	if err != context.Canceled {
 		t.Fatalf("err = %v, want context.Canceled (Err calls=%d)", err, ctx.calls)
+	}
+}
+
+func TestUnsupportedErrorCodes(t *testing.T) {
+	data := []byte(`<svg viewBox="0 0 4 4"><rect width="4" height="4"/></svg>`)
+
+	_, err := Render(data, 0)
+	if !errors.Is(err, ErrNonPositiveSize) {
+		t.Fatalf("err = %v, want ErrNonPositiveSize", err)
+	}
+	var ue *UnsupportedError
+	if !errors.As(err, &ue) || ue.Code != CodeNonPositiveSize {
+		t.Fatalf("Code = %v, want CodeNonPositiveSize", ue)
+	}
+
+	_, err = Render(data, DefaultMaxDimension+1)
+	if !errors.Is(err, ErrDimensionExceeded) {
+		t.Fatalf("err = %v, want ErrDimensionExceeded", err)
+	}
+
+	_, err = Parse([]byte(""))
+	if !errors.Is(err, ErrEmptyDocument) {
+		t.Fatalf("err = %v, want ErrEmptyDocument", err)
+	}
+	if ue := err.(*UnsupportedError); ue.Code != CodeEmptyDocument {
+		t.Fatalf("Code = %v, want CodeEmptyDocument", ue.Code)
 	}
 }

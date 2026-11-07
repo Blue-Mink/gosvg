@@ -4,6 +4,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -273,4 +274,26 @@ func weightIsBold(w string) bool {
 func isItalic(s string) bool {
 	s = strings.ToLower(strings.TrimSpace(s))
 	return s == "italic" || s == "oblique"
+}
+
+// RegisteredFonts 返回当前通过 AddFontDir 注册的字体族名（已排序）。
+// 内置 Go Regular 是默认回退、不依赖系统字体目录，故不计入。
+// 返回的是副本，调用方修改不影响内部注册表。
+func RegisteredFonts() []string {
+	fontRegistry.RLock()
+	defer fontRegistry.RUnlock()
+	out := make([]string, 0, len(fontRegistry.families))
+	for name := range fontRegistry.families {
+		out = append(out, name)
+	}
+	sort.Strings(out)
+	return out
+}
+
+// ResetFonts 清空 AddFontDir 注册的系统字体，恢复为仅内置 Go Regular。
+// 主要用于测试隔离；并发安全、可重复调用。
+func ResetFonts() {
+	fontRegistry.Lock()
+	defer fontRegistry.Unlock()
+	fontRegistry.families = map[string]*fontFamily{}
 }
