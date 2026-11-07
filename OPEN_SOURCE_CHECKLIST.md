@@ -15,8 +15,9 @@
 - [ ] **许可证核对**：自研 MIT；`internal/rasterx`（MIT）、`internal/vector`（BSD-3-Clause）
       的 LICENSE 与 `UPSTREAM.md` 齐全。
 - [ ] **CI 徽章**：README 顶部换成正经的 GitHub Actions badge（当前只有静态 Go/License/deps 徽章）。
-- [ ] **首个 tag / release**：PR 合并到 main 后打 `v0.1.0`，写 release notes
-      （以 `CHANGELOG.md` 为准），确认 `go get github.com/Blue-Mink/gosvg@latest` 可用。
+- [x] **首个 tag**：内网 Gitea 已打 `v0.1.0` annotated tag（PR #1 合并后）。
+- [ ] **Release**：基于 `v0.1.0` 建 Release 并写 release notes（以 `CHANGELOG.md` 为准）；
+      确认 `go get github.com/Blue-Mink/gosvg@latest` 可用。
 - [ ] **加 remote 并推送**：`git remote add github <url>` 后 `git push github main --tags`；
       **不要**把 GitHub 设为默认 `origin`，避免内网日常开发误推。
 - [ ] **验证 outside view**：用全新临时 `GOPATH` 跑一次 `go get` + `go test`，

@@ -1,7 +1,8 @@
 # GOSVG 缺口清单与补齐进度
 
-> 由 2026-11-07 两轮代码审阅合并而成。状态：**档 1 已在本轮补齐**；档 2 需用户拍板，
-> 档 3 需外部条件或受「不推外部 Git」约束。
+> 由 2026-11-07 起多轮审阅合并而成。状态：**档 1 已补齐、档 2 已处置、档 3 已给出
+> 触发条件**；PR #1 已合并到 main，内网 Gitea 已打 `v0.1.0`。本文件记录决策与待办，
+> 不再是「待拍板」清单。
 
 ## 档 1 — 已补齐（零决策、不破坏 API、不改渲染语义）
 
@@ -46,7 +47,7 @@
 | F1/F2 API 扩展 | 新增 `RenderWithOptions` + `RenderOptions`，旧 API 不变 | `MaxDimension` / `Background` / context 取消；**超采样不做**（会改渲染管线与 golden 基线） |
 | G1/G2 资源上限 | `DefaultMaxDimension=8192`、`maxNestingDepth=32` | 超限返回 `UnsupportedError`；离屏嵌套逐层 +1，并在 3 个子 `renderContext` 里继承 ctx/opts/nesting/err |
 | H-A 子集内语义 | **保持为明确子集边界，不实现** | 逐项理由与复杂度见下表 |
-| E3 版本发布 | **合并 PR 后再打 `v0.1.0`** | 不在分支上打 tag，避免 tag 指向未合并的提交 |
+| E3 版本发布 | **已打 `v0.1.0`** | PR #1 合并到 main 后打的 annotated tag；Release 待建（见档 3） |
 | 分支策略 | **已改为分支流** | 新建 `chore/close-gaps`，后续改动走分支 + PR，main 不再直推 |
 
 ### H-A 逐项决策（为什么不实现）
@@ -77,11 +78,29 @@
 > 档 3 的共同点：不是「做不到」，而是**受用户约束或缺少外部条件**。每项都给了替代
 > 方案与触发条件，条件满足时可直接按表推进，不需要重新讨论范围。
 
-## 本轮（分支 `chore/close-gaps`）
+## 已完成的两批分支
 
-- 档 2 的可落地项已实现：`RenderWithOptions` / `RenderOptions` / `Diagnostics` / 尺寸与嵌套上限。
-- 默认路径渲染字节不变（旧 API 转调新入口、零值选项等价于原行为），
-  `testdata/golden.sha256` 不重生成；由 `go test ./...` 验证。
-- 所有改动走分支 + PR，main 不直接推。
-- 已推到 main 的第一批 6 个 commit 保留（未改写已发布历史）；若要连第一批也撤回，
-  需要 force push 回退 main，须用户另行点名授权。
+- `chore/close-gaps`（**已合并**，PR #1）：档 2 决策落地 + 档 3 处置结论 + 改走分支流。
+  合并后 main = `6a84a21`，随后打 `v0.1.0`。
+- 第一批 6 个 commit 曾直推 main（`e7502b0`）；历史已保留，未 force push 改写。
+
+## 本轮（分支 `fix/residual-gaps`）
+
+合并后盘点出的残余缺口，按 P0 → P1 → P2 修补：
+
+- **P0-2** nil ctx panic：两处入口回退 `context.Background()`（原 `ctx.Err()` 在 nil 上必崩）。
+- **P1** 代码边界：元数据元素白名单、`fillBackground` 颜色转换、离屏 `sub.err` 回传、
+  `LastRenderDiagnostics()`、补 5 项回归测试。
+- **P2** 文档漂移：CHANGELOG / GAP TODO / CHECKLIST / SECURITY / TODO / README 里
+  「尚无 tag」「档 2 待拍板」「Diagnostics 计划」「详见 options.go」等过时表述全部同步。
+- **P0-1** CI 门禁：新增 `scripts/verify.sh` 让验证可复现、两个 workflow 改调它；
+  但 **Gitea Actions runner 数仍为 0、GitHub 出站不通**，CI 尚未真正执行，
+  当前以 `sh ./scripts/verify.sh` 手动实跑为准。
+- **P0-3** 分支保护：Gitea `main` 仍 `protected=False`，本轮 PR 合并后再开启。
+
+## 仍需点名的（P3，未动）
+
+- 基于 `v0.1.0` 建 Release；删除已合并的 `chore/close-gaps` 分支
+- 修 Gitea SQLite 锁（上轮方案 B：降频刷库的 Actions workflow）
+- 注册 act_runner（当前环境无二进制、GitHub 出站不通，需你提供/授权）
+- 档 2 判为「保持子集边界」的 H-A 七项，想要哪个单独点名

@@ -77,9 +77,14 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
   `Render` / `RenderTo` / `Document.Render` 内部转调新入口，默认行为不变**。
 - `DefaultMaxDimension = 8192`：宽/高超限返回 `UnsupportedError`；
   `maxNestingDepth = 32` 限制 mask / clipPath 离屏嵌套，防止乘法级位图分配。
-- `Document.Diagnostics() []string`：累计去重的跳过事件（未识别元素、
-  image / mask / clip / use / marker / gradient 引用缺失、嵌套超限）。
-  这是**只读观察通道**，不改变渲染结果；未覆盖全部静默分支，详见 `options.go`。
+- `Document.Diagnostics() []string`：累计去重的跳过事件；新增
+  `Document.LastRenderDiagnostics()` 返回最近一次渲染的事件（每次渲染重置）。
+  覆盖未识别元素、image / mask / clip / use / marker / gradient 引用缺失、嵌套超限；
+  合法的元数据元素（`title` / `desc` / `metadata` / `namedview`）不记诊断。
+  这是**只读观察通道**，不改变渲染结果；未覆盖全部静默分支，实现见
+  `gosvg.go` / `render.go` / `image.go`。
+- `RenderWithOptions` 的 `ctx` 传 nil 时自动回退 `context.Background()`，不会 panic；
+  mask / clip 离屏渲染中的取消也会回传为错误。
 
 ## 已知边界
 

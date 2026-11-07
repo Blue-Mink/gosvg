@@ -38,4 +38,14 @@
 - 档 3 逐项给出替代方案与触发条件；新增 `OPEN_SOURCE_CHECKLIST.md`
 - 后续改动改走分支 + PR，main 不再直推
 
-> 尚无正式 tag / release；计划 PR 合并到 main 后打 `v0.1.0`。
+> 内网 Gitea 已打 `v0.1.0` annotated tag（PR #1 合并到 main 之后）；
+> Release 与推送外部 Git 仍待办，见 `OPEN_SOURCE_CHECKLIST.md`。
+
+### 修补（分支 `fix/residual-gaps`）
+- `RenderWithOptions` / `Document.RenderWithOptions` 对 nil ctx 回退 `context.Background()`，不再 panic
+- `fillBackground` 改用 `color.NRGBAModel.Convert`，修正半透明预乘色偏
+- `<title>` / `<desc>` / `<metadata>` / `<namedview>` 不再被误报为 unsupported 诊断
+- mask / clip 离屏子上下文的取消错误回传主上下文（`sub.err` → `ctx.err`）
+- 新增 `LastRenderDiagnostics()`（每次渲染重置），与累计的 `Diagnostics()` 互补
+- 新增 `scripts/verify.sh`，CI 与本地手动验证同源；两个 workflow 改为调用它
+- 同步合并/打 tag 之后过时的文档表述

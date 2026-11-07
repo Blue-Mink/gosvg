@@ -57,6 +57,7 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 | `RenderOptions{MaxDimension, Background}` | 渲染选项；`DefaultRenderOptions()` 取默认值 |
 | `(*Document).RenderWithOptions(ctx, w, h, opts)` | 已解析文档带选项渲染 |
 | `(*Document).Diagnostics() []string` | 渲染期跳过事件（去重、累计），用于排查「少了一块」 |
+| `(*Document).LastRenderDiagnostics() []string` | 最近一次渲染的跳过事件（每次渲染重置） |
 
 ## 特性
 
