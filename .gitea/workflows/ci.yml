@@ -20,24 +20,8 @@ jobs:
       - name: Toolchain
         run: go version
 
-      - name: gofmt check
-        run: test -z "$(gofmt -l .)"
-
-      - name: go vet
-        run: go vet ./...
-
-      - name: go test
-        run: go test ./...
-
-      - name: go test (race)
-        run: go test -race ./...
-
-      - name: arm64 cross build
+      # 与 scripts/verify.sh 同源：fmt / vet / test / race / arm64 / fuzz
+      - name: Verify
         env:
-          GOOS: linux
-          GOARCH: arm64
-          CGO_ENABLED: '0'
-        run: go build ./...
-
-      - name: fuzz smoke
-        run: go test -run '^$' -fuzz '^FuzzParse$' -fuzztime 30s .
+          GOPROXY: https://proxy.golang.org,direct
+        run: sh ./scripts/verify.sh
