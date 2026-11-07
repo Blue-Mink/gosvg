@@ -2,6 +2,7 @@ package gosvg
 
 import (
 	"image/color"
+	"math"
 	"strconv"
 	"strings"
 
@@ -115,27 +116,9 @@ func parseColor(s string) (color.NRGBA, bool) {
 		return color.NRGBA{}, false
 	}
 
-	// rgb() / rgba()
-	if strings.HasPrefix(s, "rgb") {
-		inner := s[strings.Index(s, "(")+1 : strings.LastIndex(s, ")")]
-		parts := strings.Split(inner, ",")
-		if len(parts) < 3 {
-			return color.NRGBA{}, false
-		}
-		r, ok1 := parseColorComp(parts[0])
-		g, ok2 := parseColorComp(parts[1])
-		b, ok3 := parseColorComp(parts[2])
-		a := 255
-		if len(parts) >= 4 {
-			af, ok4 := parseFloat(parts[3])
-			if ok4 {
-				a = int(clamp01(af) * 255)
-			}
-		}
-		if !ok1 || !ok2 || !ok3 {
-			return color.NRGBA{}, false
-		}
-		return color.NRGBA{R: r, G: g, B: b, A: uint8(a)}, true
+	// rgb() / rgba() / hsl() / hsla()
+	if strings.HasPrefix(s, "rgb") || strings.HasPrefix(s, "hsl") {
+		return parseColorFunc(s)
 	}
 
 	// 命名颜色
@@ -144,6 +127,163 @@ func parseColor(s string) (color.NRGBA, bool) {
 	}
 
 	return color.NRGBA{}, false
+}
+
+// parseColorFunc 解析 rgb()/rgba()/hsl()/hsla() 颜色函数。
+// 支持逗号分隔与空格分隔（含 "/" 分隔的 alpha，如 "rgb(255 0 0 / 0.5)"）。
+func parseColorFunc(s string) (color.NRGBA, bool) {
+	open := strings.IndexByte(s, '(')
+	close := strings.LastIndexByte(s, ')')
+	if open < 0 || close < open {
+		return color.NRGBA{}, false
+	}
+	name := strings.TrimSpace(s[:open])
+	inner := s[open+1 : close]
+
+	// 分离斜杠语法 alpha（如 "255 0 0 / 0.5"）。
+	alpha := 1.0
+	if i := strings.IndexByte(inner, '/'); i >= 0 {
+		if af, ok := parseAlpha(inner[i+1:]); ok {
+			alpha = af
+		}
+		inner = inner[:i]
+	}
+
+	// 分量：优先逗号，其次空白。
+	var comps []string
+	if strings.Contains(inner, ",") {
+		comps = strings.Split(inner, ",")
+	} else {
+		comps = strings.Fields(inner)
+	}
+
+	switch name {
+	case "rgb", "rgba":
+		if len(comps) < 3 {
+			return color.NRGBA{}, false
+		}
+		r, ok1 := parseColorComp(comps[0])
+		g, ok2 := parseColorComp(comps[1])
+		b, ok3 := parseColorComp(comps[2])
+		if !ok1 || !ok2 || !ok3 {
+			return color.NRGBA{}, false
+		}
+		// 逗号分隔的第 4 分量（rgba 老语法）优先于斜杠 alpha。
+		if name == "rgba" && len(comps) >= 4 {
+			if af, ok := parseAlpha(comps[3]); ok {
+				alpha = af
+			}
+		}
+		return color.NRGBA{R: r, G: g, B: b, A: uint8(alpha * 255)}, true
+
+	case "hsl", "hsla":
+		if len(comps) < 3 {
+			return color.NRGBA{}, false
+		}
+		h, ok1 := parseHue(comps[0])
+		sat, ok2 := parsePercent(comps[1])
+		lig, ok3 := parsePercent(comps[2])
+		if !ok1 || !ok2 || !ok3 {
+			return color.NRGBA{}, false
+		}
+		r, g, b := hslToRGB(h, sat, lig)
+		if name == "hsla" && len(comps) >= 4 {
+			if af, ok := parseAlpha(comps[3]); ok {
+				alpha = af
+			}
+		}
+		return color.NRGBA{R: r, G: g, B: b, A: uint8(alpha * 255)}, true
+	}
+	return color.NRGBA{}, false
+}
+
+// parseAlpha 解析 alpha 分量（数字 0..1 或百分比 0%..100%）。
+func parseAlpha(s string) (float64, bool) {
+	s = strings.TrimSpace(s)
+	if strings.HasSuffix(s, "%") {
+		f, ok := parseFloat(strings.TrimSuffix(s, "%"))
+		if !ok {
+			return 0, false
+		}
+		return clamp01(f / 100), true
+	}
+	f, ok := parseFloat(s)
+	if !ok {
+		return 0, false
+	}
+	return clamp01(f), true
+}
+
+// parseHue 解析色相（度，支持 deg 后缀），归一化到 [0,360)。
+func parseHue(s string) (float64, bool) {
+	s = strings.TrimSpace(s)
+	if strings.HasSuffix(s, "deg") {
+		s = strings.TrimSuffix(s, "deg")
+	}
+	f, ok := parseFloat(s)
+	if !ok {
+		return 0, false
+	}
+	f = math.Mod(f, 360)
+	if f < 0 {
+		f += 360
+	}
+	return f, true
+}
+
+// parsePercent 解析百分比分量（"50%" → 0.5，或数字 0..1）。
+func parsePercent(s string) (float64, bool) {
+	s = strings.TrimSpace(s)
+	if strings.HasSuffix(s, "%") {
+		f, ok := parseFloat(strings.TrimSuffix(s, "%"))
+		if !ok {
+			return 0, false
+		}
+		return clamp01(f / 100), true
+	}
+	f, ok := parseFloat(s)
+	if !ok {
+		return 0, false
+	}
+	return clamp01(f), true
+}
+
+// hslToRGB 把 HSL（h 0..360，s/l 0..1）转成 RGB（0..255）。
+func hslToRGB(h, s, l float64) (uint8, uint8, uint8) {
+	if s == 0 {
+		v := uint8(l*255 + 0.5)
+		return v, v, v
+	}
+	var q float64
+	if l < 0.5 {
+		q = l * (1 + s)
+	} else {
+		q = l + s - l*s
+	}
+	p := 2*l - q
+	return hueToRGB(p, q, h/360+1.0/3.0),
+		hueToRGB(p, q, h/360),
+		hueToRGB(p, q, h/360-1.0/3.0)
+}
+
+// hueToRGB 把 hue 分量（0..1，已含偏移）转成 0..255。
+func hueToRGB(p, q, t float64) uint8 {
+	if t < 0 {
+		t++
+	}
+	if t > 1 {
+		t--
+	}
+	switch {
+	case t < 1.0/6.0:
+		return uint8((p + (q-p)*6*t) * 255)
+	case t < 1.0/2.0:
+		return uint8(q * 255)
+	case t < 2.0/3.0:
+		return uint8((p + (q-p)*(2.0/3.0-t)*6) * 255)
+	default:
+		return uint8(p * 255)
+	}
 }
 
 // parseColorComp 解析 rgb() 的一个分量（数字或百分比）。

@@ -219,3 +219,11 @@
   默认值下等价，才过对账。现在完整支持。
 - 测试 `mask_test.go` 5 项：maskContentUnits obb（全/部分覆盖）、mask transform、
   maskUnits region（userSpaceOnUse + objectBoundingBox）。
+
+## hsl()/现代颜色（2026-11-07 完成）
+- `style.go` 重构 `parseColor`：新增 `parseColorFunc` 统一解析 rgb()/rgba()/hsl()/hsla()。
+- 支持 hsl/hsla（h 度/deg、s/l 百分比或 0..1）、rgb 空格分隔语法（`rgb(255 0 0)`）、
+  斜杠 alpha（`rgb(255 0 0 / 0.5)`），顺带保留 rgba 逗号第 4 分量老语法。
+- 新增 `hslToRGB`/`hueToRGB`/`parseHue`/`parsePercent`/`parseAlpha`。
+- 测试 `color_test.go` 4 项：hsl 六基色+空格/deg、hsla alpha+斜杠、rgb 空格+斜杠、
+  渲染链路 hsl 填充。

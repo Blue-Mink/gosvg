@@ -25,6 +25,10 @@
 // （含 CSS 通用名 sans-serif/serif/monospace 与逗号列表）则换用对应字型，
 // 字重/字型按 font-weight/font-style 择优；未命中回退内置字体。
 //
+// 颜色格式：支持 #rgb / #rrggbb / #rgba / #rrggbbaa、rgb()/rgba()、
+// hsl()/hsla()（逗号或空格分隔，含 "/" 分隔 alpha，h 支持 deg 单位）、
+// SVG/CSS 命名颜色、none、currentColor。
+//
 // 明确不支持的常见特性（命中时静默降级，不报错）：
 //
 //	clip-path / tspan
