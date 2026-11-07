@@ -26,6 +26,9 @@ gosvg 是**库**，接收不可信 SVG 字节并渲染成位图。预期调用�
 **仍需注意**（见 `GOSVG_GAP_TODO.md`）：
 - `ImageDecoder` 由调用方注入；若回调抓取远程 URL，库侧无超时/大小限制，请在回调里自行约束。
 - `ImageDecoder` 是包级变量，**并发写不安全**；应在渲染前设置一次，之后只读。
+  更推荐用 `RenderOptions.ImageDecoder` 逐渲染注入。`DefaultImageDecoder()` 只处理
+  `data:` URI 与本地文件路径，**不会抓取远程 URL**；若自行实现远程解码器，
+  请在回调内加超时与大小限制。
 - `tspan` 嵌套、`g` 深嵌套、CSS 规则链、mask↔clip 互引暂无深度上限。
 - 带 `encoding="ISO-8859-1"` 等非 UTF-8 声明的 SVG 会被 `encoding/xml` 拒绝。
 

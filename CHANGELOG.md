@@ -49,3 +49,14 @@
 - 新增 `LastRenderDiagnostics()`（每次渲染重置），与累计的 `Diagnostics()` 互补
 - 新增 `scripts/verify.sh`，CI 与本地手动验证同源；两个 workflow 改为调用它
 - 同步合并/打 tag 之后过时的文档表述
+
+### 分支 `feat/display-and-polish`
+- **P0 正确性**：实现 `display:none`（跳过整棵子树）与 `visibility:hidden|collapse|visible`
+  （继承语义，子元素可显式覆盖）；CSS 规则与内联 `style` 同样生效。此前两者被完全忽略，
+  会把隐藏元素画出来（实证 16×16 全红矩形误绘 256 像素）。
+- **P1 易用性**：新增 `DefaultImageDecoder()`（标准库 PNG/JPEG/GIF + data URI，零外部依赖）；
+  `RenderOptions.ImageDecoder` 支持逐渲染注入；`UnsupportedError` 加 `Code` / `Err`
+  与哨兵错误支持 `errors.Is`；新增 `RegisteredFonts()` / `ResetFonts()`。
+- **P3/P4**：新增 `BenchmarkParse` / `BenchmarkRenderDocument` 与 `BENCHMARK.md` 实测基线；
+  `scripts/verify.sh` 加 `-count=1 -cover` 与 benchmark 冒烟。
+- 新增 15 项测试（display/visibility 9、默认解码 3、字体 2、错误码 1）。
