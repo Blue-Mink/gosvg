@@ -119,6 +119,8 @@ func (ctx *renderContext) renderNodeBare(n *node, opacity float64) error {
 		// 定义类元素不直接渲染。
 	case "use":
 		ctx.renderUse(n, nodeOpacity)
+	case "image":
+		ctx.renderImage(n)
 	case "text":
 		ctx.renderText(n, nodeOpacity)
 	case "circle", "ellipse", "rect", "line", "path", "polygon", "polyline":

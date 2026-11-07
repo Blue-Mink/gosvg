@@ -9,7 +9,7 @@
 //
 //	元素：svg / g / defs / use / linearGradient / radialGradient / stop /
 //	     clipPath / circle / ellipse / rect / line / path / polygon /
-//	     polyline / text / tspan / mask / marker / style
+//	     polyline / text / tspan / mask / marker / image / style
 //	属性：viewBox / preserveAspectRatio / transform / fill / fill-rule / fill-opacity /
 //	     stroke / stroke-width / stroke-linecap / stroke-linejoin /
 //	     stroke-miterlimit / stroke-dasharray / stroke-dashoffset /

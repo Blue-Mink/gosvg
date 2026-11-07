@@ -298,3 +298,10 @@
 - 切线方向用 flattenPath（像素坐标）的相邻顶点 atan2；marker 渲染在 renderShape 末尾，
   坐标变换 base（marker 坐标系→像素）+ Translate(-ref) + Rotate + Translate(pos)。
 - renderNodeBare 跳过 marker 元素。测试 marker_test.go 4 项（end/start/mid/无 stroke 回退）。
+
+## <image> 元素（2026-11-07 完成）
+- 新增 `image.go`：包级变量 `ImageDecoder func(href string) (image.Image, error)`，
+  调用方注入位图解码（库保持零依赖）；未注入时 <image> 静默跳过。
+- renderImage 解码后按 x/y/width/height 缩放到目标矩形（x/image/draw CatmullRom），
+  width/height 缺省用位图固有尺寸。renderNodeBare 加 image case。
+- 测试 image_test.go 3 项（基本渲染/无 decoder 跳过/默认尺寸）。
