@@ -61,14 +61,16 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 ```mermaid
 flowchart LR
   A["SVG 数据"] --> B["XML 解析 → 元素树"]
-  B --> C["resolve：defs / gradient / mask 索引"]
+  B --> C["resolve：defs / gradient / mask / clipPath 索引"]
   C --> D["viewBox 等比缩放"]
   D --> E{"元素分派"}
-  E -->|path / shape| F["fill + stroke 精确轮廓"]
+  E -->|path / shape| F["fill + stroke（含 gradient）精确轮廓"]
   E -->|mask| G["luminance mask 合成"]
+  E -->|clip-path| J["形状 alpha 裁剪"]
   E -->|text| H["opentype 字体渲染"]
   F --> I["*image.NRGBA"]
   G --> I
+  J --> I
   H --> I
 ```
 
@@ -106,12 +108,14 @@ shape.go            基本形状（circle / ellipse / rect / line / polygon / po
 stroke.go           stroke 精确轮廓
 dash.go             stroke-dasharray / dashoffset
 mask.go             luminance mask 合成
-text.go             text 渲染
+clip.go             clip-path 形状 alpha 裁剪
+gradient.go         linear / radial 渐变（fill 与 stroke 均支持）
+text.go             text / tspan 渲染
 font.go             字体（内置 Go Regular + 可选系统字体）
 style.go            颜色 / 长度 / 内联样式解析
 transform.go        transform / viewBox
 internal/rasterx    fork 自 rasterx（fill 扫描器）
-internal/vector     fork 自 x/image/vector（AA 光栅器）
+internal/vector     fork 自 x/image/vector（AA 光栅器，已扩展 even-odd winding）
 cmd/render          CLI 渲染器
 cmd/verify          CLI 校验
 testdata/           对账测试样例
