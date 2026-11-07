@@ -208,3 +208,14 @@
 - stroke-width 带单位（"4px"）解析失败回退 1 → 改 parseLengthOr。
 - text fill="none"/"url(#)" 渲染成黑色 → 解析失败 return（与 renderShape fill 对齐）。
 - use 循环引用栈溢出 → renderContext.useDepth 深度上限（maxUseDepth=100）。
+
+## mask 的 maskUnits/maskContentUnits/transform（2026-11-07 完成）
+- 重写 `mask.go` 的 `renderMaskImage`：支持 maskContentUnits（userSpaceOnUse 默认 /
+  objectBoundingBox 归一化映射到 bbox）、mask 自身 transform、maskUnits 的
+  x/y/width/height 区域裁剪（objectBoundingBox / userSpaceOnUse）。
+- 新增 `elementBounds`（遍历元素树算 device 空间几何 bbox，支持 g/use/形状，depth 防循环）
+  与 `applyMaskRegion`（区域外亮度归零）。
+- 之前 mask 一律当 userSpaceOnUse + 无区域裁剪 + 忽略 transform；circle-flags 恰好是
+  默认值下等价，才过对账。现在完整支持。
+- 测试 `mask_test.go` 5 项：maskContentUnits obb（全/部分覆盖）、mask transform、
+  maskUnits region（userSpaceOnUse + objectBoundingBox）。

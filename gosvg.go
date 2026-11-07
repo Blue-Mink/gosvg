@@ -17,7 +17,8 @@
 //	     spreadMethod / offset / stop-color / stop-opacity /
 //	     font-size / font-family / font-weight / font-style /
 //	     text-anchor / dominant-baseline / color / currentColor /
-//	     id / mask / style（内联 CSS 声明，优先级高于 presentation 属性）
+//	     id / mask / maskUnits / maskContentUnits /
+//	     style（内联 CSS 声明，优先级高于 presentation 属性）
 //
 // 文字字体：默认用内置 Go Regular（零外部依赖）。可选调用 AddFontDir 注册
 // 系统字体目录（如 /usr/share/fonts/truetype/dejavu），命中 font-family
