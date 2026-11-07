@@ -32,5 +32,6 @@ gosvg 是**库**，接收不可信 SVG 字节并渲染成位图。预期调用�
 ## 已知边界（非漏洞）
 
 超出子集的 SVG 特性会**静默跳过**（清单见 `GOSVG_TODO.md`「明确不支持」），
-不返回错误、目前也没有运行时诊断通道。调用方若需要知道「哪块被跳过了」，
-见 `GOSVG_GAP_TODO.md` 档 2 的 Diagnostics 计划。
+不返回错误。调用方若需要知道「哪块被跳过了」，用
+`Document.Diagnostics()`（累计）或 `Document.LastRenderDiagnostics()`（最近一次渲染），
+实现见 `gosvg.go` / `render.go` / `image.go`；诊断并非穷尽所有静默分支。

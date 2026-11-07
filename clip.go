@@ -95,7 +95,13 @@ func (ctx *renderContext) renderClipMask(clipNode, targetNode *node, w, h int) *
 	}
 	sub.dasher = newDasherFor(img)
 	for _, c := range clipNode.children {
-		_ = sub.renderNodeBare(c, 1.0)
+		if err := sub.renderNodeBare(c, 1.0); err != nil && ctx.err == nil {
+			ctx.err = err
+			break
+		}
+	}
+	if sub.err != nil && ctx.err == nil {
+		ctx.err = sub.err
 	}
 
 	if hasRegion {

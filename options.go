@@ -48,10 +48,11 @@ func validateSize(w, h int, o RenderOptions) error {
 
 // fillBackground 用背景色填满整张图（只在渲染前调用一次，不改变尺寸）。
 func fillBackground(img *image.NRGBA, c color.Color) {
-	r, g, b, a := c.RGBA()
-	rr, gg, bb, aa := uint8(r>>8), uint8(g>>8), uint8(b>>8), uint8(a>>8)
+	// 用 NRGBAModel 转换，避免把预乘的 color.RGBA 当成非预乘 NRGBA 直接写入
+	// 导致半透明背景色偏。
+	n := color.NRGBAModel.Convert(c).(color.NRGBA)
 	px := img.Pix
 	for i := 0; i < len(px); i += 4 {
-		px[i], px[i+1], px[i+2], px[i+3] = rr, gg, bb, aa
+		px[i], px[i+1], px[i+2], px[i+3] = n.R, n.G, n.B, n.A
 	}
 }

@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestRenderOptionsMaxDimension(t *testing.T) {
@@ -110,5 +111,97 @@ func TestDiagnosticsDeduplicates(t *testing.T) {
 	}
 	if n != 1 {
 		t.Fatalf("diagnostic should be deduplicated, got %d", n)
+	}
+}
+
+func TestRenderOptionsNilContext(t *testing.T) {
+	data := []byte(`<svg viewBox="0 0 10 10"><rect width="10" height="10" fill="red"/></svg>`)
+	if _, err := RenderWithOptions(nil, data, 16, 16, DefaultRenderOptions()); err != nil {
+		t.Fatalf("nil ctx should fall back to Background: %v", err)
+	}
+	doc, err := Parse(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := doc.RenderWithOptions(nil, 16, 16, DefaultRenderOptions()); err != nil {
+		t.Fatalf("nil ctx (Document) should fall back: %v", err)
+	}
+}
+
+func TestRenderOptionsTranslucentBackground(t *testing.T) {
+	data := []byte(`<svg viewBox="0 0 4 4"/>`)
+	// color.RGBA 是预乘色；期望等价于 NRGBAModel 转换后的非预乘值。
+	c := color.RGBA{R: 200, G: 100, B: 50, A: 128}
+	want := color.NRGBAModel.Convert(c).(color.NRGBA)
+	img, err := RenderWithOptions(context.Background(), data, 4, 4, RenderOptions{Background: c})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := img.NRGBAAt(0, 0); got != want {
+		t.Fatalf("background = %v, want %v", got, want)
+	}
+}
+
+func TestDiagnosticsIgnoresMetadata(t *testing.T) {
+	svg := []byte(`<svg viewBox="0 0 4 4"><title>hi</title><desc>there</desc><metadata/><rect width="4" height="4" fill="blue"/></svg>`)
+	doc, err := Parse(svg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := doc.Render(8, 8); err != nil {
+		t.Fatal(err)
+	}
+	for _, d := range doc.Diagnostics() {
+		if strings.Contains(d, "title") || strings.Contains(d, "desc") || strings.Contains(d, "metadata") {
+			t.Fatalf("metadata element should not be diagnosed: %q", d)
+		}
+	}
+}
+
+func TestLastRenderDiagnostics(t *testing.T) {
+	doc, err := Parse([]byte(`<svg viewBox="0 0 4 4"><filter id="f"/></svg>`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := doc.Render(8, 8); err != nil {
+		t.Fatal(err)
+	}
+	if n := len(doc.LastRenderDiagnostics()); n != 1 {
+		t.Fatalf("first render: want 1 diagnostic, got %v", doc.LastRenderDiagnostics())
+	}
+	if _, err := doc.Render(8, 8); err != nil {
+		t.Fatal(err)
+	}
+	if n := len(doc.LastRenderDiagnostics()); n != 1 {
+		t.Fatalf("second render should reset, got %v", doc.LastRenderDiagnostics())
+	}
+	if n := len(doc.Diagnostics()); n != 1 {
+		t.Fatalf("cumulative Diagnostics should stay deduplicated, got %v", doc.Diagnostics())
+	}
+}
+
+// cancelAfterN 在第 n 次 Err() 调用起返回 context.Canceled，用于模拟渲染中途取消。
+type cancelAfterN struct{ n, calls int }
+
+func (c *cancelAfterN) Deadline() (time.Time, bool) { return time.Time{}, false }
+func (c *cancelAfterN) Done() <-chan struct{}       { return nil }
+func (c *cancelAfterN) Value(any) any               { return nil }
+func (c *cancelAfterN) Err() error {
+	c.calls++
+	if c.calls >= c.n {
+		return context.Canceled
+	}
+	return nil
+}
+
+func TestCancelDuringRender(t *testing.T) {
+	data := []byte(`<svg viewBox="0 0 10 10">
+  <defs><mask id="m"><rect width="10" height="10" fill="white"/></mask></defs>
+  <rect width="10" height="10" fill="red" mask="url(#m)"/>
+</svg>`)
+	ctx := &cancelAfterN{n: 3}
+	_, err := RenderWithOptions(ctx, data, 32, 32, DefaultRenderOptions())
+	if err != context.Canceled {
+		t.Fatalf("err = %v, want context.Canceled (Err calls=%d)", err, ctx.calls)
 	}
 }
