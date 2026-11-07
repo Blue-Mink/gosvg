@@ -7,15 +7,17 @@
 //
 // 支持的 SVG 子集：
 //
-//	元素：svg / g / defs / use / circle / ellipse / rect / line /
-//	     path / polygon / polyline / text / mask
+//	元素：svg / g / defs / use / linearGradient / radialGradient / stop /
+//	     circle / ellipse / rect / line / path / polygon / polyline /
+//	     text / mask
 //	属性：viewBox / transform / fill / fill-rule / fill-opacity /
 //	     stroke / stroke-width / stroke-linecap / stroke-linejoin /
-//	     stroke-dasharray / stroke-dashoffset / stroke-opacity /
-//	     opacity / font-size / font-family / font-weight / font-style /
-//	     text-anchor / dominant-baseline /
-//	     color / currentColor / id / mask /
-//	     style（内联 CSS 声明，优先级高于 presentation 属性）
+//	     stroke-miterlimit / stroke-dasharray / stroke-dashoffset /
+//	     stroke-opacity / opacity / gradientUnits / gradientTransform /
+//	     spreadMethod / offset / stop-color / stop-opacity /
+//	     font-size / font-family / font-weight / font-style /
+//	     text-anchor / dominant-baseline / color / currentColor /
+//	     id / mask / style（内联 CSS 声明，优先级高于 presentation 属性）
 //
 // 文字字体：默认用内置 Go Regular（零外部依赖）。可选调用 AddFontDir 注册
 // 系统字体目录（如 /usr/share/fonts/truetype/dejavu），命中 font-family
@@ -24,11 +26,11 @@
 //
 // 明确不支持的常见特性（命中时静默降级，不报错）：
 //
-//	gradient（linearGradient / radialGradient，fill="url(#id)" 降级为不填充）
 //	clip-path / tspan
 //	class 选择器 / <style> 样式表元素
 //	preserveAspectRatio 的非默认值（仅支持 xMidYMid meet）
 //	mask-type="alpha"（仅支持默认 luminance）
+//	fill-rule="evenodd"（底层 vector 光栅器仅支持 non-zero winding，evenodd 降级为 non-zero）
 package gosvg
 
 import (

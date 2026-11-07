@@ -47,12 +47,12 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 
 ## 特性
 
-**元素**：`svg` / `g` / `defs` / `use` / `circle` / `ellipse` / `rect` / `line` / `path` / `polygon` / `polyline` / `text` / `mask`
+**元素**：`svg` / `g` / `defs` / `use` / `linearGradient` / `radialGradient` / `stop` / `circle` / `ellipse` / `rect` / `line` / `path` / `polygon` / `polyline` / `text` / `mask`
 
-**属性**：`viewBox` / `transform` / `fill` / `fill-rule` / `fill-opacity` / `stroke` / `stroke-width` / `stroke-linecap` / `stroke-linejoin` / `stroke-dasharray` / `stroke-dashoffset` / `stroke-opacity` / `opacity` / `font-size` / `font-family` / `font-weight` / `font-style` / `text-anchor` / `dominant-baseline` / `color` / `currentColor` / `id` / `mask` / 内联 `style`
+**属性**：`viewBox` / `transform` / `fill` / `fill-rule` / `fill-opacity` / `stroke` / `stroke-width` / `stroke-linecap` / `stroke-linejoin` / `stroke-miterlimit` / `stroke-dasharray` / `stroke-dashoffset` / `stroke-opacity` / `opacity` / `gradientUnits` / `gradientTransform` / `spreadMethod` / `offset` / `stop-color` / `stop-opacity` / `font-size` / `font-family` / `font-weight` / `font-style` / `text-anchor` / `dominant-baseline` / `color` / `currentColor` / `id` / `mask` / 内联 `style`
 
 > [!NOTE]
-> **明确不支持**（命中时静默降级，不报错）：gradient、clip-path、tspan、`<style>` 样式表、class 选择器、`preserveAspectRatio` 非默认值、`mask-type="alpha"`。
+> **明确不支持**（命中时静默降级，不报错）：clip-path、tspan、`<style>` 样式表、class 选择器、`preserveAspectRatio` 非默认值、`mask-type="alpha"`、`fill-rule="evenodd"`（底层光栅器仅 non-zero，evenodd 降级为 non-zero）。
 
 ## 工作原理
 

@@ -2,7 +2,6 @@ package gosvg
 
 import (
 	"image"
-	"image/color"
 	"math"
 	"strings"
 
@@ -56,9 +55,11 @@ func (ctx *renderContext) renderText(n *node, opacity float64) {
 	if strings.EqualFold(fillStr, "currentColor") {
 		fillStr = style.color
 	}
-	c := color.NRGBA{0, 0, 0, 255}
-	if v, ok := parseColor(fillStr); ok {
-		c = v
+	// fill="none" / fill="url(#...)"（gradient 等未支持）时 parseColor 失败，
+	// 语义应为"不渲染"而非降级成黑色（与 renderShape 的 fill 处理保持一致）。
+	c, ok := parseColor(fillStr)
+	if !ok || c.A == 0 {
+		return
 	}
 
 	x := parseFloatOr(n.attr("x"), 0)

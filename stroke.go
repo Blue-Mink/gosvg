@@ -185,8 +185,7 @@ func segOf(a, b Point, u float64) segDir {
 }
 
 // emitJoin 处理顶点 pts[idx] 处 segs[prev]→segs[idx] 的 join。
-func emitJoin(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, arcTol float64, pts []Point, segs []segDir, idx, n int, u float64, join string) {
-	const miterLimit = 4.0
+func emitJoin(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, arcTol float64, pts []Point, segs []segDir, idx, n int, u float64, join string, miterLimit float64) {
 	prev := (idx - 1 + n) % n
 	pv := segs[prev]
 	s := segs[idx]
@@ -216,7 +215,9 @@ func emitJoin(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, arcTol f
 			case "bevel":
 				f.Line(pt(q2x, q2y))
 			case "miter":
-				if ok && d <= miterLimit*u {
+				// SVG: miterLength/strokeWidth > miterlimit 时 bevel。
+				// miterLength=d（顶点到尖点），strokeWidth=2u，故阈值 d <= 2*miterLimit*u。
+				if ok && d <= 2*miterLimit*u {
 					f.Line(pt(X, Y))
 				} else {
 					f.Line(pt(q2x, q2y))
@@ -230,7 +231,7 @@ func emitJoin(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, arcTol f
 
 // emitOffsetChain 沿链生成左偏移边（含顶点 join）。
 // closed=true 时为完整环（含首顶点 join，终点回到起点）。返回最后法线角。
-func emitOffsetChain(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, arcTol float64, pts []Point, u float64, closed bool, join string) float64 {
+func emitOffsetChain(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, arcTol float64, pts []Point, u float64, closed bool, join string, miterLimit float64) float64 {
 	n := len(pts)
 	segN := n - 1
 	if closed {
@@ -244,20 +245,20 @@ func emitOffsetChain(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, a
 	for i := 0; i < segN; i++ {
 		s := segs[i]
 		if i > 0 {
-			emitJoin(f, pt, arcTol, pts, segs, i, segN, u, join)
+			emitJoin(f, pt, arcTol, pts, segs, i, segN, u, join, miterLimit)
 		}
 		b := pts[(i+1)%n]
 		f.Line(pt(b.X+s.nx, b.Y+s.ny))
 		lastAng = math.Atan2(s.ny, s.nx)
 	}
 	if closed {
-		emitJoin(f, pt, arcTol, pts, segs, 0, segN, u, join)
+		emitJoin(f, pt, arcTol, pts, segs, 0, segN, u, join, miterLimit)
 	}
 	return lastAng
 }
 
 // strokeExactPath 把一个子路径的精确 stroke 轮廓写入 filler。
-func strokeExactPath(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, arcTol float64, pts []Point, u float64, closed bool, cap, join string) {
+func strokeExactPath(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, arcTol float64, pts []Point, u float64, closed bool, cap, join string, miterLimit float64) {
 	n := len(pts)
 	if (closed && n < 3) || (!closed && n < 2) {
 		if join == "round" {
@@ -267,20 +268,20 @@ func strokeExactPath(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, a
 	}
 	if closed {
 		f.Start(pt(pts[0].X+segOf(pts[0], pts[1], u).nx, pts[0].Y+segOf(pts[0], pts[1], u).ny))
-		emitOffsetChain(f, pt, arcTol, pts, u, true, join)
+		emitOffsetChain(f, pt, arcTol, pts, u, true, join, miterLimit)
 		f.Stop(true)
 		rev := make([]Point, n)
 		for i := range pts {
 			rev[i] = pts[n-1-i]
 		}
 		f.Start(pt(rev[0].X+segOf(rev[0], rev[1], u).nx, rev[0].Y+segOf(rev[0], rev[1], u).ny))
-		emitOffsetChain(f, pt, arcTol, rev, u, true, join)
+		emitOffsetChain(f, pt, arcTol, rev, u, true, join, miterLimit)
 		f.Stop(true)
 		return
 	}
 	s0 := segOf(pts[0], pts[1], u)
 	f.Start(pt(pts[0].X+s0.nx, pts[0].Y+s0.ny))
-	emitOffsetChain(f, pt, arcTol, pts, u, false, join)
+	emitOffsetChain(f, pt, arcTol, pts, u, false, join, miterLimit)
 	sl := segOf(pts[n-2], pts[n-1], u)
 	P0 := pts[0]
 	Pl := pts[n-1]
@@ -301,7 +302,7 @@ func strokeExactPath(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, a
 	for i := range pts {
 		rev[i] = pts[n-1-i]
 	}
-	emitOffsetChain(f, pt, arcTol, rev, u, false, join)
+	emitOffsetChain(f, pt, arcTol, rev, u, false, join, miterLimit)
 	// ---- cap0 ----
 	switch cap {
 	case "square":
@@ -318,7 +319,7 @@ func strokeExactPath(f *rasterx.Filler, pt func(x, y float64) fixed.Point26_6, a
 
 func segs0N(pts []Point, u float64) segDir { return segOf(pts[0], pts[1], u) }
 
-func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D, halfWidth float64, c color.NRGBA, tol float64, linecap, linejoin string, dasharray []float64, dashoffset float64) {
+func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D, halfWidth float64, c color.NRGBA, tol float64, linecap, linejoin string, miterLimit float64, dasharray []float64, dashoffset float64) {
 	// 用户空间 flatten（Identity），offset 在用户空间做，最终 Transform 到 device。
 	subs := flattenPath(path, rasterx.Identity, tol)
 	if len(subs) == 0 {
@@ -365,12 +366,12 @@ func strokeCapsules(img *image.NRGBA, path rasterx.Path, matrix rasterx.Matrix2D
 			}
 			for _, seg := range dashSegments(dashPts, dashoffset, dashes, closedP) {
 				if len(seg) >= 2 {
-					strokeExactPath(filler, pt, tol, seg, halfWidth, false, linecap, linejoin)
+					strokeExactPath(filler, pt, tol, seg, halfWidth, false, linecap, linejoin, miterLimit)
 				}
 			}
 			continue
 		}
-		strokeExactPath(filler, pt, tol, dedup, halfWidth, closedP, linecap, linejoin)
+		strokeExactPath(filler, pt, tol, dedup, halfWidth, closedP, linecap, linejoin, miterLimit)
 	}
 
 	filler.SetColor(c)

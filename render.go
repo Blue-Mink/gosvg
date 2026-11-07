@@ -11,11 +11,12 @@ import (
 
 // renderContext 是单次渲染的上下文，持有目标图像、光栅化器和累积的变换/透明度。
 type renderContext struct {
-	img    *image.NRGBA
-	dasher *rasterx.Dasher
-	doc    *Document
-	matrix rasterx.Matrix2D
-	style  shapeStyle // 继承的表现样式（fill/stroke 等）
+	img      *image.NRGBA
+	dasher   *rasterx.Dasher
+	doc      *Document
+	matrix   rasterx.Matrix2D
+	style    shapeStyle // 继承的表现样式（fill/stroke 等）
+	useDepth int        // <use> 嵌套深度（防循环引用栈溢出）
 }
 
 func newRenderContext(width, height int, d *Document) *renderContext {
@@ -112,8 +113,19 @@ func (ctx *renderContext) renderNodeBare(n *node, opacity float64) error {
 	return nil
 }
 
+// maxUseDepth 是 <use> 引用的最大嵌套深度，用于防止循环引用导致栈溢出。
+const maxUseDepth = 100
+
 // renderUse 处理 <use href="#id"> 引用。
 func (ctx *renderContext) renderUse(n *node, opacity float64) {
+	// 循环引用（如 <use id="a" href="#a"/> 或 a↔b 互引）会无限递归导致栈溢出，
+	// 用嵌套深度上限截断。正常 SVG 的 use 嵌套远小于该值。
+	if ctx.useDepth >= maxUseDepth {
+		return
+	}
+	ctx.useDepth++
+	defer func() { ctx.useDepth-- }()
+
 	ref := n.attr("href")
 	if ref == "" {
 		ref = n.attr("xlink:href")
@@ -156,11 +168,14 @@ func (ctx *renderContext) renderShape(n *node, opacity float64) {
 	if c, ok := parseColor(fillStr); ok && c.A > 0 {
 		nonZero := style.fillRule != "evenodd"
 		ctx.fill(p, c, opacity*style.fillOpacity, nonZero)
+	} else if g := ctx.doc.resolveGradient(fillStr); g != nil {
+		nonZero := style.fillRule != "evenodd"
+		ctx.fillGradient(p, g, opacity*style.fillOpacity, nonZero)
 	}
 
 	// 描边
 	if c, ok := parseColor(strokeStr); ok && c.A > 0 && style.strokeWidth > 0 {
-		ctx.stroke(p, c, style.strokeWidth, style.linecap, style.linejoin, style.strokeDasharray, style.strokeDashoffset, opacity*style.strokeOpacity)
+		ctx.stroke(p, c, style.strokeWidth, style.linecap, style.linejoin, style.miterLimit, style.strokeDasharray, style.strokeDashoffset, opacity*style.strokeOpacity)
 	}
 }
 
@@ -174,6 +189,7 @@ type shapeStyle struct {
 	strokeOpacity    float64
 	linecap          string
 	linejoin         string
+	miterLimit       float64
 	strokeDasharray  []float64
 	strokeDashoffset float64
 	color            string
@@ -189,6 +205,7 @@ func defaultShapeStyle() shapeStyle {
 		strokeOpacity: 1,
 		linecap:       "butt",
 		linejoin:      "miter",
+		miterLimit:    4,
 		color:         "black",
 	}
 }
@@ -209,7 +226,7 @@ func mergeStyle(base shapeStyle, n *node) shapeStyle {
 		s.stroke = v
 	}
 	if v, ok := n.attrs["stroke-width"]; ok {
-		s.strokeWidth = parseFloatOr(v, 1)
+		s.strokeWidth = parseLengthOr(v, 1)
 	}
 	if v, ok := n.attrs["stroke-opacity"]; ok {
 		s.strokeOpacity = parseFloatOr(v, 1)
@@ -219,6 +236,9 @@ func mergeStyle(base shapeStyle, n *node) shapeStyle {
 	}
 	if v, ok := n.attrs["stroke-linejoin"]; ok {
 		s.linejoin = v
+	}
+	if v, ok := n.attrs["stroke-miterlimit"]; ok {
+		s.miterLimit = parseLengthOr(v, 4)
 	}
 	if v, ok := n.attrs["stroke-dasharray"]; ok {
 		if da, ok := parseDashArray(v); ok {
@@ -249,7 +269,7 @@ func (ctx *renderContext) fill(p rasterx.Path, c color.NRGBA, opacity float64, n
 }
 
 // stroke 用指定颜色和宽度描边路径。
-func (ctx *renderContext) stroke(p rasterx.Path, c color.NRGBA, width float64, linecap, linejoin string, dasharray []float64, dashoffset float64, opacity float64) {
+func (ctx *renderContext) stroke(p rasterx.Path, c color.NRGBA, width float64, linecap, linejoin string, miterLimit float64, dasharray []float64, dashoffset float64, opacity float64) {
 	scale := ctx.matrixScale()
 	if scale <= 0 {
 		scale = 1
@@ -258,6 +278,6 @@ func (ctx *renderContext) stroke(p rasterx.Path, c color.NRGBA, width float64, l
 
 	// 全部 cap/join 组合统一走精确轮廓（单条连续边，解析级 AA）。
 	// 用户空间 offset：halfWidth 传用户半宽 width/2，tol 换算到用户单位。
-	strokeCapsules(ctx.img, p, ctx.matrix, width/2, final, 0.01/scale, linecap, linejoin, dasharray, dashoffset)
+	strokeCapsules(ctx.img, p, ctx.matrix, width/2, final, 0.01/scale, linecap, linejoin, miterLimit, dasharray, dashoffset)
 	return
 }

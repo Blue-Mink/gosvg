@@ -183,3 +183,28 @@
   无斜杠零，字形一致；Go Regular 回退列仍是斜杠零细体。
 - 边界（写进包注释）：引入"渲染结果取决于系统字体"的边界——不调用 AddFontDir 则
   保持零依赖不变；.ttc 集合字体暂不支持。
+
+## gradient 实现（2026-11-07 完成，fill 支持 linear/radial）
+- 新增 `gradient.go`：`resolveGradient` / `buildGradient` / `fillGradient` / `pathBounds`。
+- 复用 fork 的 `internal/rasterx` 已有 `Gradient` 结构 + `GetColorFunctionUS`（返回 ColorFunc，
+  ScannerGV.SetColor 原生支持 ColorFunc）——底层光栅化能力本就齐备，只需补解析层与 fill 接线。
+- 支持：linearGradient / radialGradient、gradientUnits（userSpaceOnUse / objectBoundingBox）、
+  gradientTransform、spreadMethod（pad/reflect/repeat）、stop（offset/stop-color/stop-opacity，
+  offset 支持百分比）、href/xlink:href 继承（stops 与通用属性继承，几何由当前元素决定）、
+  fill-rule 组合（non-zero）。
+- objectBoundingBox 的 bbox 用 `pathBounds`（flattenPath 后取极值，device 空间）。
+- 测试 `gradient_test.go` 6 项：linear(obb)/radial(uso)/href 继承/三 stop 插值/stop-opacity。
+- **顺带发现既有问题**：`fill-rule="evenodd"` 从未生效——`ScannerGV.SetWinding` 是 no-op，
+  `internal/vector`（fork x/image/vector）光栅器仅支持 non-zero（源码 TODO 注释）。已写进
+  包注释与 README 的"明确不支持"，暂不实现（需在 vector 光栅器里补 even-odd 扫描）。
+
+## stroke-miterlimit（2026-11-07 完成）
+- 新增 `shapeStyle.miterLimit`（默认 4），`mergeStyle` 解析 `stroke-miterlimit`。
+- 语义修正：旧 `emitJoin` 硬编码 `miterLimit=4` 且判断 `d <= miterLimit*u`（实际等价
+  miterlimit=2，偏保守）；改为 SVG 规范的 `d <= 2*miterLimit*u`（miterLength/strokeWidth）。
+- 测试 `fix_test.go` TestStrokeMiterLimit（90° 角 0.5→bevel / 1→miter）+ TestMergeStyleMiterLimit。
+
+## 修复的实证 bug（2026-11-07）
+- stroke-width 带单位（"4px"）解析失败回退 1 → 改 parseLengthOr。
+- text fill="none"/"url(#)" 渲染成黑色 → 解析失败 return（与 renderShape fill 对齐）。
+- use 循环引用栈溢出 → renderContext.useDepth 深度上限（maxUseDepth=100）。

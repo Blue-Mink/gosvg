@@ -174,3 +174,97 @@ func TestParseLengthUnit(t *testing.T) {
 		}
 	}
 }
+
+// TestStrokeWidthUnit 验证 stroke-width 带单位（如 "4px"）不被回退到默认 1。
+// 修复前：parseFloatOr("4px") 失败回退 1 → 渲染成 10px 宽；
+// 修复后：parseLengthOr 剥离单位 → 4 → 40px 宽。
+func TestStrokeWidthUnit(t *testing.T) {
+	// 竖直线，固定 y=50（线中点）数 x 方向非透明像素 = 线宽。
+	render := func(strokeWidth string) int {
+		data := []byte(`<svg viewBox="0 0 10 10"><line x1="5" y1="1" x2="5" y2="9" stroke="red" stroke-width="` + strokeWidth + `"/></svg>`)
+		img, err := Render(data, 100)
+		if err != nil {
+			t.Fatalf("render: %v", err)
+		}
+		n := 0
+		for x := 0; x < 100; x++ {
+			if _, _, _, a := img.At(x, 50).RGBA(); a > 0 {
+				n++
+			}
+		}
+		return n
+	}
+	withUnit := render("4px")
+	noUnit := render("4")
+	// 两者应一致（≈40px，viewBox 10 → 100 缩放 10x）。
+	if withUnit != noUnit {
+		t.Errorf("stroke-width=4px → %d px, stroke-width=4 → %d px; should be equal", withUnit, noUnit)
+	}
+	if withUnit < 35 || withUnit > 45 {
+		t.Errorf("stroke-width=4px → %d px, want ~40", withUnit)
+	}
+}
+
+// TestTextFillNone 验证 text 的 fill="none" / fill="url(#...)" 不渲染任何像素。
+// 修复前：parseColor 失败后 c 保持默认黑色 → 渲染成黑色文字。
+func TestTextFillNone(t *testing.T) {
+	for _, fill := range []string{"none", "url(#g)"} {
+		data := []byte(`<svg viewBox="0 0 100 100"><text x="10" y="50" font-size="40" fill="` + fill + `">ABC</text></svg>`)
+		img, err := Render(data, 100)
+		if err != nil {
+			t.Fatalf("render: %v", err)
+		}
+		if n := countAlpha(img); n != 0 {
+			t.Errorf("text fill=%q rendered %d px, want 0", fill, n)
+		}
+	}
+}
+
+// TestUseCycle 验证 use 循环引用不崩溃（修复前会栈溢出 exit status 2）。
+func TestUseCycle(t *testing.T) {
+	cases := [][]byte{
+		// 自引用
+		[]byte(`<svg viewBox="0 0 10 10"><use id="a" href="#a"/></svg>`),
+		// 互引
+		[]byte(`<svg viewBox="0 0 10 10"><use id="a" href="#b"/><use id="b" href="#a"/><use href="#a"/></svg>`),
+	}
+	for i, data := range cases {
+		if _, err := Render(data, 10); err != nil {
+			t.Errorf("case %d: use cycle should not error, got %v", i, err)
+		}
+	}
+}
+
+// TestStrokeMiterLimit 验证 stroke-miterlimit 属性生效。
+// 修复前：miterLimit 硬编码 4.0 且语义错误（d <= miterLimit*u，实际等价 miterlimit=2）；
+// 修复后：正确解析属性，语义为 SVG 规范的 miterLength/strokeWidth（d <= 2*miterLimit*u）。
+func TestStrokeMiterLimit(t *testing.T) {
+	// 90° 角：miterLength/strokeWidth = 0.707，故 miterlimit=1 保留尖角、0.5 触发 bevel。
+	render := func(ml string) int {
+		data := []byte(`<svg viewBox="0 0 100 100"><polyline points="5,50 50,50 50,5" fill="none" stroke="red" stroke-width="20" stroke-linejoin="miter" stroke-miterlimit="` + ml + `"/></svg>`)
+		img, err := Render(data, 100)
+		if err != nil {
+			t.Fatalf("render: %v", err)
+		}
+		return countAlpha(img)
+	}
+	bevel := render("0.5")
+	miter := render("1")
+	if bevel == miter {
+		t.Errorf("stroke-miterlimit 未生效：0.5 与 1 渲染结果相同（都是 %d px）", bevel)
+	}
+	if !(bevel < miter) {
+		t.Errorf("miterlimit=0.5 应 bevel（尖角砍平，像素更少），got bevel=%d miter=%d", bevel, miter)
+	}
+}
+
+// TestMergeStyleMiterLimit 验证 mergeStyle 解析 stroke-miterlimit 与默认值。
+func TestMergeStyleMiterLimit(t *testing.T) {
+	n := &node{attrs: map[string]string{"stroke-miterlimit": "10"}}
+	if s := mergeStyle(defaultShapeStyle(), n); s.miterLimit != 10 {
+		t.Errorf("miterLimit = %v, want 10", s.miterLimit)
+	}
+	if s := mergeStyle(defaultShapeStyle(), &node{}); s.miterLimit != 4 {
+		t.Errorf("default miterLimit = %v, want 4", s.miterLimit)
+	}
+}
