@@ -105,6 +105,7 @@ func (d *Document) resolve() error {
 		}
 		d.width = parseLengthOr(d.root.attr("width"), 0)
 		d.height = parseLengthOr(d.root.attr("height"), 0)
+		d.par = parsePreserveAspectRatio(d.root.attr("preserveaspectratio"))
 	}
 
 	// 深度优先遍历，收集带 id 的元素（mask / gradient / 供 use 引用的形状）。
@@ -183,4 +184,50 @@ func parseFloatOr(s string, def float64) float64 {
 		return v
 	}
 	return def
+}
+
+// preserveAspect 保存解析后的 preserveAspectRatio：对齐位置（0/0.5/1）、
+// slice 标志与 none（不保持比例）标志。
+type preserveAspect struct {
+	alignX, alignY float64
+	slice          bool
+	none           bool
+}
+
+// parsePreserveAspectRatio 解析 preserveAspectRatio 属性。
+// 默认 xMidYMid meet；"none" 表示不保持比例（拉伸填充）。
+func parsePreserveAspectRatio(s string) preserveAspect {
+	p := preserveAspect{alignX: 0.5, alignY: 0.5}
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return p
+	}
+	fields := strings.Fields(s)
+	switch fields[0] {
+	case "none":
+		p.none = true
+		return p
+	case "xMinYMin":
+		p.alignX, p.alignY = 0, 0
+	case "xMidYMin":
+		p.alignX, p.alignY = 0.5, 0
+	case "xMaxYMin":
+		p.alignX, p.alignY = 1, 0
+	case "xMinYMid":
+		p.alignX, p.alignY = 0, 0.5
+	case "xMidYMid":
+		p.alignX, p.alignY = 0.5, 0.5
+	case "xMaxYMid":
+		p.alignX, p.alignY = 1, 0.5
+	case "xMinYMax":
+		p.alignX, p.alignY = 0, 1
+	case "xMidYMax":
+		p.alignX, p.alignY = 0.5, 1
+	case "xMaxYMax":
+		p.alignX, p.alignY = 1, 1
+	}
+	if len(fields) >= 2 {
+		p.slice = fields[1] == "slice"
+	}
+	return p
 }

@@ -10,7 +10,7 @@
 //	元素：svg / g / defs / use / linearGradient / radialGradient / stop /
 //	     clipPath / circle / ellipse / rect / line / path / polygon /
 //	     polyline / text / tspan / mask
-//	属性：viewBox / transform / fill / fill-rule / fill-opacity /
+//	属性：viewBox / preserveAspectRatio / transform / fill / fill-rule / fill-opacity /
 //	     stroke / stroke-width / stroke-linecap / stroke-linejoin /
 //	     stroke-miterlimit / stroke-dasharray / stroke-dashoffset /
 //	     stroke-opacity / opacity / gradientUnits / gradientTransform /
@@ -34,7 +34,6 @@
 // 明确不支持的常见特性（命中时静默降级，不报错）：
 //
 //	class 选择器 / <style> 样式表元素
-//	preserveAspectRatio 的非默认值（仅支持 xMidYMid meet）
 //	mask-type="alpha"（仅支持默认 luminance）
 package gosvg
 
@@ -79,6 +78,7 @@ type Document struct {
 	height  float64
 	defs    map[string]*node
 	grads   map[string]*node
+	par     preserveAspect // preserveAspectRatio 解析结果
 	// err 记录解析期遇到的、可安全忽略的问题（供调试），不影响渲染。
 }
 

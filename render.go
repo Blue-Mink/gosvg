@@ -41,7 +41,7 @@ func newDasherFor(img *image.NRGBA) *rasterx.Dasher {
 	return rasterx.NewDasher(w, h, rasterx.NewScannerGV(w, h, img, b))
 }
 
-// viewBoxMatrix 计算 viewBox → 目标尺寸的变换（preserveAspectRatio 默认 xMidYMid meet）。
+// viewBoxMatrix 计算 viewBox → 目标尺寸的变换（按 preserveAspectRatio 对齐/缩放）。
 func (ctx *renderContext) viewBoxMatrix(w, h int) rasterx.Matrix2D {
 	d := ctx.doc
 	if !d.hasVB {
@@ -53,11 +53,23 @@ func (ctx *renderContext) viewBoxMatrix(w, h int) rasterx.Matrix2D {
 		return rasterx.Identity.Scale(float64(w)/vw, float64(h)/vh)
 	}
 	vb := d.viewBox
+
+	// preserveAspectRatio="none"：不保持比例，拉伸填充。
+	if d.par.none {
+		sx := float64(w) / vb[2]
+		sy := float64(h) / vb[3]
+		return rasterx.Identity.Translate(-vb[0]*sx, -vb[1]*sy).Scale(sx, sy)
+	}
+
 	sx := float64(w) / vb[2]
 	sy := float64(h) / vb[3]
+	// meet：缩放至完全包含（取较小缩放）；slice：缩放至完全覆盖（取较大缩放，超界裁剪）。
 	s := math.Min(sx, sy)
-	tx := (float64(w)-vb[2]*s)/2 - vb[0]*s
-	ty := (float64(h)-vb[3]*s)/2 - vb[1]*s
+	if d.par.slice {
+		s = math.Max(sx, sy)
+	}
+	tx := (float64(w)-vb[2]*s)*d.par.alignX - vb[0]*s
+	ty := (float64(h)-vb[3]*s)*d.par.alignY - vb[1]*s
 	return rasterx.Identity.Translate(tx, ty).Scale(s, s)
 }
 
