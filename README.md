@@ -25,6 +25,12 @@
 go get github.com/Blue-Mink/gosvg
 ```
 
+> [!NOTE]
+> 当前源码托管在内网 Gitea（`https://github.com/Blue-Mink/gosvg`），
+> module 路径保留 `github.com/Blue-Mink/gosvg` 以便未来开源。内网/本地使用请在
+> 调用方 `go.mod` 里加 `replace github.com/Blue-Mink/gosvg => <本地路径>`，
+> 或配合 `GOPRIVATE` 使用；仓库尚未推送到 GitHub 时 `go get` 不可用。
+
 ```go
 import "github.com/Blue-Mink/gosvg"
 
@@ -59,7 +65,22 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 **颜色**：`#rgb` / `#rrggbb` / `#rgba` / `#rrggbbaa`、`rgb()` / `rgba()`、`hsl()` / `hsla()`（逗号或空格分隔，含 `/` 分隔 alpha）、SVG/CSS 命名颜色、`none`、`currentColor`。
 
 > [!NOTE]
-> **明确不支持**（命中时静默降级，不报错）：`mask-type="alpha"`。CSS 仅支持简单选择器（类型/class/id 及其组合），不支持后代/子代/伪类选择器与 `@media`/`@import`。
+> **明确不支持**（命中时静默跳过，不报错）的特性清单：
+>
+> - **元素/特性**：`filter`、`pattern`、`textPath`、`foreignObject`、`symbol`/`view`、
+>   `switch`/`requiredFeatures`、动画与脚本、`mask-type="alpha"`、`clip-rule`、
+>   `vector-effect`（含 `non-scaling-stroke`）、`marker orient="auto-start-reverse"`、
+>   `radialGradient` 的 `fx/fy/fr`、`mix-blend-mode`/`isolation`、
+>   `letter-spacing`/`word-spacing`/`text-decoration`、`use` 的 `width/height`、
+>   `<image>` 自身的 `preserveAspectRatio`（按 x/y/w/h 拉伸）
+> - **CSS**：后代/子代/兄弟选择器、伪类/伪元素、`@media`/`@import`/`@supports`、
+>   `!important`、`var()`/`calc()`、`inherit`、CSS4 颜色（`lab()`/`lch()`/`color()`）
+> - **长度**：所有单位统一剥离后按数值 **1:1 近似**，不做物理单位换算，`%` 不按基准解析
+> - **字体**：`.ttc` 集合；未调用 `AddFontDir` 时 `font-family` 一律回退 Go Regular
+> - **`<image>`**：需注入 `ImageDecoder`，未注入或解码失败时静默跳过
+>
+> 完整清单与已知边界见 [GOSVG_TODO.md](GOSVG_TODO.md)；渲染期跳过事件目前没有运行时
+> 诊断通道，见 [GOSVG_GAP_TODO.md](GOSVG_GAP_TODO.md)。
 
 ## 工作原理
 
@@ -129,10 +150,16 @@ testdata/           对账测试样例
 ## 开发
 
 ```sh
-go test ./...      # 单元 + 回归测试
-go vet ./...       # 静态检查
-gofmt -l .         # 格式检查（无输出 = 通过）
+go test ./...      # 单元 + 回归 + golden 像素哈希基线
+go test -race ./...
+go vet ./...
+gofmt -l .         # 无输出 = 通过
+GOARCH=arm64 GOOS=linux go build ./...
+go test -run TestGoldenRegression -update .   # 有意改动渲染输出后重新生成基线
 ```
+
+若 `proxy.golang.org` 不通，用 `GOPROXY=https://goproxy.cn,direct`。
+更多见 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [GOSVG_TODO.md](GOSVG_TODO.md)。
 
 ## 📄 许可证
 

@@ -33,9 +33,22 @@
 // hsl()/hsla()（逗号或空格分隔，含 "/" 分隔 alpha，h 支持 deg 单位）、
 // SVG/CSS 命名颜色、none、currentColor。
 //
-// 明确不支持的常见特性（命中时静默降级，不报错）：
+// 明确不支持的常见特性（命中时静默跳过，不报错）：
 //
-//	mask-type="alpha"（仅支持默认 luminance）
+//	元素/特性：filter、pattern、textPath、foreignObject、symbol/view、
+//	    switch/requiredFeatures、动画与脚本、mask-type="alpha"、clip-rule、
+//	    vector-effect（含 non-scaling-stroke）、marker orient="auto-start-reverse"、
+//	    radialGradient 的 fx/fy/fr、mix-blend-mode/isolation、
+//	    letter-spacing/word-spacing/text-decoration、use 的 width/height、
+//	    <image> 自身的 preserveAspectRatio
+//	CSS：后代/子代/兄弟选择器、伪类、@media/@import/@supports、!important、
+//	    var()/calc()、inherit 关键字、CSS4 颜色（lab/lch/color/device-cmyk）
+//	长度：单位统一剥离后按数值 1:1 近似，不做物理换算，% 不按基准解析
+//	字体：.ttc 集合；未调用 AddFontDir 时 font-family 一律回退 Go Regular
+//	<image>：需调用方注入 ImageDecoder，未注入时静默跳过
+//
+// 完整清单见 GOSVG_TODO.md / README.md。渲染期跳过事件目前没有运行时诊断通道，
+// 见 GOSVG_GAP_TODO.md。
 package gosvg
 
 import (
@@ -110,7 +123,9 @@ func clearGhostRGB(img *image.NRGBA) {
 	}
 }
 
-// UnsupportedError 表示遇到了超出本库子集的 SVG 特性（非致命，已跳过）。
+// UnsupportedError 表示调用方传入了本库无法处理的输入（空文档、非正尺寸等）。
+// 注意：超出子集的 SVG 特性不会返回本错误，而是静默跳过（见包注释「明确不支持」）；
+// 这些跳过目前没有运行时诊断通道，详见 GOSVG_GAP_TODO.md。
 type UnsupportedError struct{ Feature string }
 
 func (e *UnsupportedError) Error() string { return "gosvg: unsupported " + e.Feature }
