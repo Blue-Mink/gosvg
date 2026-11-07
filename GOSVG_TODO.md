@@ -269,3 +269,17 @@
   text-anchor/dominant-baseline）、定位（x/y 绝对、dx/dy 相对）、绝对 x 重置游标。
 - drawTextSpan 返回用户空间宽度供游标前进。
 - 测试 `tspan_test.go` 5 项：仅 tspan、直接文本+tspan 共存、fill 继承、嵌套、x 偏移。
+
+## preserveAspectRatio 完整支持（2026-11-07 完成）
+- 新增 `parsePreserveAspectRatio`（对齐 0/0.5/1、slice、none），Document 加 `par` 字段，
+  resolve 读取 preserveAspectRatio，viewBoxMatrix 按 align/meet/slice/none 计算。
+- 支持 9 种 align + meet/slice + none 拉伸。测试 aspect_test.go 4 项。
+
+## class 选择器 + `<style>` 样式表（2026-11-07 完成）
+- 新增 `css.go`：cssSelector(tag/class/id)/cssRule/parseCSS/parseSelector/matches/
+  specificity/applyCSS。支持类型、.class、#id、组合选择器与逗号分隔，按 (id,class,tag)
+  特异性级联；不支持后代/子代/伪类/@media/@import。
+- 优先级：presentation 属性 < CSS 规则（特异性）< 内联 style。
+- node 加 inlineStyle 字段（parse 时内联 style 不再合并进 attrs，改由 applyCSS 统一合并），
+  Document 加 cssRules 字段，resolve 解析 <style> 并在末尾 applyCSS。
+- 测试 css_test.go 6 项（class/type/id/特异性/内联优先/CSS 覆盖 presentation）。

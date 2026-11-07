@@ -9,7 +9,7 @@
 //
 //	元素：svg / g / defs / use / linearGradient / radialGradient / stop /
 //	     clipPath / circle / ellipse / rect / line / path / polygon /
-//	     polyline / text / tspan / mask
+//	     polyline / text / tspan / mask / style
 //	属性：viewBox / preserveAspectRatio / transform / fill / fill-rule / fill-opacity /
 //	     stroke / stroke-width / stroke-linecap / stroke-linejoin /
 //	     stroke-miterlimit / stroke-dasharray / stroke-dashoffset /
@@ -17,7 +17,7 @@
 //	     spreadMethod / offset / stop-color / stop-opacity /
 //	     font-size / font-family / font-weight / font-style /
 //	     text-anchor / dominant-baseline / color / currentColor /
-//	     id / mask / maskUnits / maskContentUnits /
+//	     id / class / mask / maskUnits / maskContentUnits /
 //	     clip-path / clipPathUnits /
 //	     x / y / dx / dy（text 与 tspan 定位）/
 //	     style（内联 CSS 声明，优先级高于 presentation 属性）
@@ -33,7 +33,6 @@
 //
 // 明确不支持的常见特性（命中时静默降级，不报错）：
 //
-//	class 选择器 / <style> 样式表元素
 //	mask-type="alpha"（仅支持默认 luminance）
 package gosvg
 
@@ -71,14 +70,15 @@ func Parse(data []byte) (*Document, error) {
 
 // Document 是一份已解析的 SVG 文档。
 type Document struct {
-	root    *node
-	viewBox [4]float64
-	hasVB   bool
-	width   float64
-	height  float64
-	defs    map[string]*node
-	grads   map[string]*node
-	par     preserveAspect // preserveAspectRatio 解析结果
+	root     *node
+	viewBox  [4]float64
+	hasVB    bool
+	width    float64
+	height   float64
+	defs     map[string]*node
+	grads    map[string]*node
+	par      preserveAspect // preserveAspectRatio 解析结果
+	cssRules []cssRule      // <style> 元素解析出的 CSS 规则
 	// err 记录解析期遇到的、可安全忽略的问题（供调试），不影响渲染。
 }
 

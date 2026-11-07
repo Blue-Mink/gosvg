@@ -8,13 +8,15 @@ import (
 )
 
 // node 是 SVG 元素树的一个节点。name 为元素名（小写），attrs 为属性表，
-// content 是 <text> 这类元素的字符内容。
+// content 是 <text> 这类元素的字符内容。inlineStyle 是内联 style 属性
+// 解析结果（优先级高于 presentation 属性与 CSS 规则，在 resolve 阶段合并）。
 type node struct {
-	name     string
-	attrs    map[string]string
-	children []*node
-	content  string
-	parent   *node
+	name        string
+	attrs       map[string]string
+	inlineStyle map[string]string
+	children    []*node
+	content     string
+	parent      *node
 }
 
 // attr 返回属性值（区分大小写不敏感，已统一小写），缺失返回空串。
@@ -54,12 +56,10 @@ func parse(data []byte) (*node, error) {
 			for _, a := range t.Attr {
 				n.attrs[strings.ToLower(a.Name.Local)] = a.Value
 			}
-			// 内联 style 属性（style="fill:red;...")优先级高于 presentation 属性，
-			// 解析后覆盖同名属性。
+			// 内联 style 属性（style="fill:red;...")优先级最高，单独保存，
+			// 在 resolve 的 applyCSS 阶段最后覆盖 presentation 属性与 CSS 规则。
 			if style := n.attrs["style"]; style != "" {
-				for k, v := range parseStyle(style) {
-					n.attrs[k] = v
-				}
+				n.inlineStyle = parseStyle(style)
 			}
 			if len(stack) == 0 {
 				if root != nil {
@@ -122,6 +122,10 @@ func (d *Document) resolve() error {
 				if id := c.attr("id"); id != "" {
 					d.grads[id] = c
 				}
+			case "style":
+				if c.content != "" {
+					d.cssRules = append(d.cssRules, parseCSS(c.content)...)
+				}
 			case "defs":
 				d.indexDefs(c)
 			default:
@@ -136,6 +140,10 @@ func (d *Document) resolve() error {
 		}
 	}
 	walk(d.root)
+
+	// CSS 级联：把 <style> 规则与内联 style 合并进元素 attrs。
+	d.applyCSS()
+
 	return nil
 }
 
