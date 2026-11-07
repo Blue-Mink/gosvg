@@ -71,6 +71,9 @@ func RenderTo(data []byte, width, height int) (*image.NRGBA, error) {
 // RenderWithOptions 用 ctx 与 opts 渲染 SVG。ctx 取消时返回 ctx.Err()；
 // opts 为零值时等价于默认选项。旧的 Render / RenderTo 内部转调本函数，行为不变。
 func RenderWithOptions(ctx context.Context, data []byte, width, height int, opts RenderOptions) (*image.NRGBA, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	if err := validateSize(width, height, opts); err != nil {
 		return nil, err
 	}
@@ -109,9 +112,11 @@ type Document struct {
 	par      preserveAspect // preserveAspectRatio 解析结果
 	cssRules []cssRule      // <style> 元素解析出的 CSS 规则
 
-	diagMu   sync.Mutex      // 保护下面两个诊断字段
-	diagSeen map[string]bool // 跳过事件去重
-	diags    []string        // 渲染期跳过事件（累计）
+	diagMu    sync.Mutex      // 保护下面所有诊断字段
+	diagSeen  map[string]bool // 累计去重
+	diags     []string        // 渲染期跳过事件（累计）
+	lastSeen  map[string]bool // 最近一次渲染去重
+	lastDiags []string        // 最近一次渲染的跳过事件
 }
 
 // Render 把文档渲染成 width×height 的 NRGBA 位图（默认选项）。
@@ -121,6 +126,9 @@ func (d *Document) Render(width, height int) (*image.NRGBA, error) {
 
 // RenderWithOptions 用 ctx 与 opts 渲染已解析的文档，可对不同尺寸多次调用。
 func (d *Document) RenderWithOptions(ctx context.Context, width, height int, opts RenderOptions) (*image.NRGBA, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	if err := validateSize(width, height, opts); err != nil {
 		return nil, err
 	}
@@ -131,6 +139,7 @@ func (d *Document) RenderWithOptions(ctx context.Context, width, height int, opt
 }
 
 func (d *Document) render(ctx context.Context, width, height int, opts RenderOptions) (*image.NRGBA, error) {
+	d.resetLastDiagnostics()
 	rctx := newRenderContext(width, height, d)
 	rctx.ctx = ctx
 	rctx.opts = opts
@@ -154,17 +163,32 @@ func (d *Document) addDiagnostic(s string) {
 	if d.diagSeen == nil {
 		d.diagSeen = map[string]bool{}
 	}
-	if d.diagSeen[s] {
-		return
+	if !d.diagSeen[s] {
+		d.diagSeen[s] = true
+		d.diags = append(d.diags, s)
 	}
-	d.diagSeen[s] = true
-	d.diags = append(d.diags, s)
+	if d.lastSeen == nil {
+		d.lastSeen = map[string]bool{}
+	}
+	if !d.lastSeen[s] {
+		d.lastSeen[s] = true
+		d.lastDiags = append(d.lastDiags, s)
+	}
+}
+
+// resetLastDiagnostics 在每次 Render 开头清空「最近一次渲染」的诊断。
+func (d *Document) resetLastDiagnostics() {
+	d.diagMu.Lock()
+	defer d.diagMu.Unlock()
+	d.lastSeen = nil
+	d.lastDiags = nil
 }
 
 // Diagnostics 返回本 Document 渲染过程中遇到的跳过事件（按文本去重）。
 // 这是只读观察通道，不改变渲染结果；事件为累计值，多次 Render 不清空。
 // 覆盖主要跳过点（未识别元素、image/mask/clip/use/marker/gradient 引用缺失、
-// 嵌套超限），并非穷尽所有静默分支。
+// 嵌套超限），并非穷尽所有静默分支。若只需最近一次渲染的事件，见
+// LastRenderDiagnostics()。
 func (d *Document) Diagnostics() []string {
 	d.diagMu.Lock()
 	defer d.diagMu.Unlock()
@@ -192,3 +216,13 @@ func clearGhostRGB(img *image.NRGBA) {
 type UnsupportedError struct{ Feature string }
 
 func (e *UnsupportedError) Error() string { return "gosvg: unsupported " + e.Feature }
+
+// LastRenderDiagnostics 返回最近一次 Render 的跳过事件（每次渲染开头重置）。
+// 与累计的 Diagnostics() 互补：复用 Document 多次渲染时用它区分「这一次」。
+func (d *Document) LastRenderDiagnostics() []string {
+	d.diagMu.Lock()
+	defer d.diagMu.Unlock()
+	out := make([]string, len(d.lastDiags))
+	copy(out, d.lastDiags)
+	return out
+}

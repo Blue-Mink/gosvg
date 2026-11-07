@@ -144,8 +144,10 @@ func (ctx *renderContext) renderNodeBare(n *node, opacity float64) error {
 	case "circle", "ellipse", "rect", "line", "path", "polygon", "polyline":
 		ctx.renderShape(n, nodeOpacity)
 	default:
-		// 超出子集的元素静默跳过，但留下可观察的诊断。
-		ctx.doc.addDiagnostic("unsupported element skipped: " + n.name)
+		// 无害的元数据元素不记诊断（合法 SVG，只是不参与渲染）。
+		if !isMetadataElement(n.name) {
+			ctx.doc.addDiagnostic("unsupported element skipped: " + n.name)
+		}
 	}
 
 	ctx.matrix = savedM
@@ -347,4 +349,14 @@ func (ctx *renderContext) strokeColor(p rasterx.Path, clr interface{}, width flo
 	// 用户空间 offset：halfWidth 传用户半宽 width/2，tol 换算到用户单位。
 	strokeCapsules(ctx.img, p, ctx.matrix, width/2, clr, 0.01/scale, linecap, linejoin, miterLimit, dasharray, dashoffset)
 	return
+}
+
+// isMetadataElement 返回不参与渲染、但完全合法的 SVG 元数据元素名。
+// 这些元素被静默忽略属于正常行为，不应作为「不支持」诊断报给调用方。
+func isMetadataElement(name string) bool {
+	switch name {
+	case "title", "desc", "metadata", "namedview":
+		return true
+	}
+	return false
 }

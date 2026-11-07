@@ -95,7 +95,13 @@ func (ctx *renderContext) renderMaskImage(maskNode, targetNode *node, w, h int) 
 	}
 	sub.dasher = newDasherFor(img)
 	for _, c := range maskNode.children {
-		_ = sub.renderNodeBare(c, 1.0)
+		if err := sub.renderNodeBare(c, 1.0); err != nil && ctx.err == nil {
+			ctx.err = err
+			break
+		}
+	}
+	if sub.err != nil && ctx.err == nil {
+		ctx.err = sub.err
 	}
 
 	// mask 区域裁剪（maskUnits）：显式声明了 x/y/width/height 时，区域外亮度归零。
@@ -220,7 +226,12 @@ func (ctx *renderContext) renderSubimage(n *node, opacity float64, w, h int) *im
 		err:     ctx.err,
 	}
 	sub.dasher = newDasherFor(img)
-	_ = sub.renderNodeBare(n, opacity)
+	if err := sub.renderNodeBare(n, opacity); err != nil && ctx.err == nil {
+		ctx.err = err
+	}
+	if sub.err != nil && ctx.err == nil {
+		ctx.err = sub.err
+	}
 	return img
 }
 
