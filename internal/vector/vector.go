@@ -105,6 +105,12 @@ type Rasterizer struct {
 	// The zero value is draw.Over.
 	DrawOp draw.Op
 
+	// UseEvenOdd selects the even-odd winding rule for the next Draw.
+	// When false (the zero value), the non-zero winding rule is used.
+	// The even-odd path bypasses the SIMD accumulate kernels (which only
+	// implement non-zero winding).
+	UseEvenOdd bool
+
 	// TODO: an exported field equivalent to the mask point in the
 	// draw.DrawMask function in the stdlib image/draw package?
 }
@@ -269,7 +275,7 @@ func (z *Rasterizer) Draw(dst draw.Image, r image.Rectangle, src image.Image, sp
 	// TODO: adjust r and sp (and mp?) if src.Bounds() doesn't contain
 	// r.Add(sp.Sub(r.Min)).
 
-	if src, ok := src.(*image.Uniform); ok {
+	if src, ok := src.(*image.Uniform); ok && !z.UseEvenOdd {
 		srcR, srcG, srcB, srcA := src.RGBA()
 		switch dst := dst.(type) {
 		case *image.Alpha:
@@ -306,13 +312,17 @@ func (z *Rasterizer) accumulateMask() {
 		} else {
 			z.bufU32 = z.bufU32[:n]
 		}
-		if haveAccumulateSIMD {
+		if z.UseEvenOdd {
+			floatingAccumulateMaskEvenOdd(z.bufU32, z.bufF32)
+		} else if haveAccumulateSIMD {
 			floatingAccumulateMaskSIMD(z.bufU32, z.bufF32)
 		} else {
 			floatingAccumulateMask(z.bufU32, z.bufF32)
 		}
 	} else {
-		if haveAccumulateSIMD {
+		if z.UseEvenOdd {
+			fixedAccumulateMaskEvenOdd(z.bufU32)
+		} else if haveAccumulateSIMD {
 			fixedAccumulateMaskSIMD(z.bufU32)
 		} else {
 			fixedAccumulateMask(z.bufU32)

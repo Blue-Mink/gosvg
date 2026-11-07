@@ -314,3 +314,31 @@ func fixedAccumulateMask(buf []uint32) {
 		buf[i] = uint32(a)
 	}
 }
+
+// fixedAccumulateMaskEvenOdd is the even-odd winding counterpart of
+// fixedAccumulateMask. The winding unit is fxOne² (=2^(2ϕ)); a pixel is
+// filled iff its winding count is odd, with the fractional remainder as
+// coverage.
+func fixedAccumulateMaskEvenOdd(buf []uint32) {
+	acc := int2ϕ(0)
+	unit := int32(fxOne) * int32(fxOne)
+	for i, v := range buf {
+		acc += int2ϕ(v)
+		a := acc
+		if a < 0 {
+			a = -a
+		}
+		ai := int32(a)
+		w := (ai + unit - 1) / unit // ceil(ai / unit)
+		if w&1 == 0 {
+			buf[i] = 0
+			continue
+		}
+		f := ai - (w-1)*unit
+		alpha := f >> (2*ϕ - 16)
+		if alpha > 0xffff {
+			alpha = 0xffff
+		}
+		buf[i] = uint32(alpha)
+	}
+}

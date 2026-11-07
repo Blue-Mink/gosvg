@@ -35,7 +35,6 @@
 //	class 选择器 / <style> 样式表元素
 //	preserveAspectRatio 的非默认值（仅支持 xMidYMid meet）
 //	mask-type="alpha"（仅支持默认 luminance）
-//	fill-rule="evenodd"（底层 vector 光栅器仅支持 non-zero winding，evenodd 降级为 non-zero）
 package gosvg
 
 import (

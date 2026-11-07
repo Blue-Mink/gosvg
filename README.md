@@ -54,7 +54,7 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 **颜色**：`#rgb` / `#rrggbb` / `#rgba` / `#rrggbbaa`、`rgb()` / `rgba()`、`hsl()` / `hsla()`（逗号或空格分隔，含 `/` 分隔 alpha）、SVG/CSS 命名颜色、`none`、`currentColor`。
 
 > [!NOTE]
-> **明确不支持**（命中时静默降级，不报错）：clip-path、tspan、`<style>` 样式表、class 选择器、`preserveAspectRatio` 非默认值、`mask-type="alpha"`、`fill-rule="evenodd"`（底层光栅器仅 non-zero，evenodd 降级为 non-zero）。
+> **明确不支持**（命中时静默降级，不报错）：clip-path、tspan、`<style>` 样式表、class 选择器、`preserveAspectRatio` 非默认值、`mask-type="alpha"`。
 
 ## 工作原理
 

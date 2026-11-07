@@ -69,7 +69,8 @@ func (c *ClipImage) At(x, y int) color.Color {
 
 // SetWinding set the winding rule for the scanner
 func (s *ScannerGV) SetWinding(useNonZeroWinding bool) {
-	// no-op as scanner gv does not support even-odd winding
+	// useNonZeroWinding=false 表示 even-odd（fill-rule="evenodd"）。
+	s.r.UseEvenOdd = !useNonZeroWinding
 }
 
 // SetColor set the color type for the scanner

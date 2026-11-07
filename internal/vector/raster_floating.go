@@ -204,3 +204,34 @@ func floatingAccumulateMask(dst []uint32, src []float32) {
 		dst[i] = uint32(almost65536 * a)
 	}
 }
+
+// floatingAccumulateMaskEvenOdd is the even-odd winding counterpart of
+// floatingAccumulateMask. A pixel is filled iff its winding count is odd;
+// the coverage is the fractional remainder of |winding|.
+func floatingAccumulateMaskEvenOdd(dst []uint32, src []float32) {
+	if len(dst) < len(src) {
+		return
+	}
+	acc := float32(0)
+	for i, v := range src {
+		acc += v
+		a := acc
+		if a < 0 {
+			a = -a
+		}
+		// winding = ceil(a)。
+		w := int32(a)
+		if float32(w) < a {
+			w++
+		}
+		if w&1 == 0 {
+			dst[i] = 0
+			continue
+		}
+		f := a - float32(w-1)
+		if f > 1 {
+			f = 1
+		}
+		dst[i] = uint32(almost65536 * f)
+	}
+}

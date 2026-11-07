@@ -227,3 +227,14 @@
 - 新增 `hslToRGB`/`hueToRGB`/`parseHue`/`parsePercent`/`parseAlpha`。
 - 测试 `color_test.go` 4 项：hsl 六基色+空格/deg、hsla alpha+斜杠、rgb 空格+斜杠、
   渲染链路 hsl 填充。
+
+## fill-rule="evenodd" 真实现（2026-11-07 完成）
+- 根因：`ScannerGV.SetWinding` 是 no-op，`internal/vector`（fork x/image/vector）光栅器
+  仅 non-zero（accumulate 取 |winding| 绝对值）。
+- 修法：`vector.Rasterizer` 加 `UseEvenOdd` 字段；`accumulateMask` 按 even-odd 分支（禁用
+  SIMD，走新增的 `floatingAccumulateMaskEvenOdd` / `fixedAccumulateMaskEvenOdd`）；`Draw`
+  在 even-odd 时跳过 *image.Uniform fast path（否则 SIMD rasterize 绕过 accumulateMask）；
+  `ScannerGV.SetWinding` 真正写 `UseEvenOdd = !useNonZeroWinding`。
+- even-odd 数学：winding 数 = ceil(|acc|/unit)，奇数→填充（alpha=部分覆盖），偶数→透明。
+  unit = fxOne²（fixed）/ 1.0（floating）。
+- 测试 `evenodd_test.go` 4 项：同心矩形镂空、evenodd vs nonzero、winding=3 奇偶、evenodd+gradient。
