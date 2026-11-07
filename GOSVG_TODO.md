@@ -70,6 +70,17 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 > 渲染期跳过事件目前**没有运行时诊断通道**（`UnsupportedError` 仅用于空文档/非正尺寸等
 > 调用方输入错误）。补齐计划见 `GOSVG_GAP_TODO.md`。
 
+## 渲染选项与诊断
+
+- `RenderWithOptions(ctx, data, w, h, opts)` / `Document.RenderWithOptions(...)`：
+  支持 `context` 取消；`RenderOptions{MaxDimension, Background}`。**旧的
+  `Render` / `RenderTo` / `Document.Render` 内部转调新入口，默认行为不变**。
+- `DefaultMaxDimension = 8192`：宽/高超限返回 `UnsupportedError`；
+  `maxNestingDepth = 32` 限制 mask / clipPath 离屏嵌套，防止乘法级位图分配。
+- `Document.Diagnostics() []string`：累计去重的跳过事件（未识别元素、
+  image / mask / clip / use / marker / gradient 引用缺失、嵌套超限）。
+  这是**只读观察通道**，不改变渲染结果；未覆盖全部静默分支，详见 `options.go`。
+
 ## 已知边界
 
 1. **45° 斜线 AA 相位歧义**：`internal/vector`（fork `x/image/vector`，libart 扫描线 AA）

@@ -17,10 +17,13 @@ gosvg 是**库**，接收不可信 SVG 字节并渲染成位图。预期调用�
 - `<use>` / `marker` / `gradient href` / `elementBounds` 有循环与深度上限。
 - 5 个 fuzz 目标（不变量：任意输入不 panic），CI 跑 30 秒冒烟。
 
-**仍需注意**（见 `GOSVG_GAP_TODO.md` 档 2，未实现）：
-- `Render(data, size)` 目前**没有尺寸上限**：超大 `size` 会触发巨量位图分配（OOM/DoS）。
-  服务端接入前请自行限制 `width` / `height`。
-- 嵌套 `mask` / `clipPath` 各分配一份全尺寸 NRGBA，多层叠加为乘法级内存。
+**已实现的输入边界**：
+- `Render(data, size)` 有尺寸上限 `DefaultMaxDimension = 8192`，超限返回
+  `UnsupportedError`；可通过 `RenderOptions.MaxDimension` 调整（调大请自行评估内存）。
+- `mask` / `clipPath` 离屏渲染有 `maxNestingDepth = 32` 上限；超限时跳过该层
+  mask/clip 并记入 `Document.Diagnostics()`。
+
+**仍需注意**（见 `GOSVG_GAP_TODO.md`）：
 - `ImageDecoder` 由调用方注入；若回调抓取远程 URL，库侧无超时/大小限制，请在回调里自行约束。
 - `ImageDecoder` 是包级变量，**并发写不安全**；应在渲染前设置一次，之后只读。
 - `tspan` 嵌套、`g` 深嵌套、CSS 规则链、mask↔clip 互引暂无深度上限。
