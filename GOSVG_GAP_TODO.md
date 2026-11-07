@@ -104,3 +104,18 @@
 - 修 Gitea SQLite 锁（上轮方案 B：降频刷库的 Actions workflow）
 - 注册 act_runner（当前环境无二进制、GitHub 出站不通，需你提供/授权）
 - 档 2 判为「保持子集边界」的 H-A 七项，想要哪个单独点名
+
+## 本轮（分支 `feat/display-and-polish`）
+
+按「优化完善盘点」的建议顺序推进：
+
+- **P0** `display` / `visibility` 正确性缺口已修（此前实证 256 像素误绘）。
+- **P1** 默认解码 / 逐渲染 `ImageDecoder` / 错误类型化 / 字体枚举与 Reset 已实现。
+- **P3/P4** 性能基线（`BENCHMARK.md`）与覆盖率门槛（`verify.sh`）已落地。
+  实测修正了上一轮的判断：`Parse` 仅 3.5 µs、复用 `Document` 无实质收益，
+  「解析缓存」不是优化方向；瓶颈在渲染/光栅化（292k allocs、5.37 MB/op）。
+- 本轮**未做**、留待按兴趣点名：输入字节/元素/XML 深度上限、`FuzzRender` 与 corpus 入库、
+  CSS 选择器索引、离屏位图池化、`internal/*` 覆盖率、WASM 编译验证、fnOS FPK 集成、
+  Lucide / circle-flags 真实语料对账。
+- 环境阻塞不变：Gitea Actions runner 仍为 0、GitHub 出站不通，门禁以手动
+  `sh ./scripts/verify.sh` 实跑为准。

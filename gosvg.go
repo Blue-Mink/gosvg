@@ -53,6 +53,7 @@ package gosvg
 
 import (
 	"context"
+	"errors"
 	"image"
 	"sync"
 )
@@ -213,9 +214,33 @@ func clearGhostRGB(img *image.NRGBA) {
 // UnsupportedError 表示调用方传入了本库无法处理的输入（空文档、非正尺寸等）。
 // 注意：超出子集的 SVG 特性不会返回本错误，而是静默跳过（见包注释「明确不支持」）；
 // 这些跳过目前没有运行时诊断通道，详见 GOSVG_GAP_TODO.md。
-type UnsupportedError struct{ Feature string }
+// ErrorCode 是 UnsupportedError 的机器可读分类。
+type ErrorCode string
+
+const (
+	CodeEmptyDocument     ErrorCode = "empty_document"
+	CodeNonPositiveSize   ErrorCode = "non_positive_size"
+	CodeDimensionExceeded ErrorCode = "dimension_exceeded"
+)
+
+// 哨兵错误，供 errors.Is / errors.As 判断。
+var (
+	ErrEmptyDocument     = errors.New("gosvg: empty document")
+	ErrNonPositiveSize   = errors.New("gosvg: non-positive size")
+	ErrDimensionExceeded = errors.New("gosvg: dimension exceeded")
+)
+
+// UnsupportedError 表示调用方传入了本库无法处理的输入（空文档、非正尺寸、尺寸超限）。
+// Code 供程序判断，Err 供 errors.Is，Feature 保留人类可读文本（向后兼容）。
+// 注意：超出子集的 SVG 特性不会返回本错误，而是静默跳过（见包注释「明确不支持」）。
+type UnsupportedError struct {
+	Feature string
+	Code    ErrorCode
+	Err     error
+}
 
 func (e *UnsupportedError) Error() string { return "gosvg: unsupported " + e.Feature }
+func (e *UnsupportedError) Unwrap() error { return e.Err }
 
 // LastRenderDiagnostics 返回最近一次 Render 的跳过事件（每次渲染开头重置）。
 // 与累计的 Diagnostics() 互补：复用 Document 多次渲染时用它区分「这一次」。

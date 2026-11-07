@@ -22,6 +22,9 @@ type RenderOptions struct {
 	MaxDimension int
 	// Background 非 nil 时先填充该颜色作为底色；nil 保持透明底（默认）。
 	Background color.Color
+	// ImageDecoder 是本次渲染专用的 <image> 解码器；nil 时回退到包级 ImageDecoder。
+	// 放进选项可避免全局状态（见 DefaultImageDecoder）。
+	ImageDecoder func(string) (image.Image, error)
 }
 
 // DefaultRenderOptions 返回默认选项：透明底、DefaultMaxDimension 尺寸上限。
@@ -38,10 +41,14 @@ func (o RenderOptions) maxDim() int {
 
 func validateSize(w, h int, o RenderOptions) error {
 	if w <= 0 || h <= 0 {
-		return &UnsupportedError{"non-positive size"}
+		return &UnsupportedError{Feature: "non-positive size", Code: CodeNonPositiveSize, Err: ErrNonPositiveSize}
 	}
 	if m := o.maxDim(); w > m || h > m {
-		return &UnsupportedError{fmt.Sprintf("size %dx%d exceeds MaxDimension %d", w, h, m)}
+		return &UnsupportedError{
+			Feature: fmt.Sprintf("size %dx%d exceeds MaxDimension %d", w, h, m),
+			Code:    CodeDimensionExceeded,
+			Err:     ErrDimensionExceeded,
+		}
 	}
 	return nil
 }

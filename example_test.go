@@ -52,3 +52,27 @@ func BenchmarkRender(b *testing.B) {
 		}
 	}
 }
+
+func BenchmarkParse(b *testing.B) {
+	data := []byte(`<svg viewBox="0 0 24 24"><path fill="none" stroke="#000" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>`)
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		if _, err := gosvg.Parse(data); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+func BenchmarkRenderDocument(b *testing.B) {
+	data := []byte(`<svg viewBox="0 0 24 24"><path fill="none" stroke="#000" stroke-width="2" d="M5 12h14M12 5l7 7-7 7"/></svg>`)
+	doc, err := gosvg.Parse(data)
+	if err != nil {
+		b.Fatal(err)
+	}
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		if _, err := doc.Render(512, 512); err != nil {
+			b.Fatal(err)
+		}
+	}
+}

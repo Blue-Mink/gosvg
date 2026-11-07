@@ -85,6 +85,16 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
   `gosvg.go` / `render.go` / `image.go`。
 - `RenderWithOptions` 的 `ctx` 传 nil 时自动回退 `context.Background()`，不会 panic；
   mask / clip 离屏渲染中的取消也会回传为错误。
+- **`display` / `visibility`**：`display:none` 跳过整棵子树；`visibility` 是继承属性，
+  `hidden` / `collapse` 跳过本节点绘制、子元素可显式 `visible` 覆盖。
+  presentation 属性、CSS 规则、内联 `style` 三条路径都生效。
+- **`<image>` 解码**：`DefaultImageDecoder()` 用标准库 PNG/JPEG/GIF 解码 `data:` URI 与
+  本地路径（零外部依赖）；`RenderOptions.ImageDecoder` 支持逐渲染注入，
+  优先级高于包级 `ImageDecoder`。两者都为 nil 时仍静默跳过，**默认行为不变**。
+- **错误分类**：`UnsupportedError` 带 `Code`（`ErrorCode`）与 `Err`，
+  提供 `ErrEmptyDocument` / `ErrNonPositiveSize` / `ErrDimensionExceeded` 供 `errors.Is`。
+- **字体**：`RegisteredFonts()` 返回已注册字体族（排序副本）；`ResetFonts()` 清空注册，
+  供测试隔离。
 
 ## 已知边界
 
@@ -101,7 +111,10 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ## 质量基线
 
 ```sh
+sh ./scripts/verify.sh                         # 全套门禁（含覆盖率与 benchmark 冒烟）
 go test ./...                                  # 单元 + 回归 + golden 哈希
+go test -count=1 -cover ./...                  # 覆盖率（根包当前 85.5%）
+go test -run '^$' -bench . -benchmem -benchtime 2s .   # 性能基线，见 BENCHMARK.md
 go test -race ./...                           # 并发检查
 go vet ./...                                  # 静态检查
 gofmt -l .                                    # 空输出 = 通过

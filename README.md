@@ -58,12 +58,17 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 | `(*Document).RenderWithOptions(ctx, w, h, opts)` | 已解析文档带选项渲染 |
 | `(*Document).Diagnostics() []string` | 渲染期跳过事件（去重、累计），用于排查「少了一块」 |
 | `(*Document).LastRenderDiagnostics() []string` | 最近一次渲染的跳过事件（每次渲染重置） |
+| `DefaultImageDecoder()` | 零外部依赖的默认 `<image>` 解码器（标准库 PNG/JPEG/GIF + data URI） |
+| `RenderOptions.ImageDecoder` | 逐渲染注入解码器，避免包级全局状态 |
+| `RegisteredFonts() []string` | 已注册系统字体族（排序后的副本） |
+| `ResetFonts()` | 清空 `AddFontDir` 注册，用于测试隔离 |
+| `ErrorCode` / `ErrEmptyDocument` 等 | `UnsupportedError` 的机器可读分类与 `errors.Is` 哨兵 |
 
 ## 特性
 
 **元素**：`svg` / `g` / `defs` / `use` / `linearGradient` / `radialGradient` / `stop` / `clipPath` / `circle` / `ellipse` / `rect` / `line` / `path` / `polygon` / `polyline` / `text` / `tspan` / `mask` / `marker` / `image` / `style`
 
-**属性**：`viewBox` / `preserveAspectRatio` / `transform` / `fill` / `fill-rule` / `fill-opacity` / `stroke` / `stroke-width` / `stroke-linecap` / `stroke-linejoin` / `stroke-miterlimit` / `stroke-dasharray` / `stroke-dashoffset` / `stroke-opacity` / `opacity` / `gradientUnits` / `gradientTransform` / `spreadMethod` / `offset` / `stop-color` / `stop-opacity` / `mask` / `maskUnits` / `maskContentUnits` / `clip-path` / `clipPathUnits` / `marker-start` / `marker-mid` / `marker-end` / `markerUnits` / `markerWidth` / `markerHeight` / `refX` / `refY` / `orient` / `font-size` / `font-family` / `font-weight` / `font-style` / `text-anchor` / `dominant-baseline` / `x` / `y` / `dx` / `dy` / `color` / `currentColor` / `id` / `class` / 内联 `style`
+**属性**：`viewBox` / `preserveAspectRatio` / `transform` / `fill` / `fill-rule` / `fill-opacity` / `stroke` / `stroke-width` / `stroke-linecap` / `stroke-linejoin` / `stroke-miterlimit` / `stroke-dasharray` / `stroke-dashoffset` / `stroke-opacity` / `opacity` / `gradientUnits` / `gradientTransform` / `spreadMethod` / `offset` / `stop-color` / `stop-opacity` / `mask` / `maskUnits` / `maskContentUnits` / `clip-path` / `clipPathUnits` / `marker-start` / `marker-mid` / `marker-end` / `markerUnits` / `markerWidth` / `markerHeight` / `refX` / `refY` / `orient` / `font-size` / `font-family` / `font-weight` / `font-style` / `text-anchor` / `dominant-baseline` / `x` / `y` / `dx` / `dy` / `color` / `currentColor` / `id` / `class` / `display` / `visibility` / 内联 `style`
 
 **CSS**：支持 `<style>` 样式表元素与 class/id/类型选择器（含 `tag.class#id` 组合与逗号分隔），按 CSS 特异性级联；优先级 presentation 属性 < CSS 规则 < 内联 `style`。
 
@@ -155,6 +160,7 @@ testdata/           对账测试样例
 ## 开发
 
 ```sh
+sh ./scripts/verify.sh   # 全套（fmt/vet/test/race/arm64/cover/bench/fuzz）
 go test ./...      # 单元 + 回归 + golden 像素哈希基线
 go test -race ./...
 go vet ./...
@@ -165,6 +171,13 @@ go test -run TestGoldenRegression -update .   # 有意改动渲染输出后重�
 
 若 `proxy.golang.org` 不通，用 `GOPROXY=https://goproxy.cn,direct`。
 更多见 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [GOSVG_TODO.md](GOSVG_TODO.md)。
+
+## 性能
+
+`BenchmarkRender`（512×512，Lucide 线条图标）在 .15 / Go 1.27.3 / Ryzen 7 5825U 上实测
+约 **8.9 ms/op**（同机多次 8.9–11.2 ms）、**5.37 MB/op**、**292,168 allocs/op**。
+`Parse` 仅约 3.5 µs，复用 `Document` 收益可忽略；数字与机器强相关，仅作同一台机器上的
+相对基线，详见 [BENCHMARK.md](BENCHMARK.md)。
 
 ## 📄 许可证
 

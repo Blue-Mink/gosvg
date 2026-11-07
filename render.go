@@ -24,6 +24,7 @@ type renderContext struct {
 	opts    RenderOptions   // 本次渲染选项
 	nesting int             // 离屏（mask/clip）嵌套层数
 	err     error           // 首个取消错误，供所有递归分支快速返回
+	visible bool            // CSS visibility 的继承状态（默认 true）
 }
 
 func newRenderContext(width, height int, d *Document) *renderContext {
@@ -31,13 +32,14 @@ func newRenderContext(width, height int, d *Document) *renderContext {
 	scanner := rasterx.NewScannerGV(width, height, img, img.Bounds())
 	dasher := rasterx.NewDasher(width, height, scanner)
 	ctx := &renderContext{
-		img:    img,
-		dasher: dasher,
-		doc:    d,
-		matrix: rasterx.Identity,
-		style:  defaultShapeStyle(),
-		ctx:    context.Background(),
-		opts:   DefaultRenderOptions(),
+		img:     img,
+		dasher:  dasher,
+		doc:     d,
+		matrix:  rasterx.Identity,
+		style:   defaultShapeStyle(),
+		ctx:     context.Background(),
+		opts:    DefaultRenderOptions(),
+		visible: true,
 	}
 	ctx.matrix = ctx.viewBoxMatrix(width, height)
 	return ctx
@@ -93,6 +95,10 @@ func (ctx *renderContext) renderNode(n *node, opacity float64) error {
 			return err
 		}
 	}
+	// CSS display:none 跳过整棵子树（含子元素），不产生任何绘制。
+	if strings.EqualFold(n.attr("display"), "none") {
+		return nil
+	}
 	// clip-path 处理：带 clip 引用的元素，离屏渲染 + 形状 alpha 裁剪。
 	if id := clipPathRef(n.attr("clip-path")); id != "" && n.name != "clippath" {
 		ctx.renderClipped(n, id, opacity)
@@ -110,6 +116,22 @@ func (ctx *renderContext) renderNode(n *node, opacity float64) error {
 // transform / opacity / 样式继承对所有可渲染元素统一生效（含基本形状、text、use），
 // 而非仅 svg/g——否则 <rect transform=... opacity=.../> 这类元素级属性会被忽略。
 func (ctx *renderContext) renderNodeBare(n *node, opacity float64) error {
+	// display:none 跳过整棵子树（renderNode 已挡一层，这里兜住直接调用方）。
+	if strings.EqualFold(n.attr("display"), "none") {
+		return nil
+	}
+	// visibility 是继承属性：hidden 只跳过本节点绘制，子元素可显式 visible 覆盖。
+	vis := ctx.visible
+	switch strings.ToLower(n.attr("visibility")) {
+	case "hidden", "collapse":
+		vis = false
+	case "visible":
+		vis = true
+	}
+	savedVis := ctx.visible
+	ctx.visible = vis
+	defer func() { ctx.visible = savedVis }()
+
 	savedM := ctx.matrix
 	savedStyle := ctx.style
 
@@ -136,13 +158,21 @@ func (ctx *renderContext) renderNodeBare(n *node, opacity float64) error {
 	case "defs", "mask", "clippath", "lineargradient", "radialgradient", "marker", "style":
 		// 定义类元素不直接渲染。
 	case "use":
-		ctx.renderUse(n, nodeOpacity)
+		if ctx.visible {
+			ctx.renderUse(n, nodeOpacity)
+		}
 	case "image":
-		ctx.renderImage(n)
+		if ctx.visible {
+			ctx.renderImage(n)
+		}
 	case "text":
-		ctx.renderText(n, nodeOpacity)
+		if ctx.visible {
+			ctx.renderText(n, nodeOpacity)
+		}
 	case "circle", "ellipse", "rect", "line", "path", "polygon", "polyline":
-		ctx.renderShape(n, nodeOpacity)
+		if ctx.visible {
+			ctx.renderShape(n, nodeOpacity)
+		}
 	default:
 		// 无害的元数据元素不记诊断（合法 SVG，只是不参与渲染）。
 		if !isMetadataElement(n.name) {

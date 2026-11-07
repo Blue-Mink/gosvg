@@ -7,13 +7,18 @@ import (
 )
 
 // ImageDecoder 解码 <image> 元素的 href（data: URI、URL、路径等）为位图。
-// 库本身不内置 PNG/JPEG 解码（保持零依赖），由调用方注入；未注入时
-// <image> 元素静默跳过。应在渲染前设置一次，不要并发修改。
+// 由调用方注入；未注入且 RenderOptions.ImageDecoder 也为 nil 时 <image> 静默跳过。
+// 这是包级变量，应在渲染前设置一次、不要并发修改；更推荐用
+// RenderOptions.ImageDecoder 或 DefaultImageDecoder() 做逐渲染注入。
 var ImageDecoder func(href string) (image.Image, error)
 
 // renderImage 渲染 <image> 元素：解码位图并缩放到 x/y/width/height 矩形。
 func (ctx *renderContext) renderImage(n *node) {
-	if ImageDecoder == nil {
+	dec := ctx.opts.ImageDecoder
+	if dec == nil {
+		dec = ImageDecoder
+	}
+	if dec == nil {
 		ctx.doc.addDiagnostic("<image> skipped: ImageDecoder not set")
 		return
 	}
@@ -25,7 +30,7 @@ func (ctx *renderContext) renderImage(n *node) {
 		ctx.doc.addDiagnostic("<image> skipped: empty href")
 		return
 	}
-	src, err := ImageDecoder(href)
+	src, err := dec(href)
 	if err != nil || src == nil {
 		ctx.doc.addDiagnostic("<image> skipped: decoder failed")
 		return
