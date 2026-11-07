@@ -4,25 +4,34 @@
 覆盖 circle-flags 国旗(mask)、Lucide 图标(path+stroke)、年代唱片(text) 这类实际场景。
 
 ## 支持范围（明确子集，不做完整 SVG）
-元素：svg / g / defs / use / circle / ellipse / rect / line / path / polygon / polyline / text / mask
+元素：svg / g / defs / use / circle / ellipse / rect / line / path / polygon / polyline /
+      text / tspan / mask / clipPath / linearGradient / radialGradient / stop
 属性：viewBox / transform / fill / fill-rule / fill-opacity / stroke / stroke-width /
-      stroke-linecap / stroke-linejoin / stroke-dasharray / stroke-dashoffset /
-      stroke-opacity / opacity / font-size / text-anchor / dominant-baseline / id / mask(url)
+      stroke-linecap / stroke-linejoin / stroke-miterlimit / stroke-dasharray / stroke-dashoffset /
+      stroke-opacity / opacity / gradientUnits / gradientTransform / spreadMethod / offset /
+      stop-color / stop-opacity / mask / maskUnits / maskContentUnits / clip-path / clipPathUnits /
+      font-size / font-family / font-weight / font-style / text-anchor / dominant-baseline /
+      x / y / dx / dy / color / currentColor / id / 内联 style
+颜色：hex(3/4/6/8) / rgb()/rgba() / hsl()/hsla() / 命名颜色 / none / currentColor
 
 ## 底层
-- golang.org/x/image/vector : path fill/stroke 光栅化（AA）
+- golang.org/x/image/vector : path fill/stroke 光栅化（AA，已扩展 even-odd winding）
 - golang.org/x/image/font + gofont/goregular + opentype : text 渲染
 - encoding/xml : SVG 解析
 
 ## 进度
 - [x] 项目骨架 + go.mod + 依赖（rasterx + x/image v0.47）
-- [x] XML 解析 → 元素树（含 mask/gradient 索引，支持 mask 直接放 svg 下）
+- [x] XML 解析 → 元素树（含 mask/gradient/clipPath 索引，支持 defs 直挂 svg 下）
 - [x] path `d` 解析 → vector path（全指令 M/L/H/V/C/Q/S/T/A/Z）
 - [x] 基本形状渲染（circle/ellipse/rect/line/polygon/polyline）
 - [x] fill/stroke/opacity 样式 + **样式继承**（svg/g → 子元素）
 - [x] transform + viewBox（xMidYMid meet）
-- [x] mask 合成（luminance mask，alpha 加权）
+- [x] mask 合成（luminance mask，alpha 加权；maskUnits/maskContentUnits/transform）
+- [x] clip-path（形状 alpha 裁剪；clipPathUnits/transform/区域/多子元素 union）
+- [x] fill-rule="evenodd" 真实现（vector 光栅器补 even-odd winding）
+- [x] gradient（linear/radial + units/transform/spread/stop/href 继承，fill 与 stroke 均支持）
 - [x] text 渲染（goregular + opentype，anchor/baseline）
+- [x] tspan（text 内嵌片段，嵌套/定位/样式覆盖）
 - [x] defs/use 引用
 - [x] 与 cairosvg 对账（IoU + alphaAAD）
 - [x] **B 方案：自研胶囊体并集 stroke（cairo 级质量，2026-11-07 完成）**
