@@ -11,12 +11,13 @@ import (
 
 // renderContext 是单次渲染的上下文，持有目标图像、光栅化器和累积的变换/透明度。
 type renderContext struct {
-	img      *image.NRGBA
-	dasher   *rasterx.Dasher
-	doc      *Document
-	matrix   rasterx.Matrix2D
-	style    shapeStyle // 继承的表现样式（fill/stroke 等）
-	useDepth int        // <use> 嵌套深度（防循环引用栈溢出）
+	img         *image.NRGBA
+	dasher      *rasterx.Dasher
+	doc         *Document
+	matrix      rasterx.Matrix2D
+	style       shapeStyle // 继承的表现样式（fill/stroke 等）
+	useDepth    int        // <use> 嵌套深度（防循环引用栈溢出）
+	markerDepth int        // marker 嵌套深度（防 marker 循环引用栈溢出）
 }
 
 func newRenderContext(width, height int, d *Document) *renderContext {
@@ -134,6 +135,9 @@ func (ctx *renderContext) renderNodeBare(n *node, opacity float64) error {
 
 // maxUseDepth 是 <use> 引用的最大嵌套深度，用于防止循环引用导致栈溢出。
 const maxUseDepth = 100
+
+// maxMarkerDepth 是 marker 引用的最大嵌套深度，用于防止 marker 循环引用导致栈溢出。
+const maxMarkerDepth = 100
 
 // renderUse 处理 <use href="#id"> 引用。
 func (ctx *renderContext) renderUse(n *node, opacity float64) {

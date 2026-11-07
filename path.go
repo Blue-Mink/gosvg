@@ -35,7 +35,15 @@ func parsePathData(d string) rasterx.Path {
 			// 开头没有指令，跳过
 			continue
 		} else {
-			// 数字，复用上一个指令
+			// 数字复用上一指令；但无参数指令（Z/z 或未知字母）后不应跟数字，
+			// 否则下方 i-- 回退后 takeArgs(n=0) 不推进 i，形成死循环。
+			cc0 := lastCmd
+			if cc0 >= 'a' && cc0 <= 'z' {
+				cc0 = cc0 - 'a' + 'A'
+			}
+			if argCount(cc0) == 0 {
+				continue
+			}
 			i--
 		}
 

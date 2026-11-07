@@ -56,6 +56,14 @@ func (ctx *renderContext) renderMarkers(n *node, p rasterx.Path, strokeWidth flo
 
 // renderMarker 渲染单个 marker 到 (px,py)（像素坐标），沿 angle 方向对齐。
 func (ctx *renderContext) renderMarker(ref string, px, py, angle, strokeWidth, opacity float64) {
+	// marker 循环引用（marker 内 path 又引用同一 marker）会无限递归，
+	// 用嵌套深度上限截断。
+	if ctx.markerDepth >= maxMarkerDepth {
+		return
+	}
+	ctx.markerDepth++
+	defer func() { ctx.markerDepth-- }()
+
 	m := ctx.doc.defs[ref]
 	if m == nil || m.name != "marker" {
 		return
