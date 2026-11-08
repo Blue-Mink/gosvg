@@ -32,7 +32,8 @@ gosvg 是**库**，接收不可信 SVG 字节并渲染成位图。预期调用�
 - XML 嵌套深度受 `MaxXMLDepth = 256` 限制（含 `tspan` / `g` 嵌套）；SVG 字节数受
   `MaxSVGSize`（8 MiB）、元素总数受 `MaxElementCount`（10 万）限制，超限返回对应 `Err*`。
   mask↔clip 离屏嵌套受 `maxNestingDepth = 32` 限制。
-  **仍未限制**：CSS 规则条数与单条规则长度。
+  `<style>` 的 CSS 解析也有规模上限：`MaxCSSRules = 10000`、`MaxCSSSelectorLen = 512`、
+  `MaxCSSDeclLen = 4096`；超限内容被丢弃（不是让整个渲染失败），并记入 `Diagnostics()`。
 - 带 `encoding="ISO-8859-1"` 等非 UTF-8 声明的 SVG 会被 `encoding/xml` 拒绝。
 
 ## 已知边界（非漏洞）

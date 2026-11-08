@@ -71,3 +71,12 @@
 - **`verify.sh` 新增 WASM 编译门禁**（`GOOS=js GOARCH=wasm go build ./...`）
 - 清理 `gosvg.go` 里一段挂在 `ErrorCode` 上、内容已过时的孤立注释
 - `BENCHMARK.md` 记录 pprof 分配热点，并据此明确不做 CSS 索引 / 解析缓存 / 离屏池化的理由
+
+### 分支 `feat/limits-and-coverage`
+- **CSS 解析规模上限**：`MaxCSSRules` / `MaxCSSSelectorLen` / `MaxCSSDeclLen`；
+  超限为降级（丢弃 + 诊断）而非硬失败，新增 `parseCSSLimited`（`parseCSS` 保持原签名兼容）
+- **并发用例**：`TestConcurrentRenderSameDocument` / `TestConcurrentParseAndRender`，
+  配合 `-race` 验证同一 `Document` 可并发渲染、诊断字段锁保护有效
+- **`cmd/verify` 覆盖率 0% → 62.3%**：重构为 `parseArgs` / `run` / `writePNG`，6 项测试
+- **`internal/rasterx` 覆盖率 0% → 3.9%**：新增 `Matrix2D` 的 8 项测试
+  （Identity / Mult / Translate / Invert 往返 / TransformVector / TFixed / SkewX / SkewY）

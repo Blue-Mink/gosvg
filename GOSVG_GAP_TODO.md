@@ -131,3 +131,13 @@
   经数据判定为无收益或与基线无关，**明确不做**，理由写在 `BENCHMARK.md`。
 - 仍未做（需要外部条件或点名）：fnOS FPK 集成、Lucide / circle-flags 真实语料对账、
   CI runner 安装、`cmd/verify` 与 `examples/*` 覆盖率、`internal/rasterx` 覆盖率。
+
+## 本轮（分支 `feat/limits-and-coverage`）
+
+- **CSS 规模上限**补齐（此前 `SECURITY.md` 自己标注「仍未限制：CSS 规则条数与单条规则长度」）。
+  选择「降级 + 诊断」而非硬失败，与输入/尺寸上限的区别写进了 `GOSVG_TODO.md`。
+- **并发渲染用例**补齐（此前无并发测试，`Diagnostics` 的锁只有代码审查保证）。
+- **`cmd/verify` 覆盖率 0% → 62.3%**（重构为可测函数）、**`internal/rasterx` 0% → 3.9%**
+  （补 `Matrix2D` 基础性质测试，fork 代码此前零覆盖）；根包 85.7% → 85.8%。
+- 仍未做：`internal/rasterx` 的 `Gradient` / `Filler` / `Dasher` 测试、`examples/*` 覆盖、
+  fnOS FPK 集成、真实语料对账、CI runner 安装（下载源已确认可达，等授权）。
