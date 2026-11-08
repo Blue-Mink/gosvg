@@ -47,10 +47,12 @@
 //	长度：根 <svg> 的 width/height 按 96dpi 换算物理单位；其余长度统一剥离后
 //	    按数值 1:1 近似，不做物理换算，% 不按基准解析
 //	字体：.ttc 集合；未调用 AddFontDir 时 font-family 一律回退 Go Regular
-//	<image>：需调用方注入 ImageDecoder，未注入时静默跳过
+//	<image>：内置 DefaultImageDecoder()（PNG/JPEG/GIF + data URI 与本地路径），
+//	    也可用包级 ImageDecoder / RenderOptions.ImageDecoder 覆盖；两者皆空时静默跳过
 //
-// 完整清单见 GOSVG_TODO.md / README.md。渲染期跳过事件目前没有运行时诊断通道，
-// 见 GOSVG_GAP_TODO.md。
+// 完整清单见 GOSVG_TODO.md / README.md。渲染期跳过事件可通过
+// Document.Diagnostics() / LastRenderDiagnostics() 观察（只读通道，不改变渲染结果）；
+// 尚未覆盖的静默分支见 GOSVG_GAP_TODO.md。
 package gosvg
 
 import (

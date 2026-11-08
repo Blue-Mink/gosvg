@@ -39,7 +39,8 @@
 - 后续改动改走分支 + PR，main 不再直推
 
 > 内网 Gitea 已打 `v0.1.0` annotated tag（PR #1 合并到 main 之后）；
-> Release 与推送外部 Git 仍待办，见 `OPEN_SOURCE_CHECKLIST.md`。
+> Release 已发至 `v0.2.2`（见下方各分支条目）；**仅推送外部 Git 仍待办**，
+> 见 `OPEN_SOURCE_CHECKLIST.md`。
 
 ### 修补（分支 `fix/residual-gaps`）
 - `RenderWithOptions` / `Document.RenderWithOptions` 对 nil ctx 回退 `context.Background()`，不再 panic
@@ -168,3 +169,24 @@
   （bbox 与不透明像素数都近似，IoU 0.70–0.77 已非几何错误）；
   2 个为填充差异（`toolbarButton-editorHighlight` 0.40、`altText_spinner` 0.45）。
   判定为**已定案边界，不值得继续改**，详见 `CAIROSVG_IOU.md`。
+
+### 分支 `fix/viewport-relative-units-and-docs`
+- **修 v0.2.2 新引入的相对单位回归**：`parseViewportLength` 原先把 `width="100em"` 之类的
+  相对单位交给 `parseFloat` 判非法、返回默认 0（视口尺寸归零），与它自己承诺的
+  「相对单位保持 1:1 近似旧行为」相矛盾。改为先剥离后缀再按单位分派：物理单位换算、
+  相对单位（`em/rem/ex/ch/vw/vh/vmin/vmax/%`）按数值 1:1 近似、未知后缀判非法；
+  顺带修好注释里「按后缀长度降序匹配」与代码不符的误导。
+- 测试从 12 例扩到 27 例（补大小写、科学计数法、负数、空白、8 种相对单位、非法后缀），
+  新增端到端 `TestViewportRelativeUnitsRender`；**`golden.sha256` 未变**。
+- **文档一致性批量补齐**（本轮盘点出 10 处自相矛盾 / 过时）：包注释与 `GOSVG_TODO.md`
+  里「渲染期跳过事件没有诊断通道」→ 已实现 `Diagnostics()` / `LastRenderDiagnostics()`；
+  `<image>` 三处仍写「必须注入解码器」→ 已有开箱可用的 `DefaultImageDecoder()`；
+  覆盖率 85.8% → **86.2%**（本轮实测；其余包 62.3% / 42.2% / 16.7% / 24.3% / 3.9% 复核无误）；
+  CHANGELOG / CHECKLIST / GAP TODO 里
+  「Release 待办」→ 已发至 v0.2.2；`ResetFonts()` 隔离、分支保护 `protected=True`、
+  H-A 表「视口单位例外」逐项同步；`CAIROSVG_IOU.md` 修正 1 的旧结论第 2/4 条
+  标注「已被修正 2/3 推翻」，避免被推翻的判断继续误导后续排查。
+- **推翻上一版对 2 个低分文件的定性**：PNG 逐像素复核显示二者是**整块缺失的真 bug**
+  （gosvg 只多画 5px，cairosvg 多画 12220 / 18661 px），不是「填充差异 / AA 边界」。
+  只读定位到 `@media` 嵌套 CSS 规则被误应用、even-odd 多子路径被挖空两个根因假设；
+  **改动会波及渲染字节与全量 IoU 表，按纪律列为需用户点头项，未动代码**。
