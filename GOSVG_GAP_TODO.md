@@ -224,3 +224,19 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
 - **SQLite 锁（零中断修法已生效）**：取消 33 个僵尸 queued run，38 个 run 全部
   `completed/cancelled`；日志里 `database is locked` 与 Actions cron 扫描显著减少。
   **根治仍需** `[database] SQLITE_BUSY_TIMEOUT` + 重启 Gitea（会中断服务，未获授权，未做）。
+
+## 本轮（分支 `fix/viewport-physical-units`）
+
+- **视口物理单位换算已落地并验证**：新增 `viewport.go` / `viewport_test.go`，
+  `parser.go` 的 `d.width`/`d.height` 改用 `parseViewportLength`（96dpi，支持
+  px/mm/cm/in/pt/pc/q）；元素几何保持 1:1 近似不变。`verify.sh` 在 .15 / Go 1.27.3
+  全套 `ALL GREEN`（含 race / arm64 / wasm / 两个 fuzz 目标）。
+- **上一版「D 批 54 个低分 = 物理单位未换算」的假设被全量数据证伪**：换算后
+  平均 IoU 仅 0.9486 → 0.9507、D 批 54 → 52、退化 0，只救回两个 bamboo 文件。
+  **不要再按「54 个待修」排期**。
+- **剩余 52 个定性**：50 个抗锯齿 / 字体栅格化边界（bbox 与像素数都近似，
+  IoU 0.70–0.77，非几何错误）→ 归入已定案边界；2 个填充差异
+  （`toolbarButton-editorHighlight` 0.40、`altText_spinner` 0.45）→ 低优先级待查，
+  不阻塞发版。
+- **文档一致性**：README / GOSVG_TODO / 包注释 / style.go 四处「所有单位 1:1 近似」
+  已补上「根 `<svg>` 视口尺寸例外」的说明，避免文档与代码矛盾。

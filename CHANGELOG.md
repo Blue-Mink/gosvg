@@ -148,3 +148,23 @@
 - `CAIROSVG_IOU.md` 补齐全量复测数据、根因分类与方法论校准（抽样会骗人、bbox 比 RGB 差可靠、
   假设必须全量验证）。
 - 新增待查：D 批 `width="193mm"` 物理单位未换算（54 个低分文件）。
+
+### 分支 `fix/viewport-physical-units`
+- **视口尺寸按 96dpi 换算物理单位**：新增 `parseViewportLength`，根 `<svg>` 的
+  `width`/`height` 支持 `px` / `mm` / `cm` / `in` / `pt` / `pc` / `q`（无单位按 px；
+  `%` 与相对单位在根上无父参照，保持 1:1 近似的旧行为）。`parser.go` 的
+  `d.width` / `d.height` 改走它；**元素几何仍走 `parseLengthOr` 的 1:1 近似**，
+  不动既有「单位不换算」决策。
+- 4 项测试：单位换算表、默认值、物理单位视口的端到端定位、有 viewBox 时视口单位
+  不影响渲染字节。根包覆盖率 86.0% → **86.1%**；`golden.sha256` 未变
+  （6 个基线样例均无物理单位）。
+- **`scripts/verify.sh` 全套通过**（.15 / Go 1.27.3）：gofmt 空、vet 0、
+  test 0、`-race` 0、arm64 / wasm 交叉编译 0、bench 冒烟、
+  `FuzzParse` 30s + `FuzzRender` 20s 无 crash → `ALL GREEN`。
+- **全量对账的诚实结论（收益很小）**：848 样本平均 IoU **0.9486 → 0.9507**，
+  D 批低分 **54 → 52**，退化 **0**，只救回两个 bamboo 文件
+  （`0.0000 → 0.9334` / `0.8604`）。即物理单位换算**不是**剩余 52 个低分的原因。
+- **剩余 52 个定性**：50 个为渲染器抗锯齿 / 字体栅格化的像素级边界差异
+  （bbox 与不透明像素数都近似，IoU 0.70–0.77 已非几何错误）；
+  2 个为填充差异（`toolbarButton-editorHighlight` 0.40、`altText_spinner` 0.45）。
+  判定为**已定案边界，不值得继续改**，详见 `CAIROSVG_IOU.md`。

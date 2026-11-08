@@ -63,8 +63,11 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 `!important`、CSS 自定义属性 `var()` / `calc()`、`inherit` 关键字、CSS4 颜色
 （`lab()` / `lch()` / `color()` / `device-cmyk()`）。
 
-**长度**：所有单位（`px/pt/pc/cm/mm/in/em/ex/%` 等）统一剥离后按**数值部分 1:1 近似**，
-不做物理单位换算；`%` 不按父值/视口基准解析。未知后缀（如 `12abc`）视为非法。
+**长度**：根 `<svg>` 的 `width`/`height` 例外——按 96dpi 换算物理单位
+（`px/mm/cm/in/pt/pc/q`，见 `viewport.go`），与浏览器 / cairosvg 的视口建立语义一致。
+其余长度（元素几何 / font-size / stroke-width 等）统一剥离后按**数值部分 1:1 近似**，
+不做物理单位换算；`%` 与相对单位（em/ex/rem）不按父值/视口基准解析。
+未知后缀（如 `12abc`）视为非法。
 详见 `style.go:parseLength`。
 
 **字体**：`.ttc` 字体集合；未调用 `AddFontDir` 时 `font-family` 一律回退 Go Regular。
