@@ -60,3 +60,14 @@
 - **P3/P4**：新增 `BenchmarkParse` / `BenchmarkRenderDocument` 与 `BENCHMARK.md` 实测基线；
   `scripts/verify.sh` 加 `-count=1 -cover` 与 benchmark 冒烟。
 - 新增 15 项测试（display/visibility 9、默认解码 3、字体 2、错误码 1）。
+
+### 分支 `feat/robustness-and-coverage`
+- **输入规模上限**：`MaxSVGSize`（8 MiB）/ `MaxElementCount`（10 万）/ `MaxXMLDepth`（256），
+  超限返回带 `Code` 的 `UnsupportedError` 与新哨兵 `ErrInputTooLarge` /
+  `ErrTooManyElements` / `ErrNestingTooDeep`
+- **新增 `FuzzRender` 目标**（渲染期畸形输入）与 6 个入库 corpus；`verify.sh` 增跑 20s
+- **`internal/vector` 覆盖率 0% → 24.3%**：新增 even-odd 镂空 / non-zero 填充 /
+  `Reset` 复用三项测试（覆盖本 fork 对上游的扩展）
+- **`verify.sh` 新增 WASM 编译门禁**（`GOOS=js GOARCH=wasm go build ./...`）
+- 清理 `gosvg.go` 里一段挂在 `ErrorCode` 上、内容已过时的孤立注释
+- `BENCHMARK.md` 记录 pprof 分配热点，并据此明确不做 CSS 索引 / 解析缓存 / 离屏池化的理由

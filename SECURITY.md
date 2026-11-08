@@ -29,7 +29,10 @@ gosvg 是**库**，接收不可信 SVG 字节并渲染成位图。预期调用�
   更推荐用 `RenderOptions.ImageDecoder` 逐渲染注入。`DefaultImageDecoder()` 只处理
   `data:` URI 与本地文件路径，**不会抓取远程 URL**；若自行实现远程解码器，
   请在回调内加超时与大小限制。
-- `tspan` 嵌套、`g` 深嵌套、CSS 规则链、mask↔clip 互引暂无深度上限。
+- XML 嵌套深度受 `MaxXMLDepth = 256` 限制（含 `tspan` / `g` 嵌套）；SVG 字节数受
+  `MaxSVGSize`（8 MiB）、元素总数受 `MaxElementCount`（10 万）限制，超限返回对应 `Err*`。
+  mask↔clip 离屏嵌套受 `maxNestingDepth = 32` 限制。
+  **仍未限制**：CSS 规则条数与单条规则长度。
 - 带 `encoding="ISO-8859-1"` 等非 UTF-8 声明的 SVG 会被 `encoding/xml` 拒绝。
 
 ## 已知边界（非漏洞）
