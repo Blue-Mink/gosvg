@@ -131,3 +131,20 @@
 - **新增 `CAIROSVG_IOU.md`**：117 个真实语料抽样的对账报告（中位 IoU 0.9982、分布、
   按批次、低分根因分类、复现步骤）。
 - 新增 4 项 transform+clip/mask 测试与 9 项 encode 测试；根包覆盖率 85.9% → **86.0%**。
+
+### 分支 `fix/no-viewbox-aspect-ratio`
+- **修复无 viewBox 时的非等比拉伸**：此前 `viewBoxMatrix` 的 `!hasVB` 分支直接
+  `Scale(w/vw, h/vh)`，把 `width!=height` 的 SVG 拉扁并整体错位。改为按 width/height
+  等比缩放 + `xMidYMid` 居中（与浏览器 / cairosvg 一致）；显式
+  `preserveAspectRatio="none"` 仍保留拉伸。4 项测试；`golden.sha256` 未变
+  （6 个基线样例全有 viewBox）。
+- **cairosvg 全量对账（848 样本）**：平均 IoU **0.7870 → 0.9486**、IoU<0.5 **210 → 17**、
+  D 批 0.2731 → 0.8687；**195 个文件提升 >0.05、零退化**。`resizeHorizontal` 0.0000 → 0.999。
+- **撤回两个此前的误判**：
+  1. D 批低分不是「亚像素 AA + 字体已定案边界」，而是无 viewBox 的非等比拉伸
+     （上版依据「重叠区 RGB 差仅 3–7」在位置错开时失真）。
+  2. even-odd + transform 的全量高危交叉验证显示中位 IoU 1.0000、只有 3 个 <0.5，
+     **证伪该假设**，撤回改 `internal/vector` 核心的计划；`frame-icon` 是个例。
+- `CAIROSVG_IOU.md` 补齐全量复测数据、根因分类与方法论校准（抽样会骗人、bbox 比 RGB 差可靠、
+  假设必须全量验证）。
+- 新增待查：D 批 `width="193mm"` 物理单位未换算（54 个低分文件）。

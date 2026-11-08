@@ -213,3 +213,14 @@ cairosvg 24562 不透明像素）——仅 5 个元素、1 条 `fill-rule="eveno
 
 **仍未做**：`cmd/render` 增强（格式/宽高/stdin-stdout/批量/--strict）、WASM demo、
 fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权）。
+
+## 本轮（分支 `fix/no-viewbox-aspect-ratio`）
+
+- **修复无 viewBox 非等比拉伸**：全量对账 848 样本实证平均 IoU 0.7870 → 0.9486、
+  IoU<0.5 210 → 17、195 个文件提升、零退化。同时撤回上一版把 D 批判为
+  「亚像素 AA + 字体已定案边界」的误判（依据的 RGB 差指标在位置错开时失真）。
+- **even-odd + transform 假设被全量数据证伪**（高危 70 个中位 IoU 1.0000、仅 3 个 <0.5），
+  撤回改 `internal/vector` 核心的计划。
+- **SQLite 锁（零中断修法已生效）**：取消 33 个僵尸 queued run，38 个 run 全部
+  `completed/cancelled`；日志里 `database is locked` 与 Actions cron 扫描显著减少。
+  **根治仍需** `[database] SQLITE_BUSY_TIMEOUT` + 重启 Gitea（会中断服务，未获授权，未做）。
