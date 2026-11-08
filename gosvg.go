@@ -44,7 +44,8 @@
 //	    <image> 自身的 preserveAspectRatio
 //	CSS：后代/子代/兄弟选择器、伪类、@media/@import/@supports、!important、
 //	    var()/calc()、inherit 关键字、CSS4 颜色（lab/lch/color/device-cmyk）
-//	长度：单位统一剥离后按数值 1:1 近似，不做物理换算，% 不按基准解析
+//	长度：根 <svg> 的 width/height 按 96dpi 换算物理单位；其余长度统一剥离后
+//	    按数值 1:1 近似，不做物理换算，% 不按基准解析
 //	字体：.ttc 集合；未调用 AddFontDir 时 font-family 一律回退 Go Regular
 //	<image>：需调用方注入 ImageDecoder，未注入时静默跳过
 //
