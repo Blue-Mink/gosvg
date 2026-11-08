@@ -34,7 +34,11 @@ gosvg 是**库**，接收不可信 SVG 字节并渲染成位图。预期调用�
   mask↔clip 离屏嵌套受 `maxNestingDepth = 32` 限制。
   `<style>` 的 CSS 解析也有规模上限：`MaxCSSRules = 10000`、`MaxCSSSelectorLen = 512`、
   `MaxCSSDeclLen = 4096`；超限内容被丢弃（不是让整个渲染失败），并记入 `Diagnostics()`。
-- 带 `encoding="ISO-8859-1"` 等非 UTF-8 声明的 SVG 会被 `encoding/xml` 拒绝。
+- XML 编码声明：UTF-8 / ASCII 系透传、ISO-8859-1 逐字节展开，其余编码返回带编码名的
+  明确错误（不再是 `encoding/xml` 那句 `CharsetReader is nil`）。替换包级 `CharsetReader`
+  可扩展；置 nil 可恢复 `encoding/xml` 的默认严格行为。
+- `<image>` 只有 `data:` URI 会被内置解码；**文件路径与远程 URL 必须显式注入解码器**，
+  库不会自行读文件或发起网络请求（有测试守住该边界）。
 
 ## 已知边界（非漏洞）
 

@@ -100,6 +100,11 @@ func parseColor(s string) (color.NRGBA, bool) {
 	// 十六进制
 	if strings.HasPrefix(s, "#") {
 		hex := s[1:]
+		if !isHexDigits(hex) {
+			// 非法十六进制字符（如 #gggggg）是无效颜色：按 CSS 语义应忽略该声明，
+			// 而不是被 hexv 静默当成 0 渲染成黑色。
+			return color.NRGBA{}, false
+		}
 		switch len(hex) {
 		case 3:
 			return color.NRGBA{
@@ -340,4 +345,19 @@ func clamp01(f float64) float64 {
 		return 1
 	}
 	return f
+}
+
+// isHexDigits 判断字符串是否非空且全为十六进制字符。
+func isHexDigits(s string) bool {
+	if s == "" {
+		return false
+	}
+	for i := 0; i < len(s); i++ {
+		switch c := s[i]; {
+		case c >= '0' && c <= '9', c >= 'a' && c <= 'f', c >= 'A' && c <= 'F':
+		default:
+			return false
+		}
+	}
+	return true
 }

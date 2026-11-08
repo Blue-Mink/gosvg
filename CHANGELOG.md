@@ -80,3 +80,18 @@
 - **`cmd/verify` 覆盖率 0% → 62.3%**：重构为 `parseArgs` / `run` / `writePNG`，6 项测试
 - **`internal/rasterx` 覆盖率 0% → 3.9%**：新增 `Matrix2D` 的 8 项测试
   （Identity / Mult / Translate / Invert 往返 / TransformVector / TFixed / SkewX / SkewY）
+
+### 分支 `feat/realworld-compat`
+全部改动由 **958 个真实世界 SVG** 的实测驱动（详见 `CORPUS_BASELINE.md`）：
+
+- **非 UTF-8 编码声明不再硬失败**：新增 `charset.go` 与可替换的 `CharsetReader`，
+  默认零依赖支持 UTF-8 / ASCII 系透传 + ISO-8859-1 逐字节展开，其余编码返回带编码名的
+  明确错误。实测 Parse 失败 **67 → 0**
+- **无效颜色声明按 CSS 语义忽略**：`mergeStyle` 仅在 `isValidPaint` 通过时覆盖继承值，
+  `fill="000000"`（Material Symbols 真实导出写法）从全透明恢复为规范默认 black
+- **`parseColor` 校验十六进制字符**：`#gggggg` 不再被 `hexv` 静默当成 0 渲染为黑色
+- **`<image>` 的 data: URI 开箱可用**：未注入解码器时用标准库内置解码（不碰文件与网络）；
+  文件路径 / 远程 URL 仍需显式注入，并有测试守住这条安全边界
+- **新增 `cmd/corpus`**：批量渲染真实语料，输出成功率 / 全透明清单 / 失败清单 / 诊断分布，
+  支持 `-json`；覆盖率 42.2%
+- 真实语料整体成功率 **90.4% → 99.5%**（954/958）

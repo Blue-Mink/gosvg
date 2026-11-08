@@ -87,7 +87,8 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 >   `!important`、`var()`/`calc()`、`inherit`、CSS4 颜色（`lab()`/`lch()`/`color()`）
 > - **长度**：所有单位统一剥离后按数值 **1:1 近似**，不做物理单位换算，`%` 不按基准解析
 > - **字体**：`.ttc` 集合；未调用 `AddFontDir` 时 `font-family` 一律回退 Go Regular
-> - **`<image>`**：需注入 `ImageDecoder`，未注入或解码失败时静默跳过
+> - **`<image>`**：`data:` URI 用标准库内置解码、开箱可用；文件路径与远程 URL
+>   需注入 `ImageDecoder`（或 `RenderOptions.ImageDecoder`），未注入时静默跳过
 >
 > 完整清单与已知边界见 [GOSVG_TODO.md](GOSVG_TODO.md)；渲染期跳过事件可用
 > `Document.Diagnostics()` / `LastRenderDiagnostics()` 观察（非穷尽）。
@@ -187,6 +188,27 @@ go test -run TestGoldenRegression -update .   # 有意改动渲染输出后重�
 约 **8.9 ms/op**（同机多次 8.9–11.2 ms）、**5.37 MB/op**、**292,168 allocs/op**。
 `Parse` 仅约 3.5 µs，复用 `Document` 收益可忽略；数字与机器强相关，仅作同一台机器上的
 相对基线，详见 [BENCHMARK.md](BENCHMARK.md)。
+
+## 真实语料实测
+
+用 `cmd/corpus` 对 .15 上 **958 个真实世界 SVG**（fnOS 面板图标、node_modules 图标库、
+应用配置、混合来源）批量渲染：
+
+| 语料 | 数量 | 渲染出内容 |
+|---|---|---|
+| fnOS 面板图标 | 217 | 99.5% |
+| node_modules 图标库 | 355 | 99.7% |
+| 应用配置 | 127 | 100% |
+| 混合来源 | 259 | 99.2% |
+| **合计** | **958** | **99.5%** |
+
+Parse / Render 崩溃数为 0。基线数据、剩余 4 个全透明样例的逐个定位与复现方式见
+[CORPUS_BASELINE.md](CORPUS_BASELINE.md)。
+
+```sh
+go run ./cmd/corpus -size 64 <dir>...   # 文本报告
+go run ./cmd/corpus -json <dir>...      # JSON，便于做基线 diff
+```
 
 ## 📄 许可证
 
