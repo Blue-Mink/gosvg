@@ -119,3 +119,15 @@
   → 本项属**语义补全**，不是「救回渲染」；golden 与语料成功率均未变化。
 - **方法论修正**：上一轮用「属性出现频率」排优先级不可靠（91 文件 → 实际影响 0），
   必须做修复前后像素对比或与完整实现（cairosvg）对账才能量化真实影响。
+
+### 分支 `fix/clip-transform-order-and-encode`
+- **修复 `clip-path` / `mask` 的求值顺序**（真 bug，靠 cairosvg 对账定位）：SVG 规定二者
+  定义在「引用元素的 user space」，即元素自身 `transform` 生效之后；此前 `renderNode`
+  先算 clip/mask、`renderNodeBare` 才应用 transform，顺序反了。
+  实测 flag-icons 阿鲁巴国旗 **IoU 0.2060 → 1.0000**，A 批平均 0.9653 → 0.9947，
+  **退化文件 0 个**；`golden.sha256` 未变。
+- **新增输出封装**：`RenderToWriter` / `EncodeImage`（PNG 与 JPEG，JPEG 自动合成到背景色
+  避免黑底）、`RenderOptions.JPEGQuality` 与 `RenderOptions.Ctx`。
+- **新增 `CAIROSVG_IOU.md`**：117 个真实语料抽样的对账报告（中位 IoU 0.9982、分布、
+  按批次、低分根因分类、复现步骤）。
+- 新增 4 项 transform+clip/mask 测试与 9 项 encode 测试；根包覆盖率 85.9% → **86.0%**。

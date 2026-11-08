@@ -63,6 +63,8 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 | `RegisteredFonts() []string` | 已注册系统字体族（排序后的副本） |
 | `ResetFonts()` | 清空 `AddFontDir` 注册，用于测试隔离 |
 | `ErrorCode` / `ErrEmptyDocument` 等 | `UnsupportedError` 的机器可读分类与 `errors.Is` 哨兵 |
+| `RenderToWriter(w, data, width, height, format, opts)` | 渲染并按 `png` / `jpeg` 编码写入 `io.Writer` |
+| `EncodeImage(w, img, format, quality, bg)` | 编码位图；JPEG 无 alpha，自动合成到 `bg`（默认白） |
 
 ## 特性
 
@@ -212,6 +214,17 @@ Parse / Render 崩溃数为 0。基线数据、剩余 4 个全透明样例的逐
 go run ./cmd/corpus -size 64 <dir>...   # 文本报告
 go run ./cmd/corpus -json <dir>...      # JSON，便于做基线 diff
 ```
+
+## 与 cairosvg 对账
+
+对 117 个真实语料抽样（256×256）算 alpha IoU：**中位 0.9982**、平均 0.8266、
+≥0.99 的有 85 个。低分集中在 `stroke-width:.25` 的**亚像素细线** + `<text>` 字体差异
+（与「45° 斜线 AA 相位歧义」同源的已定案边界），重叠区 RGB 平均差仅 3–7，
+属「画在同一处但 AA/字形不同」而非语义错误。完整方法、分布、根因分类与复现步骤见
+[CAIROSVG_IOU.md](CAIROSVG_IOU.md)。
+
+> `cmd/corpus` 的成功率只能回答「有没有画出东西」，对账才能回答「画得对不对」——
+> 本轮就是靠对账定位到一个成功率完全看不到的真 bug（clip/mask 与 transform 的求值顺序）。
 
 ## 📄 许可证
 
