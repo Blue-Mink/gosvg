@@ -226,6 +226,8 @@ func (ctx *renderContext) renderSubimage(n *node, opacity float64, w, h int) *im
 		nesting: ctx.nesting + 1,
 		err:     ctx.err,
 		visible: ctx.visible,
+		// 渲染的是同一个 n：若上层已应用过它的 transform，这里不能再应用一次。
+		skipNodeTransform: ctx.skipNodeTransform,
 	}
 	sub.dasher = newDasherFor(img)
 	if err := sub.renderNodeBare(n, opacity); err != nil && ctx.err == nil {

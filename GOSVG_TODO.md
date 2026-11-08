@@ -98,6 +98,9 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
   `MaxXMLDepth`（256）限制解析阶段；`DefaultMaxDimension`（8192）与
   `maxNestingDepth`（32）限制渲染阶段。超限一律返回 `UnsupportedError`
   （带 `Code` 与哨兵错误，支持 `errors.Is`）。
+- **`clip-path` / `mask` 的求值顺序**：按 SVG 规范在元素自身 `transform` 生效**之后**
+  的 user space 里求值。此前顺序相反，会让 `<g transform="scale(2)" clip-path="url(#c)">`
+  裁错区域（真实语料 flag-icons 国旗 IoU 仅 0.206，修复后 1.0000）。
 - **`clip-rule`**（SVG 1.1 可继承属性，默认 `nonzero`）：`clipPath` 元素或其子元素上的
   `clip-rule` 映射到内部 `fill-rule`，复用已有的 even-odd winding 光栅路径；
   每个子元素独立计算，兄弟之间不互相污染。CSS 里写 `clip-rule` 同样生效。
@@ -143,6 +146,7 @@ GOOS=js GOARCH=wasm go build ./...              # WASM 目标可编译
 go test -run TestGoldenRegression -update .    # 重新生成 testdata/golden.sha256
 go test -run '^$' -fuzz '^FuzzParse$' -fuzztime 30s .   # fuzz 冒烟
 go run ./cmd/corpus -size 64 <dir>...                  # 真实语料回归，见 CORPUS_BASELINE.md
+# 与 cairosvg 对账（需本机 cairosvg，不进 CI）：方法与结果见 CAIROSVG_IOU.md
 ```
 
 内网若 `proxy.golang.org` 不通，用 `GOPROXY=https://goproxy.cn,direct`。

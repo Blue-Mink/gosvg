@@ -1,6 +1,7 @@
 package gosvg
 
 import (
+	"context"
 	"fmt"
 	"image"
 	"image/color"
@@ -25,6 +26,20 @@ type RenderOptions struct {
 	// ImageDecoder 是本次渲染专用的 <image> 解码器；nil 时回退到包级 ImageDecoder。
 	// 放进选项可避免全局状态（见 DefaultImageDecoder）。
 	ImageDecoder func(string) (image.Image, error)
+	// JPEGQuality 仅用于 EncodeImage / RenderToWriter 的 jpeg 输出，1-100；
+	// <=0 时按 90 处理。
+	JPEGQuality int
+	// Ctx 可选：为 nil 时按 context.Background() 处理。放在选项里是为了
+	// 让 RenderToWriter 这类一次性入口也能传取消信号而不增加参数。
+	Ctx context.Context
+}
+
+// contextOrBackground 返回 opts.Ctx，为 nil 时回退 context.Background()。
+func (o RenderOptions) contextOrBackground() context.Context {
+	if o.Ctx == nil {
+		return context.Background()
+	}
+	return o.Ctx
 }
 
 // DefaultRenderOptions 返回默认选项：透明底、DefaultMaxDimension 尺寸上限。

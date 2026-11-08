@@ -194,3 +194,22 @@ CI runner 安装（下载源已确认可达，等授权）、`cmd/render` 增强
 **仍未做**：cairosvg 批量对账、文本能力（实测低频，优先级下调）、`filter`（完整滤镜链
 feBlend/feColorMatrix/feGaussianBlur/feFlood/feMorphology，成本与定位不符）、
 CI runner 安装（等授权）、`cmd/render` 增强、fnOS FPK 集成。
+
+## 本轮（分支 `fix/clip-transform-order-and-encode`）
+
+- **cairosvg 批量对账落地**（117 抽样，中位 IoU 0.9982），并据此定位到一个
+  **成功率指标完全看不到的真 bug**：`clip-path` / `mask` 与元素自身 `transform` 的
+  求值顺序反了。修复后单文件 IoU 0.206 → 1.0000、A 批平均 0.9653 → 0.9947、**零退化**。
+  这验证了上一轮的方法论修正：**对账比属性频率统计更能定位真实缺口**。
+- **输出封装**：`RenderToWriter` / `EncodeImage`（PNG/JPEG）+ `RenderOptions.JPEGQuality`/`Ctx`，
+  调用方不必再自己 `png.Encode`，也为 CLI 与 FPK 集成铺路。
+- D 批（数位板图标）IoU 0.048–0.19 经逐项核查为**亚像素细线 AA + 字体差异**
+  （`stroke-width:.25` 缩放后约 0.16px、重叠区 RGB 差仅 3–7），属已定案边界，不是 bug。
+
+**新增待查**：B 批 `frame-icon.svg`（Inkscape 导出，IoU **0.0594**，gosvg 1464 vs
+cairosvg 24562 不透明像素）——仅 5 个元素、1 条 `fill-rule="evenodd"` path +
+`matrix()` transform，疑似真缺口（evenodd 与复杂 path 数据、或 `H`/`V`/`c`/`v`
+相对指令与紧凑小数组合），下一步优先查它。
+
+**仍未做**：`cmd/render` 增强（格式/宽高/stdin-stdout/批量/--strict）、WASM demo、
+fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权）。
