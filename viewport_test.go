@@ -20,6 +20,20 @@ func TestParseViewportLengthUnits(t *testing.T) {
 		{"100px", 100},
 		{"100", 100},
 		{"50%", 50},
+		{"  193MM  ", 193 * 96.0 / 25.4},
+		{"1IN", 96},
+		{"1e2", 100},
+		{"3.", 3},
+		{"-5", -5},
+		{"2em", 2},
+		{"3rem", 3},
+		{"4ex", 4},
+		{"5ch", 5},
+		{"6vw", 6},
+		{"7vh", 7},
+		{"8vmin", 8},
+		{"9vmax", 9},
+		{"12abc", 0},
 		{"", 0},
 		{"abc", 0},
 	} {
@@ -70,5 +84,17 @@ func TestViewportUnitsDoNotAffectViewBoxRendering(t *testing.T) {
 		if i1.Pix[i] != i2.Pix[i] {
 			t.Fatal("viewBox path must not depend on viewport physical units")
 		}
+	}
+}
+
+// 相对单位视口必须按「数值 1:1 近似」正常渲染，不能退化成 0 尺寸。
+func TestViewportRelativeUnitsRender(t *testing.T) {
+	svg := `<svg width="100em" height="80em"><rect width="100" height="80" fill="red"/></svg>`
+	img, err := Render([]byte(svg), 64)
+	if err != nil {
+		t.Fatalf("relative-unit viewport must render, got %v", err)
+	}
+	if a := img.NRGBAAt(32, 32).A; a == 0 {
+		t.Fatal("center should be filled")
 	}
 }

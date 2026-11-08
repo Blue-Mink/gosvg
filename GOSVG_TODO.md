@@ -76,11 +76,14 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 逐字节展开为 UTF-8，**其余编码返回带编码名的明确错误**。需要完整 IANA 编码支持时，
 替换包级 `CharsetReader`（例如接 `golang.org/x/text/encoding/htmlindex`）。
 
-**`<image>`**：库不内置位图解码，需调用方注入 `ImageDecoder func(href string) (image.Image, error)`；
-未注入或解码失败时静默跳过。
+**`<image>`**：内置 `DefaultImageDecoder()`（标准库 PNG/JPEG/GIF + `data:` URI 与本地路径，
+零外部依赖）；调用方可用包级 `ImageDecoder` 或 `RenderOptions.ImageDecoder` 覆盖。
+两者都为 nil 或解码失败时静默跳过。
 
-> 渲染期跳过事件目前**没有运行时诊断通道**（`UnsupportedError` 仅用于空文档/非正尺寸等
-> 调用方输入错误）。补齐计划见 `GOSVG_GAP_TODO.md`。
+> 渲染期跳过事件**已有只读诊断通道**：`Document.Diagnostics()`（累计去重）与
+> `Document.LastRenderDiagnostics()`（最近一次渲染，每次重置），见下文「渲染选项与诊断」。
+> `UnsupportedError` 仅用于空文档/非正尺寸等**调用方输入错误**，与特性跳过无关。
+> 尚未覆盖的静默分支见 `GOSVG_GAP_TODO.md`。
 
 ## 渲染选项与诊断
 
@@ -138,7 +141,8 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ```sh
 sh ./scripts/verify.sh                         # 全套门禁（含覆盖率与 benchmark 冒烟）
 go test ./...                                  # 单元 + 回归 + golden 哈希
-go test -count=1 -cover ./...                  # 覆盖率（根包 85.8%、cmd/verify 62.3%、
+go test -count=1 -cover ./...                  # 覆盖率（根包 86.2%、cmd/verify 62.3%、
+                                               #   cmd/corpus 42.2%、cmd/render 16.7%、
                                                #   internal/vector 24.3%、internal/rasterx 3.9%）
 go test -run '^$' -bench . -benchmem -benchtime 2s .   # 性能基线，见 BENCHMARK.md
 go test -race ./...                           # 并发检查

@@ -34,7 +34,9 @@
 - **`AddFontDir` 全局状态污染测试**：`font_test.go` 注册系统字体后，包级 `fontRegistry`
   影响同进程内后续所有 `Render`。实测 `s60s.svg`（带 `<text>`）单独跑 golden 与跑完整
   `go test ./...` 的像素哈希不同（`bb150194…` vs `dc09dbc6…`），其余 6 个纯图形样例一致。
-  当前处置：golden 基线排除 `s60s`。彻底修复需给字体注册加隔离 / `Reset`（并入档 2 F4）。
+  当前处置：golden 基线排除 `s60s`（刻意保持确定性）。**隔离能力已落地**：
+  `ResetFonts()` + `font_test.go` 显式重置注册表（见 `font_extra_test.go`），
+  档 2 F4 的「加隔离 / Reset」已完成，不再是待办。
 
 ## 档 2 — 已处置（分支 `chore/close-gaps`）
 
@@ -60,7 +62,7 @@
 | `marker orient="auto-start-reverse"` | 不实现 | 需在起点反转切线，牵动 `renderMarkers` |
 | CSS `inherit` | 不实现 | CSS 级联层需引入「继承值」概念，超出简单选择器子集 |
 | `use` 的 `width/height` | 不实现 | 需按 symbol/view 语义做视口裁剪，牵动 `renderUse` |
-| 长度单位真换算 / `%` 基准 | 不实现 | 会改变现有全部含单位样例的渲染字节与 IoU 表 |
+| 长度单位真换算 / `%` 基准（**元素几何**） | 不实现 | 会改变现有全部含单位样例的渲染字节与 IoU 表；**根 `<svg>` 视口尺寸是例外**，已按 96dpi 换算（v0.2.2） |
 
 > 共同理由：这些都属于**扩大子集**，会改变渲染结果、要求重跑 cairosvg 对账与 golden
 > 基线，已超出「零决策、不破坏语义」的补齐范围。需要哪个请单独点名，单独做。
@@ -96,11 +98,11 @@
 - **P0-1** CI 门禁：新增 `scripts/verify.sh` 让验证可复现、两个 workflow 改调它；
   但 **Gitea Actions runner 数仍为 0、GitHub 出站不通**，CI 尚未真正执行，
   当前以 `sh ./scripts/verify.sh` 手动实跑为准。
-- **P0-3** 分支保护：Gitea `main` 仍 `protected=False`，本轮 PR 合并后再开启。
+- **P0-3** 分支保护：**已开启**（实测 `protected=True`），PR #2 起全部走分支 + PR 合并。
 
 ## 仍需点名的（P3，未动）
 
-- 基于 `v0.1.0` 建 Release；删除已合并的 `chore/close-gaps` 分支
+- Release **已发至 `v0.2.2`**，此条关闭；删除已合并的 `chore/close-gaps` 分支仍需点名
 - 修 Gitea SQLite 锁（上轮方案 B：降频刷库的 Actions workflow）
 - 注册 act_runner（当前环境无二进制、GitHub 出站不通，需你提供/授权）
 - 档 2 判为「保持子集边界」的 H-A 七项，想要哪个单独点名
@@ -240,3 +242,22 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   不阻塞发版。
 - **文档一致性**：README / GOSVG_TODO / 包注释 / style.go 四处「所有单位 1:1 近似」
   已补上「根 `<svg>` 视口尺寸例外」的说明，避免文档与代码矛盾。
+
+## 本轮（分支 `fix/viewport-relative-units-and-docs`）
+
+盘点「还有哪些需要补齐」后的分类处置：
+
+- **直接修（零决策）**：`parseViewportLength` 相对单位回归（v0.2.2 新引入，`100em` → 0 尺寸）；
+  7 处文档自相矛盾 / 过时（诊断通道、覆盖率、Release 状态、`ResetFonts()`、分支保护、
+  H-A 视口例外、修正 1 旧结论标注废弃）。全套 `verify.sh` 复验，`golden.sha256` 未变。
+- **需用户点头（会改渲染字节 + 全量 IoU 表，未动）**：2 个经 PNG 复核确认为**整块缺失**的真 bug
+  —— `altText_spinner`（`@media` 嵌套块内 `#hourglass{display:none}` 被当顶层规则应用）、
+  `toolbarButton-editorHighlight`（even-odd 多子路径被挖空）。详见 `CAIROSVG_IOU.md` 修正 3。
+  二者不属于「50 个 AA/字体已定案边界」，值得修，但要先交影响账。
+- **档 2 H-A 七项**：仍按原决策保持子集边界（用户需单独点名才做），其中「元素几何单位真换算」
+  与已落地的「视口尺寸换算」已在表中区分清楚。
+- **档 3 外部条件项**：推送外部 Git（用户约束未解除）、Gitea SQLite 根治需重启服务（会中断，
+  未获授权）、arm64 真机 runner、act_runner 注册（无二进制 / 出站不通）、CI 内 cairosvg 对账。
+  这些不是代码缺口，**不因「继续修」而自动推进**。
+- **`OPEN_SOURCE_CHECKLIST.md` 里本地可补的部分**：全历史敏感串扫描、许可证核对、
+  私有地址清单、outside view 验证，仍待用户决定是否要在推送前逐项做；本轮未擅自对外动作。
