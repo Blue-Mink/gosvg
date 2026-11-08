@@ -31,6 +31,10 @@ type renderContext struct {
 	// （pprof: setUseFloatingPointMath 占总分配 38.9%）。
 	strokeFiller    *rasterx.Filler
 	strokeFillerImg *image.NRGBA
+
+	// skipNodeTransform 为 true 时 renderNodeBare 不再应用节点自身的 transform，
+	// 用于 clip-path / mask 路径：那里 transform 已在 renderNode 中提前应用过。
+	skipNodeTransform bool
 }
 
 func newRenderContext(width, height int, d *Document) *renderContext {
@@ -105,14 +109,27 @@ func (ctx *renderContext) renderNode(n *node, opacity float64) error {
 	if strings.EqualFold(n.attr("display"), "none") {
 		return nil
 	}
-	// clip-path 处理：带 clip 引用的元素，离屏渲染 + 形状 alpha 裁剪。
-	if id := clipPathRef(n.attr("clip-path")); id != "" && n.name != "clippath" {
-		ctx.renderClipped(n, id, opacity)
-		return nil
-	}
-	// mask 处理：带 mask 引用的元素，离屏渲染 + 亮度合成。
-	if id := maskRef(n.attr("mask")); id != "" && n.name != "mask" {
-		ctx.renderMasked(n, id, opacity)
+	clipID := clipPathRef(n.attr("clip-path"))
+	maskID := maskRef(n.attr("mask"))
+	if (clipID != "" || maskID != "") && n.name != "clippath" && n.name != "mask" {
+		// SVG 规定 clip-path / mask 定义在「引用该属性的元素的 user space」，
+		// 也就是元素自身 transform 生效**之后**的坐标系。所以必须先应用 transform，
+		// 再算裁剪/遮罩，否则 <g transform="scale(2)" clip-path="url(#c)"> 这类
+		// 写法会被裁错区域（实测 flag-icons 国旗 IoU 仅 0.206）。
+		savedM := ctx.matrix
+		if tr := n.attr("transform"); tr != "" {
+			ctx.matrix = ctx.matrix.Mult(parseTransform(tr))
+		}
+		// renderClipped/renderMasked 内部会经 renderSubimage 再渲染一次 n，
+		// 那里不能再应用同一个 transform。
+		ctx.skipNodeTransform = true
+		if clipID != "" {
+			ctx.renderClipped(n, clipID, opacity)
+		} else {
+			ctx.renderMasked(n, maskID, opacity)
+		}
+		ctx.skipNodeTransform = false
+		ctx.matrix = savedM
 		return nil
 	}
 	return ctx.renderNodeBare(n, opacity)
@@ -141,9 +158,11 @@ func (ctx *renderContext) renderNodeBare(n *node, opacity float64) error {
 	savedM := ctx.matrix
 	savedStyle := ctx.style
 
-	// transform 对所有可渲染元素生效。
-	if tr := n.attr("transform"); tr != "" {
-		ctx.matrix = ctx.matrix.Mult(parseTransform(tr))
+	// transform 对所有可渲染元素生效（clip/mask 路径已在 renderNode 提前应用过）。
+	if !ctx.skipNodeTransform {
+		if tr := n.attr("transform"); tr != "" {
+			ctx.matrix = ctx.matrix.Mult(parseTransform(tr))
+		}
 	}
 	// opacity 对所有可渲染元素生效：本节点有效透明度 = 父级累积 × 自身 opacity。
 	nodeOpacity := opacity
