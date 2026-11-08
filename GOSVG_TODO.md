@@ -85,6 +85,10 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
   `gosvg.go` / `render.go` / `image.go`。
 - `RenderWithOptions` 的 `ctx` 传 nil 时自动回退 `context.Background()`，不会 panic；
   mask / clip 离屏渲染中的取消也会回传为错误。
+- **输入与资源上限**：`MaxSVGSize`（8 MiB）、`MaxElementCount`（10 万）、
+  `MaxXMLDepth`（256）限制解析阶段；`DefaultMaxDimension`（8192）与
+  `maxNestingDepth`（32）限制渲染阶段。超限一律返回 `UnsupportedError`
+  （带 `Code` 与哨兵错误，支持 `errors.Is`）。
 - **`display` / `visibility`**：`display:none` 跳过整棵子树；`visibility` 是继承属性，
   `hidden` / `collapse` 跳过本节点绘制、子元素可显式 `visible` 覆盖。
   presentation 属性、CSS 规则、内联 `style` 三条路径都生效。
@@ -119,6 +123,7 @@ go test -race ./...                           # 并发检查
 go vet ./...                                  # 静态检查
 gofmt -l .                                    # 空输出 = 通过
 GOARCH=arm64 GOOS=linux go build ./...         # 交叉编译（真机测试需 arm64 runner）
+GOOS=js GOARCH=wasm go build ./...              # WASM 目标可编译
 go test -run TestGoldenRegression -update .    # 重新生成 testdata/golden.sha256
 go test -run '^$' -fuzz '^FuzzParse$' -fuzztime 30s .   # fuzz 冒烟
 ```

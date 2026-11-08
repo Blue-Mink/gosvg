@@ -89,8 +89,15 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 > - **字体**：`.ttc` 集合；未调用 `AddFontDir` 时 `font-family` 一律回退 Go Regular
 > - **`<image>`**：需注入 `ImageDecoder`，未注入或解码失败时静默跳过
 >
-> 完整清单与已知边界见 [GOSVG_TODO.md](GOSVG_TODO.md)；渲染期跳过事件目前没有运行时
-> 诊断通道，见 [GOSVG_GAP_TODO.md](GOSVG_GAP_TODO.md)。
+> 完整清单与已知边界见 [GOSVG_TODO.md](GOSVG_TODO.md)；渲染期跳过事件可用
+> `Document.Diagnostics()` / `LastRenderDiagnostics()` 观察（非穷尽）。
+
+> [!NOTE]
+> **输入与资源限制**：单次 `Parse` 的 SVG ≤ `MaxSVGSize`（8 MiB）、元素数 ≤
+> `MaxElementCount`（10 万）、XML 嵌套深度 ≤ `MaxXMLDepth`（256）；渲染尺寸 ≤
+> `DefaultMaxDimension`（8192）、mask/clip 离屏嵌套 ≤ 32。超限返回 `UnsupportedError`，
+> 可用 `errors.Is` 判断 `ErrInputTooLarge` / `ErrTooManyElements` / `ErrNestingTooDeep` /
+> `ErrDimensionExceeded` / `ErrNonPositiveSize` / `ErrEmptyDocument`。
 
 ## 工作原理
 

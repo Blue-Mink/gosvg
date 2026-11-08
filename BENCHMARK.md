@@ -41,3 +41,28 @@
   **不设性能门槛**（CI runner 与本地机器差异大）。
 - 若做性能优化（离屏位图池化、CSS 选择器索引、Parse 缓存、`clearGhostRGB` 优化），
   改动前后各跑一次，用 `benchstat` 对比后再合并。
+
+## 内存分配热点（pprof `-alloc_space`）
+
+命令：`go test -run '^$' -bench '^BenchmarkRender$' -benchtime 3s -memprofile mem.prof .`
+样本：417 次迭代，累计分配 2642 MB（单次约 5.37 MB / 292k allocs）。
+
+| flat 占比 | 函数 |
+|---|---|
+| 38.9% | `internal/vector.(*Rasterizer).setUseFloatingPointMath` |
+| 19.8% | `image.(*NRGBA).At` |
+| 19.7% | `internal/vector.(*Rasterizer).accumulateMask` |
+| 19.4% | `image.NewNRGBA` |
+
+调用链：`newRenderContext` 占 39.6%；`strokeCapsules → strokeColor → stroke → renderShape` 占 60.3%。
+
+**结论：开销几乎全在渲染/光栅化，解析与样式匹配可忽略。** 据此明确以下判断：
+
+- **不做 CSS 选择器索引**：`applyCSS` 只在 `Parse` 跑一次，而 `Parse` 仅 3.5 µs
+  （< 单次渲染的 0.05%）。加索引是无收益的复杂度。
+- **不做解析缓存 / 强制 Document 复用**：实测 8.87 vs 9.15 ms，差异在噪声内。
+- **暂不做离屏位图池化**：基线样例不含 mask/clip，池化对当前数字无影响；
+  要做应先为「大批量带 mask/clip 渲染」单独建 benchmark。
+- 后续若继续优化，方向是 `Rasterizer` 缓冲区/实例复用（`bufF32`/`bufU32` 已按 cap 复用，
+  但每次 `newRenderContext` 都新建 Rasterizer）与光栅器分配。这属于 fork 核心，
+  必须靠 golden 回归 + cairosvg 对账兜底后再动。

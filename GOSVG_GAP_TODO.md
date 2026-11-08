@@ -119,3 +119,15 @@
   Lucide / circle-flags 真实语料对账。
 - 环境阻塞不变：Gitea Actions runner 仍为 0、GitHub 出站不通，门禁以手动
   `sh ./scripts/verify.sh` 实跑为准。
+
+## 本轮（分支 `feat/robustness-and-coverage`）
+
+- **输入规模上限**已落地（字节 / 元素数 / XML 深度），补齐了「解析阶段无任何限制」的缺口。
+- **`FuzzRender`** 已加（此前 5 个目标全在解析/数值层，渲染期无 fuzz），corpus 入库 6 个；
+  `verify.sh` 现跑 FuzzParse 30s + FuzzRender 20s。
+- **`internal/vector` 覆盖率 0% → 24.3%**（even-odd 是本 fork 对上游的扩展，此前零测试）。
+- **WASM 编译门禁**已加进 `verify.sh`（实测通过）。
+- **性能优化按 pprof 实测结论主动收窄**：CSS 选择器索引、解析缓存、离屏位图池化
+  经数据判定为无收益或与基线无关，**明确不做**，理由写在 `BENCHMARK.md`。
+- 仍未做（需要外部条件或点名）：fnOS FPK 集成、Lucide / circle-flags 真实语料对账、
+  CI runner 安装、`cmd/verify` 与 `examples/*` 覆盖率、`internal/rasterx` 覆盖率。
