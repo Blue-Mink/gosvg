@@ -1,0 +1,2 @@
+go test fuzz v1
+[]byte("<svg><image href=\"data:image/png;base64,QUFBQQ==\"/></svg>")

@@ -129,3 +129,30 @@ func FuzzViewBoxTransform(f *testing.F) {
 		_ = parseTransform(s)
 	})
 }
+
+func FuzzRender(f *testing.F) {
+	for _, s := range []string{
+		`<svg viewBox="0 0 10 10"><rect width="10" height="10" fill="red"/></svg>`,
+		`<svg viewBox="0 0 10 10"><rect width="10" height="10" fill="red" display="none"/></svg>`,
+		`<svg viewBox="0 0 10 10"><defs><mask id="m"><rect width="10" height="10" fill="white"/></mask></defs><rect width="10" height="10" fill="red" mask="url(#m)"/></svg>`,
+		`<svg viewBox="0 0 10 10"><defs><clipPath id="c"><circle cx="5" cy="5" r="4"/></clipPath></defs><rect width="10" height="10" fill="red" clip-path="url(#c)"/></svg>`,
+		`<svg viewBox="0 0 10 10"><defs><linearGradient id="g"><stop offset="0" stop-color="red"/></linearGradient></defs><rect width="10" height="10" fill="url(#g)"/></svg>`,
+		`<svg viewBox="0 0 10 10"><path d="M0 0 A1 1 0 1 1 2 2 Z" stroke="#000" stroke-width="2" stroke-dasharray="2 1"/></svg>`,
+		`<svg viewBox="0 0 10 10"><defs><marker id="m" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4"><path d="M0 0L10 5L0 10z"/></marker></defs><line x1="0" y1="0" x2="10" y2="10" stroke="#000" marker-end="url(#m)"/></svg>`,
+		`<svg viewBox="0 0 10 10"><text x="1" y="5" font-size="4">hi</text></svg>`,
+		`<svg><image href="data:image/png;base64,QUFBQQ=="/></svg>`,
+		`<svg><style>.a{display:none}</style><g class="a"><rect width="4" height="4"/></g></svg>`,
+		`<svg><use href="#a"/><use id="a" href="#use1"/></svg>`,
+		``,
+		`not xml`,
+	} {
+		f.Add([]byte(s))
+	}
+	f.Fuzz(func(t *testing.T, data []byte) {
+		_, _ = Render(data, 32)
+		doc, err := Parse(data)
+		if err == nil && doc != nil {
+			_, _ = doc.Render(16, 16)
+		}
+	})
+}

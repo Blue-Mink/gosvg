@@ -1,0 +1,2 @@
+go test fuzz v1
+[]byte("<svg><use href=\"#a\"/><use id=\"a\" href=\"#use1\"/></svg>")

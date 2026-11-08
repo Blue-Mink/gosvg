@@ -1,0 +1,2 @@
+go test fuzz v1
+[]byte("<svg viewBox=\"0 0 10 10\"><mask id=\"m\"><rect width=\"10\" height=\"10\" fill=\"white\"/></mask><rect width=\"10\" height=\"10\" fill=\"red\" mask=\"url(#m)\"/></svg>")
