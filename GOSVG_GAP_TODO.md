@@ -54,7 +54,7 @@
 
 | 特性 | 决策 | 理由 |
 |---|---|---|
-| `clip-rule` | 不实现 | 需把 fill-rule 语义接进 clip 光栅路径，会动 clip 相关对账 |
+| `clip-rule` | **已推翻原决策，改为实现** | 实测 91 个文件 / 128 次使用；实现只需把它映射到既有 even-odd 路径，成本远低于原估计。**但实测真实影响为 0**（见下） |
 | `vector-effect="non-scaling-stroke"` | 不实现 | stroke 宽度在 viewBox 变换里统一缩放，单独豁免要改 stroke 管线 |
 | `<image>` 的 `preserveAspectRatio` | 不实现 | 需把 meet/slice 裁剪逻辑引入 image 缩放路径 |
 | `marker orient="auto-start-reverse"` | 不实现 | 需在起点反转切线，牵动 `renderMarkers` |
@@ -176,3 +176,21 @@ CI runner 安装（下载源已确认可达，等授权）。
 **仍未做**：文本能力（letter-spacing / textLength / 换行 / shaping）、`filter` 与
 `foreignObject`（Figma 毛玻璃，主体图形不受影响）、cairosvg 批量对账、
 CI runner 安装（下载源已确认可达，等授权）、`cmd/render` 增强、fnOS FPK 集成。
+
+## 本轮（分支 `feat/clip-rule`）
+
+- **`clip-rule` 已实现**，推翻了此前 H-A 表里「不实现」的决策（当时估计「需把 fill-rule
+  语义接进 clip 光栅路径」，实际只需映射到既有 even-odd 路径，几行代码）。
+- **但实测真实影响为 0**：91 个文件含 clip-rule → 87 个 clipPath 块 → 10 个可能受影响 →
+  对 5 个候选做修复前后逐像素对比，**差异全为 0**（它们的 clipPath 服务于被跳过的
+  Figma `foreignObject`，或子路径不重叠）。属语义补全，golden 与语料成功率均未变化。
+- **方法论教训（比这个特性本身更重要）**：用「属性出现频率」排优先级不可靠。
+  本轮同时测得：`letter-spacing` 仅 2 次、`textLength`/`lengthAdjust` 0 次、
+  `visibility` 0 个文件、`display` 只有无害的 `display:inline` —— 说明此前几轮按频率
+  推断的优先级需要重新校准。正确的排序依据是**修复前后像素对比**或**与 cairosvg 对账**。
+- 下一步建议改为：先做 cairosvg 批量对账（本机已有 cairosvg 2.9.1），用 IoU 差异
+  定位「渲染出来了但不对」的文件，再据此决定实现哪个特性。
+
+**仍未做**：cairosvg 批量对账、文本能力（实测低频，优先级下调）、`filter`（完整滤镜链
+feBlend/feColorMatrix/feGaussianBlur/feFlood/feMorphology，成本与定位不符）、
+CI runner 安装（等授权）、`cmd/render` 增强、fnOS FPK 集成。

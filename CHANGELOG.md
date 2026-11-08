@@ -106,3 +106,16 @@
   ns/op -19%**；单 path 场景无变化。新增 `BenchmarkRenderMultiStroke` 基线。
 - `<pattern>` 从「明确不支持」移入支持范围（README / 包注释 / GOSVG_TODO 三处同步）。
 - 9 项 pattern 测试（含真实语料的 Figma 模式：pattern + use + base64 image）。
+
+### 分支 `feat/clip-rule`
+- **支持 `clip-rule`**（SVG 1.1 可继承属性，默认 nonzero）：`clipPath` 或其子元素上的
+  `clip-rule` 映射到内部 `fill-rule`，复用既有 even-odd winding 光栅路径；每个子元素
+  独立计算避免兄弟污染；CSS 里写 `clip-rule` 同样生效。6 项测试覆盖 evenodd /
+  默认 nonzero / 显式 nonzero / 从 `<clipPath>` 继承 / CSS 来源 / 兄弟不泄漏。
+- **实测结论（重要，负面结果如实记录）**：958 个真实 SVG 中 91 个文件含 `clip-rule`
+  （128 次，全部为 `evenodd`），87 个 `clipPath` 块里只有 10 个属于「多子路径或多形状」，
+  对其中 5 个候选做**修复前后逐像素对比：差异全部为 0**。原因是这些 `clipPath`
+  都服务于 Figma 的 `bgblur` + `foreignObject`（已被跳过），或子路径互不重叠。
+  → 本项属**语义补全**，不是「救回渲染」；golden 与语料成功率均未变化。
+- **方法论修正**：上一轮用「属性出现频率」排优先级不可靠（91 文件 → 实际影响 0），
+  必须做修复前后像素对比或与完整实现（cairosvg）对账才能量化真实影响。

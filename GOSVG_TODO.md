@@ -53,7 +53,7 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ## 明确不支持（命中时静默跳过，不报错）
 
 **元素/特性**：`filter`、`textPath`、`foreignObject`、`symbol` / `view`、
-`switch` / `requiredFeatures`、动画与脚本、`mask-type="alpha"`、`clip-rule`、
+`switch` / `requiredFeatures`、动画与脚本、`mask-type="alpha"`、
 `vector-effect`（含 `non-scaling-stroke`）、`marker orient="auto-start-reverse"`、
 `radialGradient` 的 `fx/fy/fr`、`mix-blend-mode` / `isolation`、
 `letter-spacing` / `word-spacing` / `text-decoration`、`use` 的 `width/height` 语义、
@@ -98,6 +98,9 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
   `MaxXMLDepth`（256）限制解析阶段；`DefaultMaxDimension`（8192）与
   `maxNestingDepth`（32）限制渲染阶段。超限一律返回 `UnsupportedError`
   （带 `Code` 与哨兵错误，支持 `errors.Is`）。
+- **`clip-rule`**（SVG 1.1 可继承属性，默认 `nonzero`）：`clipPath` 元素或其子元素上的
+  `clip-rule` 映射到内部 `fill-rule`，复用已有的 even-odd winding 光栅路径；
+  每个子元素独立计算，兄弟之间不互相污染。CSS 里写 `clip-rule` 同样生效。
 - **CSS 规模上限**：`MaxCSSRules`（10000）、`MaxCSSSelectorLen`（512）、
   `MaxCSSDeclLen`（4096）。与上面的硬失败不同，CSS 超限是**降级**——丢弃超限内容、
   记入 `Diagnostics()`，渲染照常完成。
