@@ -29,6 +29,7 @@ func parseFloat(s string) (float64, bool) {
 // svgLengthUnits 是允许出现在长度数值后的单位后缀。
 // 本库只处理 viewBox 内的用户单位：所有单位统一剥离后按数值部分 1:1 近似，
 // 不做物理单位换算（12pt 按 12 处理），% 也不按父值/视口基准解析。
+// 例外：根 <svg> 的 width/height 是视口尺寸，按 96dpi 换算物理单位，见 viewport.go。
 var svgLengthUnits = map[string]bool{
 	"px": true, "pt": true, "pc": true, "cm": true, "mm": true, "in": true,
 	"em": true, "ex": true, "rem": true, "q": true, "ch": true,

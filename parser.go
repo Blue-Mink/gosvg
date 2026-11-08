@@ -135,8 +135,10 @@ func (d *Document) resolve() error {
 				d.hasVB = true
 			}
 		}
-		d.width = parseLengthOr(d.root.attr("width"), 0)
-		d.height = parseLengthOr(d.root.attr("height"), 0)
+		// 视口尺寸按 96dpi 把物理单位换算成 px（与浏览器 / cairosvg 一致）；
+		// 元素几何（font-size / stroke-width 等）仍走 parseLengthOr 的「1:1 近似」旧决策
+		d.width = parseViewportLength(d.root.attr("width"), 0)
+		d.height = parseViewportLength(d.root.attr("height"), 0)
 		d.par = parsePreserveAspectRatio(d.root.attr("preserveaspectratio"))
 	}
 

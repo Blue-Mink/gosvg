@@ -87,7 +87,9 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 >   `<image>` 自身的 `preserveAspectRatio`（按 x/y/w/h 拉伸）
 > - **CSS**：后代/子代/兄弟选择器、伪类/伪元素、`@media`/`@import`/`@supports`、
 >   `!important`、`var()`/`calc()`、`inherit`、CSS4 颜色（`lab()`/`lch()`/`color()`）
-> - **长度**：所有单位统一剥离后按数值 **1:1 近似**，不做物理单位换算，`%` 不按基准解析
+> - **长度**：根 `<svg>` 的 `width`/`height` 按 **96dpi 换算物理单位**（mm/cm/in/pt/pc/q）；
+>   其余长度（元素几何 / font-size / stroke-width 等）仍统一剥离后按数值 **1:1 近似**，
+>   `%` 与相对单位（em/ex/rem）不按父值/视口基准解析
 > - **字体**：`.ttc` 集合；未调用 `AddFontDir` 时 `font-family` 一律回退 Go Regular
 > - **`<image>`**：`data:` URI 用标准库内置解码、开箱可用；文件路径与远程 URL
 >   需注入 `ImageDecoder`（或 `RenderOptions.ImageDecoder`），未注入时静默跳过
