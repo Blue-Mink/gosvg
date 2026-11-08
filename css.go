@@ -39,16 +39,40 @@ func stripCSSComments(s string) string {
 	return b.String()
 }
 
-// parseCSS 解析 <style> 元素的 CSS 文本为规则列表。
+// CSS 解析规模上限：防止超大 <style> 或超多规则在解析阶段耗尽内存。
+// 超限内容被丢弃（不是让整个渲染失败），并通过 parseCSSLimited 的返回值上报。
+const (
+	// MaxCSSRules 是单个 <style> 元素解析出的规则条数上限，超出部分丢弃。
+	MaxCSSRules = 10000
+	// MaxCSSSelectorLen 是单个选择器文本长度上限，超长选择器跳过。
+	MaxCSSSelectorLen = 512
+	// MaxCSSDeclLen 是单条规则声明块长度上限，超长声明块跳过。
+	MaxCSSDeclLen = 4096
+)
+
+// parseCSS 解析 <style> 元素的 CSS 文本为规则列表（超限部分静默丢弃）。
 func parseCSS(text string) []cssRule {
-	var rules []cssRule
+	rules, _ := parseCSSLimited(text)
+	return rules
+}
+
+// parseCSSLimited 同 parseCSS，并报告是否因超出 MaxCSSRules / MaxCSSSelectorLen /
+// MaxCSSDeclLen 而丢弃了内容，供调用方记入 Diagnostics。
+func parseCSSLimited(text string) (rules []cssRule, truncated bool) {
 	for _, block := range strings.Split(stripCSSComments(text), "}") {
+		if len(rules) >= MaxCSSRules {
+			return rules, true
+		}
 		block = strings.TrimSpace(block)
 		if block == "" {
 			continue
 		}
 		parts := strings.SplitN(block, "{", 2)
 		if len(parts) != 2 {
+			continue
+		}
+		if len(parts[1]) > MaxCSSDeclLen {
+			truncated = true
 			continue
 		}
 		decls := parseStyle(parts[1]) // 复用内联样式解析（按 ";" 分割，key:value）
@@ -61,13 +85,17 @@ func parseCSS(text string) []cssRule {
 			if sel == "" {
 				continue
 			}
+			if len(sel) > MaxCSSSelectorLen {
+				truncated = true
+				continue
+			}
 			rule.selectors = append(rule.selectors, parseSelector(sel))
 		}
 		if len(rule.selectors) > 0 {
 			rules = append(rules, rule)
 		}
 	}
-	return rules
+	return rules, truncated
 }
 
 // parseSelector 解析单个简单选择器（tag#id.class 的任意组合）。
