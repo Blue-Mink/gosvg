@@ -211,9 +211,6 @@ func clearGhostRGB(img *image.NRGBA) {
 	}
 }
 
-// UnsupportedError 表示调用方传入了本库无法处理的输入（空文档、非正尺寸等）。
-// 注意：超出子集的 SVG 特性不会返回本错误，而是静默跳过（见包注释「明确不支持」）；
-// 这些跳过目前没有运行时诊断通道，详见 GOSVG_GAP_TODO.md。
 // ErrorCode 是 UnsupportedError 的机器可读分类。
 type ErrorCode string
 
@@ -221,6 +218,9 @@ const (
 	CodeEmptyDocument     ErrorCode = "empty_document"
 	CodeNonPositiveSize   ErrorCode = "non_positive_size"
 	CodeDimensionExceeded ErrorCode = "dimension_exceeded"
+	CodeInputTooLarge     ErrorCode = "input_too_large"
+	CodeTooManyElements   ErrorCode = "too_many_elements"
+	CodeNestingTooDeep    ErrorCode = "nesting_too_deep"
 )
 
 // 哨兵错误，供 errors.Is / errors.As 判断。
@@ -228,6 +228,9 @@ var (
 	ErrEmptyDocument     = errors.New("gosvg: empty document")
 	ErrNonPositiveSize   = errors.New("gosvg: non-positive size")
 	ErrDimensionExceeded = errors.New("gosvg: dimension exceeded")
+	ErrInputTooLarge     = errors.New("gosvg: SVG input too large")
+	ErrTooManyElements   = errors.New("gosvg: too many SVG elements")
+	ErrNestingTooDeep    = errors.New("gosvg: XML nesting too deep")
 )
 
 // UnsupportedError 表示调用方传入了本库无法处理的输入（空文档、非正尺寸、尺寸超限）。

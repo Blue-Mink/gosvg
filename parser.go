@@ -34,10 +34,27 @@ func (n *node) hasAttr(key string) bool {
 }
 
 // parse 把 SVG 字节解析成元素树。解析失败返回 error。
+// 输入规模上限：防止超大 / 超多元素 / 超深嵌套的 SVG 在解析阶段耗尽内存或栈。
+// 这三个限制只在解析期生效，与渲染期的 DefaultMaxDimension / maxNestingDepth 互补。
+const (
+	// MaxSVGSize 是单次 Parse 允许的 SVG 字节数上限（8 MiB）。
+	MaxSVGSize = 8 << 20
+	// MaxElementCount 是单次 Parse 允许的元素总数上限。
+	MaxElementCount = 100000
+	// MaxXMLDepth 是元素嵌套深度上限。
+	MaxXMLDepth = 256
+)
+
 func parse(data []byte) (*node, error) {
+	if len(data) > MaxSVGSize {
+		return nil, &UnsupportedError{
+			Feature: "SVG input too large", Code: CodeInputTooLarge, Err: ErrInputTooLarge,
+		}
+	}
 	dec := xml.NewDecoder(bytes.NewReader(data))
 	var root *node
 	var stack []*node
+	elements := 0
 
 	for {
 		tok, err := dec.Token()
@@ -49,6 +66,17 @@ func parse(data []byte) (*node, error) {
 		}
 		switch t := tok.(type) {
 		case xml.StartElement:
+			elements++
+			if elements > MaxElementCount {
+				return nil, &UnsupportedError{
+					Feature: "too many elements", Code: CodeTooManyElements, Err: ErrTooManyElements,
+				}
+			}
+			if len(stack) >= MaxXMLDepth {
+				return nil, &UnsupportedError{
+					Feature: "XML nesting too deep", Code: CodeNestingTooDeep, Err: ErrNestingTooDeep,
+				}
+			}
 			n := &node{
 				name:  strings.ToLower(t.Name.Local),
 				attrs: make(map[string]string, len(t.Attr)),
