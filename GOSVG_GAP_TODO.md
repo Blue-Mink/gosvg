@@ -141,3 +141,22 @@
   （补 `Matrix2D` 基础性质测试，fork 代码此前零覆盖）；根包 85.7% → 85.8%。
 - 仍未做：`internal/rasterx` 的 `Gradient` / `Filler` / `Dasher` 测试、`examples/*` 覆盖、
   fnOS FPK 集成、真实语料对账、CI runner 安装（下载源已确认可达，等授权）。
+
+## 本轮（分支 `feat/realworld-compat`）
+
+按「全面能力增强分析」的第 1 批 + 第 2 批工具部分推进，全部由真实语料实测驱动：
+
+| 缺口 | 修复 | 实测效果 |
+|---|---|---|
+| 非 UTF-8 encoding 声明硬失败 | `CharsetReader`（ASCII 透传 + Latin-1 展开，零新依赖） | Parse 失败 67 → 0 |
+| 无效颜色值丢失继承 | `mergeStyle` + `isValidPaint` | `folder-off.svg` 等从全透明恢复 |
+| `#gggggg` 被当黑色 | `parseColor` 加 `isHexDigits` 校验 | 无效声明改为忽略 |
+| `<image>` data URI 需手动注入 | 内置 data URI 解码（不碰文件/网络） | 语料 B/C 的 7 次 skipped 消除 |
+| 无真实语料回归手段 | `cmd/corpus` + `CORPUS_BASELINE.md` | 958 个 SVG：90.4% → 99.5% |
+
+剩余 4 个全透明样例已逐个定位：3 个是语料本身的空 SVG，1 个是 Figma 的
+`<pattern>` + base64 `<image>`（属下一批 pattern 支持范围）。
+
+**仍未做**：`<pattern>`、`strokeCapsules` 复用 Filler（pprof 靶点，占分配 38.9%）、
+文本能力（letter-spacing / textLength / 换行 / shaping）、cairosvg 批量对账、
+CI runner 安装（下载源已确认可达，等授权）。

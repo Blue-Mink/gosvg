@@ -64,6 +64,10 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 
 **字体**：`.ttc` 字体集合；未调用 `AddFontDir` 时 `font-family` 一律回退 Go Regular。
 
+**XML 编码声明**：UTF-8 与 ASCII 系（`US-ASCII` 等）透传，`ISO-8859-1` / `Latin-1`
+逐字节展开为 UTF-8，**其余编码返回带编码名的明确错误**。需要完整 IANA 编码支持时，
+替换包级 `CharsetReader`（例如接 `golang.org/x/text/encoding/htmlindex`）。
+
 **`<image>`**：库不内置位图解码，需调用方注入 `ImageDecoder func(href string) (image.Image, error)`；
 未注入或解码失败时静默跳过。
 
@@ -130,6 +134,7 @@ GOARCH=arm64 GOOS=linux go build ./...         # 交叉编译（真机测试需 
 GOOS=js GOARCH=wasm go build ./...              # WASM 目标可编译
 go test -run TestGoldenRegression -update .    # 重新生成 testdata/golden.sha256
 go test -run '^$' -fuzz '^FuzzParse$' -fuzztime 30s .   # fuzz 冒烟
+go run ./cmd/corpus -size 64 <dir>...                  # 真实语料回归，见 CORPUS_BASELINE.md
 ```
 
 内网若 `proxy.golang.org` 不通，用 `GOPROXY=https://goproxy.cn,direct`。
