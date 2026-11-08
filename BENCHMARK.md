@@ -66,3 +66,23 @@
 - 后续若继续优化，方向是 `Rasterizer` 缓冲区/实例复用（`bufF32`/`bufU32` 已按 cap 复用，
   但每次 `newRenderContext` 都新建 Rasterizer）与光栅器分配。这属于 fork 核心，
   必须靠 golden 回归 + cairosvg 对账兜底后再动。
+
+## strokeCapsules 复用 Filler 的 A/B 实测
+
+`stroke.go` 原先每次 `strokeCapsules` 都新建 `ScannerGV` + `Filler`（512px 下每次分配
+约 1MB float32 缓冲）。改为 `renderContext.strokeFillerFor` 按目标图缓存复用后，
+同机 A/B（`-benchtime 2s`）：
+
+| Benchmark | 指标 | 复用 | 不复用 | 变化 |
+|---|---|---|---|---|
+| `BenchmarkRenderMultiStroke`（60 条 stroke path，512px） | B/op | **88.7 MB** | 212.5 MB | **-58%** |
+| 同上 | ns/op | **570 ms** | 701 ms | **-19%** |
+| 同上 | allocs/op | 21,118,737 | 21,119,093 | ≈0 |
+| `BenchmarkRender`（单条 stroke path） | 全部指标 | 292,168 allocs / 5.37 MB | 完全相同 | **无变化** |
+
+**读数要点**：收益体现在 **B/op（字节）而非 allocs/op（次数）**——filler 创建只是几次
+分配，但每次约 1MB。单 path 场景一次渲染只调用一次 `strokeCapsules`，复用无从生效，
+因此 `BenchmarkRender` 数字不变（也没有恶化）。
+
+据此更新上一轮判断：「离屏位图池化」仍未做，但**光栅器缓冲复用已做且实测有效**；
+pprof 里 `setUseFloatingPointMath` 占 38.9% 指的是分配**字节**占比，与该结论一致。

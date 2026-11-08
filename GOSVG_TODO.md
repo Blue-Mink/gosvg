@@ -15,7 +15,12 @@
 
 **元素**：`svg` / `g` / `defs` / `use` / `linearGradient` / `radialGradient` / `stop` /
 `clipPath` / `circle` / `ellipse` / `rect` / `line` / `path` / `polygon` / `polyline` /
-`text` / `tspan` / `mask` / `marker` / `image` / `style`
+`text` / `tspan` / `mask` / `marker` / `image` / `pattern` / `style`
+
+**pattern 属性**：`patternUnits`（userSpaceOnUse / objectBoundingBox，默认后者）、
+`patternContentUnits`（默认 userSpaceOnUse）、`patternTransform`、`x` / `y` /
+`width` / `height`、tile 内的 `viewBox`（等比拉伸）；tile 内可含 `<use>` / `<image>`
+等任意受支持元素。`fill="url(#pattern)"` 生效；`stroke="url(#pattern)"` 记诊断后跳过。
 
 **属性**：`viewBox` / `preserveAspectRatio`（9 种 align + meet/slice/none）/ `transform`
 （matrix/translate/scale/rotate/skewX/skewY）/ `fill` / `fill-rule` / `fill-opacity` /
@@ -47,7 +52,7 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 
 ## 明确不支持（命中时静默跳过，不报错）
 
-**元素/特性**：`filter`、`pattern`、`textPath`、`foreignObject`、`symbol` / `view`、
+**元素/特性**：`filter`、`textPath`、`foreignObject`、`symbol` / `view`、
 `switch` / `requiredFeatures`、动画与脚本、`mask-type="alpha"`、`clip-rule`、
 `vector-effect`（含 `non-scaling-stroke`）、`marker orient="auto-start-reverse"`、
 `radialGradient` 的 `fx/fy/fr`、`mix-blend-mode` / `isolation`、
