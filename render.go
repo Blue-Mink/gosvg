@@ -297,7 +297,7 @@ func defaultShapeStyle() shapeStyle {
 // mergeStyle 把节点 n 自身的表现属性覆盖到继承样式 base 上。
 func mergeStyle(base shapeStyle, n *node) shapeStyle {
 	s := base
-	if v, ok := n.attrs["fill"]; ok {
+	if v, ok := n.attrs["fill"]; ok && isValidPaint(v) {
 		s.fill = v
 	}
 	if v, ok := n.attrs["fill-rule"]; ok {
@@ -306,7 +306,7 @@ func mergeStyle(base shapeStyle, n *node) shapeStyle {
 	if v, ok := n.attrs["fill-opacity"]; ok {
 		s.fillOpacity = parseFloatOr(v, 1)
 	}
-	if v, ok := n.attrs["stroke"]; ok {
+	if v, ok := n.attrs["stroke"]; ok && isValidPaint(v) {
 		s.stroke = v
 	}
 	if v, ok := n.attrs["stroke-width"]; ok {
@@ -389,4 +389,24 @@ func isMetadataElement(name string) bool {
 		return true
 	}
 	return false
+}
+
+// isValidPaint 判断 fill / stroke 的值是否可识别。
+// 按 CSS 语义，**无效声明应被忽略并保持继承值**，而不是当成「不填充」——
+// 否则 fill="000000"（缺 #，Material Symbols 等工具的真实导出写法）会让整个
+// 图形消失。实测：修复前该写法渲染为全透明，修复后回退到规范默认 black。
+func isValidPaint(v string) bool {
+	t := strings.TrimSpace(v)
+	if t == "" {
+		return false
+	}
+	switch strings.ToLower(t) {
+	case "none", "transparent", "currentcolor":
+		return true
+	}
+	if l := strings.ToLower(t); strings.HasPrefix(l, "url(") && strings.Contains(l, ")") {
+		return true // url(#id) 以及 SVG 1.1 的 "url(#id) <fallback>" 写法
+	}
+	_, ok := parseColor(t)
+	return ok
 }
