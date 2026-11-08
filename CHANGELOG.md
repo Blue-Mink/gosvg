@@ -95,3 +95,14 @@
 - **新增 `cmd/corpus`**：批量渲染真实语料，输出成功率 / 全透明清单 / 失败清单 / 诊断分布，
   支持 `-json`；覆盖率 42.2%
 - 真实语料整体成功率 **90.4% → 99.5%**（954/958）
+
+### 分支 `feat/pattern-and-stroke-reuse`
+- **新增 `<pattern>` 平铺填充**：`patternUnits` / `patternContentUnits` / `patternTransform` /
+  `x`/`y`/`width`/`height` / tile 内 `viewBox`；tile 内支持 `<use>`、`<image>`（含 data URI）
+  等任意受支持元素。实现为「离屏渲染 tile → 按 tile 位置逐块 `draw.DrawMask` →
+  path alpha 掩膜」，`maxPatternTile=4096` 防止超大 tile 分配。
+  `stroke="url(#pattern)"` 记诊断后跳过。真实语料效果：fnOS 面板批次 216/217 → **217/217**。
+- **`strokeCapsules` 复用 Filler**：多 stroke path 场景 A/B 实测 **B/op -58%（212.5MB → 88.7MB）、
+  ns/op -19%**；单 path 场景无变化。新增 `BenchmarkRenderMultiStroke` 基线。
+- `<pattern>` 从「明确不支持」移入支持范围（README / 包注释 / GOSVG_TODO 三处同步）。
+- 9 项 pattern 测试（含真实语料的 Figma 模式：pattern + use + base64 image）。

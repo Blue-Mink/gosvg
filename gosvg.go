@@ -35,7 +35,7 @@
 //
 // 明确不支持的常见特性（命中时静默跳过，不报错）：
 //
-//	元素/特性：filter、pattern、textPath、foreignObject、symbol/view、
+//	元素/特性：filter、textPath、foreignObject、symbol/view、
 //	    switch/requiredFeatures、动画与脚本、mask-type="alpha"、clip-rule、
 //	    vector-effect（含 non-scaling-stroke）、marker orient="auto-start-reverse"、
 //	    radialGradient 的 fx/fy/fr、mix-blend-mode/isolation、

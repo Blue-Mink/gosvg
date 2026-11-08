@@ -66,7 +66,7 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 
 ## 特性
 
-**元素**：`svg` / `g` / `defs` / `use` / `linearGradient` / `radialGradient` / `stop` / `clipPath` / `circle` / `ellipse` / `rect` / `line` / `path` / `polygon` / `polyline` / `text` / `tspan` / `mask` / `marker` / `image` / `style`
+**元素**：`svg` / `g` / `defs` / `use` / `linearGradient` / `radialGradient` / `stop` / `clipPath` / `circle` / `ellipse` / `rect` / `line` / `path` / `polygon` / `polyline` / `text` / `tspan` / `mask` / `marker` / `image` / `pattern` / `style`
 
 **属性**：`viewBox` / `preserveAspectRatio` / `transform` / `fill` / `fill-rule` / `fill-opacity` / `stroke` / `stroke-width` / `stroke-linecap` / `stroke-linejoin` / `stroke-miterlimit` / `stroke-dasharray` / `stroke-dashoffset` / `stroke-opacity` / `opacity` / `gradientUnits` / `gradientTransform` / `spreadMethod` / `offset` / `stop-color` / `stop-opacity` / `mask` / `maskUnits` / `maskContentUnits` / `clip-path` / `clipPathUnits` / `marker-start` / `marker-mid` / `marker-end` / `markerUnits` / `markerWidth` / `markerHeight` / `refX` / `refY` / `orient` / `font-size` / `font-family` / `font-weight` / `font-style` / `text-anchor` / `dominant-baseline` / `x` / `y` / `dx` / `dy` / `color` / `currentColor` / `id` / `class` / `display` / `visibility` / 内联 `style`
 
@@ -77,7 +77,7 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 > [!NOTE]
 > **明确不支持**（命中时静默跳过，不报错）的特性清单：
 >
-> - **元素/特性**：`filter`、`pattern`、`textPath`、`foreignObject`、`symbol`/`view`、
+> - **元素/特性**：`filter`、`textPath`、`foreignObject`、`symbol`/`view`、
 >   `switch`/`requiredFeatures`、动画与脚本、`mask-type="alpha"`、`clip-rule`、
 >   `vector-effect`（含 `non-scaling-stroke`）、`marker orient="auto-start-reverse"`、
 >   `radialGradient` 的 `fx/fy/fr`、`mix-blend-mode`/`isolation`、
@@ -196,11 +196,14 @@ go test -run TestGoldenRegression -update .   # 有意改动渲染输出后重�
 
 | 语料 | 数量 | 渲染出内容 |
 |---|---|---|
-| fnOS 面板图标 | 217 | 99.5% |
+| fnOS 面板图标 | 217 | **100%** |
 | node_modules 图标库 | 355 | 99.7% |
-| 应用配置 | 127 | 100% |
+| 应用配置 | 127 | **100%** |
 | 混合来源 | 259 | 99.2% |
-| **合计** | **958** | **99.5%** |
+| **合计** | **958** | **99.7%** |
+
+剩余 3 个「全透明」经逐个核查均为语料本身的空 SVG（`empty.svg`、`annotation-noicon.svg`×2），
+即**可渲染的 SVG 失败数为 0**。
 
 Parse / Render 崩溃数为 0。基线数据、剩余 4 个全透明样例的逐个定位与复现方式见
 [CORPUS_BASELINE.md](CORPUS_BASELINE.md)。

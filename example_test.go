@@ -2,6 +2,7 @@ package gosvg_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	gosvg "github.com/Blue-Mink/gosvg"
@@ -72,6 +73,24 @@ func BenchmarkRenderDocument(b *testing.B) {
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		if _, err := doc.Render(512, 512); err != nil {
+			b.Fatal(err)
+		}
+	}
+}
+
+// BenchmarkRenderMultiStroke 用 60 条独立 stroke path，体现 strokeFiller 复用的收益：
+// 复用前每条 path 都新建 ScannerGV+Filler（各自分配 w*h 缓冲），复用后只分配一次。
+func BenchmarkRenderMultiStroke(b *testing.B) {
+	var sb strings.Builder
+	sb.WriteString(`<svg viewBox="0 0 200 200">`)
+	for i := 0; i < 60; i++ {
+		fmt.Fprintf(&sb, `<path d="M%d 10 L%d 190" stroke="#000" stroke-width="2" fill="none"/>`, i*3, i*3+40)
+	}
+	sb.WriteString(`</svg>`)
+	data := []byte(sb.String())
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		if _, err := gosvg.Render(data, 512); err != nil {
 			b.Fatal(err)
 		}
 	}

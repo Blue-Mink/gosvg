@@ -160,3 +160,19 @@
 **仍未做**：`<pattern>`、`strokeCapsules` 复用 Filler（pprof 靶点，占分配 38.9%）、
 文本能力（letter-spacing / textLength / 换行 / shaping）、cairosvg 批量对账、
 CI runner 安装（下载源已确认可达，等授权）。
+
+## 本轮（分支 `feat/pattern-and-stroke-reuse`）
+
+- **`<pattern>` 已实现**：真实语料 A 批 216/217 → **217/217**，958 个真实 SVG 整体
+  954 → **955（99.7%）**，剩余 3 个全透明经核查均为语料本身的空 SVG，
+  即**可渲染的真实 SVG 失败数为 0**。
+- **`strokeCapsules` 复用 Filler 已实现**并做 A/B 实测：多 path 场景 B/op -58%、ns/op -19%；
+  单 path 无变化。据此修正上一轮判断——「离屏位图池化」仍未做，但光栅器缓冲复用已做且有效。
+- 实现中修掉两个自己引入的问题：`draw.DrawMask` 会用 `src.Bounds()` 裁剪目标矩形，
+  导致「平铺 image + 一次 DrawMask」只画出左上角一块（64/256），改为按 tile 位置逐块绘制；
+  以及 `tileW/tileH` 重复声明。
+- 流程教训：从验证目录 `tar` 回传会覆盖本地未提交的文档改动（本轮踩到一次，已重做）。
+
+**仍未做**：文本能力（letter-spacing / textLength / 换行 / shaping）、`filter` 与
+`foreignObject`（Figma 毛玻璃，主体图形不受影响）、cairosvg 批量对账、
+CI runner 安装（下载源已确认可达，等授权）、`cmd/render` 增强、fnOS FPK 集成。

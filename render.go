@@ -25,6 +25,12 @@ type renderContext struct {
 	nesting int             // 离屏（mask/clip）嵌套层数
 	err     error           // 首个取消错误，供所有递归分支快速返回
 	visible bool            // CSS visibility 的继承状态（默认 true）
+
+	// strokeFiller 复用描边光栅器：strokeCapsules 此前每次调用都新建
+	// ScannerGV+Filler，512px 下每次分配约 1MB float32 缓冲
+	// （pprof: setUseFloatingPointMath 占总分配 38.9%）。
+	strokeFiller    *rasterx.Filler
+	strokeFillerImg *image.NRGBA
 }
 
 func newRenderContext(width, height int, d *Document) *renderContext {
@@ -155,7 +161,7 @@ func (ctx *renderContext) renderNodeBare(n *node, opacity float64) error {
 				return err
 			}
 		}
-	case "defs", "mask", "clippath", "lineargradient", "radialgradient", "marker", "style":
+	case "defs", "mask", "clippath", "lineargradient", "radialgradient", "marker", "pattern", "style":
 		// 定义类元素不直接渲染。
 	case "use":
 		if ctx.visible {
@@ -250,6 +256,9 @@ func (ctx *renderContext) renderShape(n *node, opacity float64) {
 	} else if g := ctx.doc.resolveGradient(fillStr); g != nil {
 		nonZero := style.fillRule != "evenodd"
 		ctx.fillGradient(p, g, opacity*style.fillOpacity, nonZero)
+	} else if pat := ctx.doc.resolvePattern(fillStr); pat != nil {
+		nonZero := style.fillRule != "evenodd"
+		ctx.fillPattern(p, pat, opacity*style.fillOpacity, nonZero)
 	}
 
 	// 描边
@@ -257,6 +266,10 @@ func (ctx *renderContext) renderShape(n *node, opacity float64) {
 		ctx.stroke(p, c, style.strokeWidth, style.linecap, style.linejoin, style.miterLimit, style.strokeDasharray, style.strokeDashoffset, opacity*style.strokeOpacity)
 	} else if g := ctx.doc.resolveGradient(strokeStr); g != nil && style.strokeWidth > 0 {
 		ctx.strokeGradient(p, g, style.strokeWidth, style.linecap, style.linejoin, style.miterLimit, style.strokeDasharray, style.strokeDashoffset, opacity*style.strokeOpacity)
+	} else if pat := ctx.doc.resolvePattern(strokeStr); pat != nil && style.strokeWidth > 0 {
+		// stroke="url(#pattern)"：先按纯色黑描边到掩膜再平铺不划算，
+		// 这里退化为用 pattern 填充描边路径的包围盒不可行，故按规范少见用法记诊断。
+		ctx.doc.addDiagnostic("stroke with pattern reference is not supported")
 	}
 
 	// marker（箭头）
@@ -377,7 +390,7 @@ func (ctx *renderContext) strokeColor(p rasterx.Path, clr interface{}, width flo
 
 	// 全部 cap/join 组合统一走精确轮廓（单条连续边，解析级 AA）。
 	// 用户空间 offset：halfWidth 传用户半宽 width/2，tol 换算到用户单位。
-	strokeCapsules(ctx.img, p, ctx.matrix, width/2, clr, 0.01/scale, linecap, linejoin, miterLimit, dasharray, dashoffset)
+	strokeCapsules(ctx.strokeFillerFor(ctx.img), p, ctx.matrix, width/2, clr, 0.01/scale, linecap, linejoin, miterLimit, dasharray, dashoffset)
 	return
 }
 
@@ -409,4 +422,17 @@ func isValidPaint(v string) bool {
 	}
 	_, ok := parseColor(t)
 	return ok
+}
+
+// strokeFillerFor 返回绑定到 img 的可复用 Filler，避免每次描边都重新分配
+// 光栅器缓冲（见 renderContext.strokeFiller 注释）。
+func (ctx *renderContext) strokeFillerFor(img *image.NRGBA) *rasterx.Filler {
+	if ctx.strokeFiller != nil && ctx.strokeFillerImg == img {
+		return ctx.strokeFiller
+	}
+	b := img.Bounds()
+	f := rasterx.NewFiller(b.Dx(), b.Dy(), rasterx.NewScannerGV(b.Dx(), b.Dy(), img, b))
+	ctx.strokeFiller = f
+	ctx.strokeFillerImg = img
+	return f
 }
