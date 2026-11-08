@@ -36,10 +36,11 @@
 // 明确不支持的常见特性（命中时静默跳过，不报错）：
 //
 //	元素/特性：filter、textPath、foreignObject、symbol/view、
-//	    switch/requiredFeatures、动画与脚本、mask-type="alpha"、clip-rule、
+//	    switch/requiredFeatures、动画与脚本、mask-type="alpha"、
 //	    vector-effect（含 non-scaling-stroke）、marker orient="auto-start-reverse"、
 //	    radialGradient 的 fx/fy/fr、mix-blend-mode/isolation、
 //	    letter-spacing/word-spacing/text-decoration、use 的 width/height、
+//	    （clip-rule 已支持：clipPath 内映射到 fill-rule 的 even-odd 光栅路径）
 //	    <image> 自身的 preserveAspectRatio
 //	CSS：后代/子代/兄弟选择器、伪类、@media/@import/@supports、!important、
 //	    var()/calc()、inherit 关键字、CSS4 颜色（lab/lch/color/device-cmyk）

@@ -95,7 +95,19 @@ func (ctx *renderContext) renderClipMask(clipNode, targetNode *node, w, h int) *
 		visible: ctx.visible,
 	}
 	sub.dasher = newDasherFor(img)
+	// clip-rule（SVG 1.1，可继承，默认 nonzero）决定 clipPath 内形状的裁剪规则。
+	// 复用 fill-rule 的 even-odd 光栅路径：映射到 sub.style.fillRule 后，
+	// renderShape 里的 nonZero := style.fillRule != "evenodd" 自然生效。
+	// 每个子元素独立计算，避免兄弟之间互相污染（clip-rule 只从父级继承）。
+	baseRule := strings.ToLower(strings.TrimSpace(clipNode.attr("clip-rule")))
 	for _, c := range clipNode.children {
+		sub.style.fillRule = "nonzero"
+		if baseRule != "" {
+			sub.style.fillRule = baseRule
+		}
+		if cr := strings.ToLower(strings.TrimSpace(c.attr("clip-rule"))); cr != "" {
+			sub.style.fillRule = cr
+		}
 		if err := sub.renderNodeBare(c, 1.0); err != nil && ctx.err == nil {
 			ctx.err = err
 			break
