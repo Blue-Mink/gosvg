@@ -52,6 +52,10 @@ func parse(data []byte) (*node, error) {
 		}
 	}
 	dec := xml.NewDecoder(bytes.NewReader(data))
+	if CharsetReader != nil {
+		// 让 <?xml encoding="ASCII"?> 这类非 UTF-8 声明不再直接 Parse 失败。
+		dec.CharsetReader = CharsetReader
+	}
 	var root *node
 	var stack []*node
 	elements := 0
