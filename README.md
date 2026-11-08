@@ -98,6 +98,8 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 > `DefaultMaxDimension`（8192）、mask/clip 离屏嵌套 ≤ 32。超限返回 `UnsupportedError`，
 > 可用 `errors.Is` 判断 `ErrInputTooLarge` / `ErrTooManyElements` / `ErrNestingTooDeep` /
 > `ErrDimensionExceeded` / `ErrNonPositiveSize` / `ErrEmptyDocument`。
+> `<style>` 的 CSS 另有 `MaxCSSRules` / `MaxCSSSelectorLen` / `MaxCSSDeclLen`，
+> 超限内容被丢弃（降级而非失败）并记入 `Diagnostics()`。
 
 ## 工作原理
 

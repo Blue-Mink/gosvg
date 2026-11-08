@@ -152,7 +152,11 @@ func (d *Document) resolve() error {
 				}
 			case "style":
 				if c.content != "" {
-					d.cssRules = append(d.cssRules, parseCSS(c.content)...)
+					rules, truncated := parseCSSLimited(c.content)
+					d.cssRules = append(d.cssRules, rules...)
+					if truncated {
+						d.addDiagnostic("<style> CSS exceeded size limits; some rules ignored")
+					}
 				}
 			case "defs":
 				d.indexDefs(c)

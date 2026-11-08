@@ -89,6 +89,9 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
   `MaxXMLDepth`（256）限制解析阶段；`DefaultMaxDimension`（8192）与
   `maxNestingDepth`（32）限制渲染阶段。超限一律返回 `UnsupportedError`
   （带 `Code` 与哨兵错误，支持 `errors.Is`）。
+- **CSS 规模上限**：`MaxCSSRules`（10000）、`MaxCSSSelectorLen`（512）、
+  `MaxCSSDeclLen`（4096）。与上面的硬失败不同，CSS 超限是**降级**——丢弃超限内容、
+  记入 `Diagnostics()`，渲染照常完成。
 - **`display` / `visibility`**：`display:none` 跳过整棵子树；`visibility` 是继承属性，
   `hidden` / `collapse` 跳过本节点绘制、子元素可显式 `visible` 覆盖。
   presentation 属性、CSS 规则、内联 `style` 三条路径都生效。
@@ -117,7 +120,8 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ```sh
 sh ./scripts/verify.sh                         # 全套门禁（含覆盖率与 benchmark 冒烟）
 go test ./...                                  # 单元 + 回归 + golden 哈希
-go test -count=1 -cover ./...                  # 覆盖率（根包当前 85.5%）
+go test -count=1 -cover ./...                  # 覆盖率（根包 85.8%、cmd/verify 62.3%、
+                                               #   internal/vector 24.3%、internal/rasterx 3.9%）
 go test -run '^$' -bench . -benchmem -benchtime 2s .   # 性能基线，见 BENCHMARK.md
 go test -race ./...                           # 并发检查
 go vet ./...                                  # 静态检查

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"image"
 	"image/png"
 	"os"
 	"path/filepath"
@@ -10,69 +11,89 @@ import (
 	gosvg "github.com/Blue-Mink/gosvg"
 )
 
-// 用法：gosvg-verify [testdata_dir] [out_dir]
-// 不给 out_dir 时只做渲染校验、不落盘；给定时把每个样例渲染成 PNG。
-func main() {
-	inDir := "testdata"
-	outDir := ""
-	if len(os.Args) > 1 {
-		inDir = os.Args[1]
+// parseArgs 从 CLI 参数取输入目录与可选输出目录。
+func parseArgs(args []string) (inDir, outDir string) {
+	inDir, outDir = "testdata", ""
+	if len(args) > 1 {
+		inDir = args[1]
 	}
-	if len(os.Args) > 2 {
-		outDir = os.Args[2]
+	if len(args) > 2 {
+		outDir = args[2]
 	}
+	return
+}
+
+// run 渲染 inDir 下所有 .svg（256×256）；outDir 非空时同时写出 PNG。
+// 返回成功数与失败数；目录不可读或无法创建 outDir 时返回 error。
+func run(inDir, outDir string) (ok, failed int, err error) {
 	if outDir != "" {
 		if err := os.MkdirAll(outDir, 0o755); err != nil {
-			fmt.Fprintln(os.Stderr, "mkdir:", err)
-			os.Exit(1)
+			return 0, 0, err
 		}
 	}
 	entries, err := os.ReadDir(inDir)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "read dir:", err)
-		os.Exit(1)
+		return 0, 0, err
 	}
-	failed, count := 0, 0
 	for _, e := range entries {
 		if e.IsDir() || !strings.HasSuffix(e.Name(), ".svg") {
 			continue
 		}
-		count++
 		name := strings.TrimSuffix(e.Name(), ".svg")
-		data, err := os.ReadFile(filepath.Join(inDir, e.Name()))
-		if err != nil {
-			fmt.Printf("READ ERR   %-16s %v\n", e.Name(), err)
+		data, rerr := os.ReadFile(filepath.Join(inDir, e.Name()))
+		if rerr != nil {
+			fmt.Printf("READ ERR   %-16s %v\n", e.Name(), rerr)
 			failed++
 			continue
 		}
-		img, err := gosvg.Render(data, 256)
-		if err != nil {
-			fmt.Printf("RENDER ERR %-16s %v\n", e.Name(), err)
+		img, ierr := gosvg.Render(data, 256)
+		if ierr != nil {
+			fmt.Printf("RENDER ERR %-16s %v\n", e.Name(), ierr)
 			failed++
 			continue
 		}
 		if outDir != "" {
-			f, err := os.Create(filepath.Join(outDir, name+".png"))
-			if err != nil {
-				fmt.Printf("CREATE ERR %-16s %v\n", e.Name(), err)
-				failed++
-				continue
-			}
-			encErr := png.Encode(f, img)
-			closeErr := f.Close()
-			if encErr != nil || closeErr != nil {
-				fmt.Printf("WRITE ERR  %-16s enc=%v close=%v\n", e.Name(), encErr, closeErr)
+			if werr := writePNG(filepath.Join(outDir, name+".png"), img); werr != nil {
+				fmt.Printf("WRITE ERR  %-16s %v\n", e.Name(), werr)
 				failed++
 				continue
 			}
 		}
 		fmt.Printf("OK %-16s %dx%d\n", e.Name(), img.Bounds().Dx(), img.Bounds().Dy())
+		ok++
 	}
-	if count == 0 {
+	return ok, failed, nil
+}
+
+// writePNG 编码并落盘；编码与关闭的错误都会被上报。
+func writePNG(path string, img *image.NRGBA) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	encErr := png.Encode(f, img)
+	closeErr := f.Close()
+	if encErr != nil {
+		return encErr
+	}
+	return closeErr
+}
+
+// 用法：gosvg-verify [testdata_dir] [out_dir]
+// 不给 out_dir 时只做渲染校验、不落盘；给定时把每个样例渲染成 PNG。
+// 退出码：0 = 全部成功；1 = 有失败、目录不可读或没有 .svg。
+func main() {
+	inDir, outDir := parseArgs(os.Args)
+	ok, failed, err := run(inDir, outDir)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	if ok+failed == 0 {
 		fmt.Fprintln(os.Stderr, "no .svg found in", inDir)
 		os.Exit(1)
 	}
-	fmt.Printf("%d/%d ok\n", count-failed, count)
+	fmt.Printf("%d/%d ok\n", ok, ok+failed)
 	if failed > 0 {
 		os.Exit(1)
 	}
