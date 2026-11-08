@@ -66,12 +66,26 @@ func newDasherFor(img *image.NRGBA) *rasterx.Dasher {
 func (ctx *renderContext) viewBoxMatrix(w, h int) rasterx.Matrix2D {
 	d := ctx.doc
 	if !d.hasVB {
-		// 无 viewBox：若声明了 width/height 则按它缩放，否则 1:1。
+		// 无 viewBox：按 width/height 建立视口，等比缩放并居中（xMidYMid meet），
+		// 与浏览器 / cairosvg 一致。此前直接 Scale(w/vw, h/vh) 做非等比拉伸，
+		// 导致 width!=height 的 SVG 被拉扁、内容位置整体偏移
+		// （真实语料 D 批 196 个无 viewBox 文件 IoU 中位数仅 0.18）。
 		vw, vh := d.width, d.height
 		if vw <= 0 || vh <= 0 {
 			return rasterx.Identity
 		}
-		return rasterx.Identity.Scale(float64(w)/vw, float64(h)/vh)
+		sx, sy := float64(w)/vw, float64(h)/vh
+		if d.par.none {
+			// 显式 preserveAspectRatio="none" 才拉伸填充。
+			return rasterx.Identity.Scale(sx, sy)
+		}
+		s := math.Min(sx, sy)
+		if d.par.slice {
+			s = math.Max(sx, sy)
+		}
+		tx := (float64(w) - vw*s) * d.par.alignX
+		ty := (float64(h) - vh*s) * d.par.alignY
+		return rasterx.Identity.Translate(tx, ty).Scale(s, s)
 	}
 	vb := d.viewBox
 
