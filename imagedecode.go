@@ -50,3 +50,12 @@ func decodeDataURI(s string) (image.Image, error) {
 	img, _, err := image.Decode(bytes.NewReader(data))
 	return img, err
 }
+
+// decodeDataURIOnly 只解码 data: URI，不触碰文件系统与网络。
+// 用于调用方未注入任何解码器时的兜底，使内联位图开箱可用。
+func decodeDataURIOnly(href string) (image.Image, error) {
+	if !strings.HasPrefix(href, "data:") {
+		return nil, fmt.Errorf("gosvg: not a data URI")
+	}
+	return decodeDataURI(href)
+}
