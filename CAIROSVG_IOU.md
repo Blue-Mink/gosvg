@@ -230,6 +230,48 @@ D 批 228 个里 **196 个无 viewBox**，bbox 的 Y 方向系统性错位；`st
 **需用户点头**项，不擅自改、不阻塞发版。修正 3 的价值主要是**语义正确性**
 （与浏览器 / cairosvg 的视口建立一致），而非 IoU 提升。
 
+### 修正 5：even-odd 修复假设证伪（2026-11-09，全量验证后撤回）
+
+> 编号说明：本结论在实验分支 `chore/evenodd-scan-finding`（已关闭的 PR #13）中记为
+> 「修正 5」；其前序「修正 4」（even-odd 状态残留假设与该假设下的修复尝试）从未合入 main，
+> 故本文件编号由 3 直接跳至 5，属有意保留，以免与分支记录、PR 讨论产生歧义。
+
+**结论：PR #13 / `9dd24ac` 的「独立 Filler 实例」改动是 no-op，对声称要修的缺陷没有任何可见效果；此前「共享 `ctx.dasher.Filler` 导致 even-odd 状态在多次 fill 之间残留」这一根因假设不成立。修复撤回，PR 已关闭、未合并、未发版。**
+
+#### 验证（本机自建 Go 1.27.3，与 .15 同版本；未触碰 .15）
+
+- `sh ./scripts/verify.sh` → **ALL GREEN**：gofmt 空、vet 0、test 86.2%、`-race` 全过、arm64/wasm 交叉编译、bench、FuzzParse 30s + FuzzRender 20s 无 crash。
+- `testdata/golden.sha256` **未变**（6 个基线样本渲染字节未变），无需重生成。
+- 全量 850 个 SVG 重新渲染（零错误），与修复前基线及 cairosvg 参照按同一 alpha IoU（alpha>8）逐文件比对，**848 个可比样本**：
+
+  | 指标 | 修复前 | 修复后 |
+  |---|---|---|
+  | 平均 IoU | 0.9507 | 0.9507 |
+  | 中位 IoU | 0.9978 | 0.9978 |
+  | IoU < 0.5 | 15 | 15 |
+  | IoU < 0.8 | 70 | 70 |
+
+  逐文件 Δ：提升 >0.001 = **0**，退化 <-0.001 = **0**，|Δ| 最大 **0.0000**，848 个**逐像素完全相同**。真 bug 文件 `D__toolbarButton-editorHighlight` 修复后仍为 **0.4048**，`D__altText_spinner` 仍为 **0.4547**。
+
+- 严格交叉验证（排除基线不干净）：从 `git archive 7bf4905`（main，修复前）单独编译二进制渲染同一文件，四方像素 sha256 与不透明像素数完全一致：
+
+  | 来源 | RGBA sha256(前 16) | alpha>8 像素 |
+  |---|---|---|
+  | baseline(7bf4905) / new(9dd24ac) / 历史基线 / 本轮全量 | `915deee870f66710` | 8343 |
+  | cairosvg 参照 | `5f412c4682b3ba8e` | 20580 |
+
+#### 为什么无效
+
+`internal/rasterx/scan.go:71` `SetWinding(b)` 仅做 `s.r.UseEvenOdd = !b`；而 `render.go fill()` **每次调用开头都会执行 `rf.SetWinding(nonZero)`**（`nonZero = style.fillRule != "evenodd"`），原代码末尾还有 `rf.SetWinding(true)` 复位。因此「共享 Filler 导致状态残留」的假设**根本不成立**——改成每次新建 Filler 与原逻辑等价，渲染字节必然不变。verify 全绿、golden 通过恰恰是因为**渲染字节压根没变**，不能当作「修复生效」的证据。
+
+真正缺陷（`toolbarButton-editorHighlight`：单条 path 含 3 个 `Z` 子路径 + `fill-rule="evenodd"`，gosvg 8343 像素空心轮廓 vs cairosvg 20580 像素实心）出在 **rasterx 对多子路径的 even-odd 奇偶累积算法**层面，与 Filler 实例生命周期无关；`altText_spinner` 主因仍是 CSS `@media` 解析。两者均未在本次改动中触及。
+
+#### 决定与现状
+
+- PR #13 **已关闭、未合并**（标题/正文含「已修复」的不实结论，合并会把错误结论写进 main）。
+- 本次仅追加文档结论：渲染代码、`golden.sha256`、全量 IoU 基线均未改动；未打 tag、未发 release。实验分支上曾列出的后续修复/发版计划与环境阻塞说明，随本次撤回一并作废（环境阻塞已通过本机自建工具链解决）。
+- 若日后要真修，需另行授权：动 `internal/rasterx` 多子路径 even-odd 算法，或改走 SVG 预处理等价转换；之后必须重跑 `verify.sh` 全套 + 全量 IoU **生效验证** + 更新 `golden.sha256`。当前缺陷收益极小（15 个低分中的 2 个），按既有定调不值得为此改 fork 核心。
+
 ### 方法论（再次校准）
 
 1. **抽样会骗人**：117 抽样里 D 批只占 30 个、低分被当作个例；全量 848 才暴露 196 个。
@@ -237,3 +279,4 @@ D 批 228 个里 **196 个无 viewBox**，bbox 的 Y 方向系统性错位；`st
    100% 渲染出内容，但 IoU = 0（画在了完全不同的位置）。
 3. **bbox 对比比 RGB 差可靠**：位置错时 RGB 差会假性变小。
 4. 假设（even-odd）必须做**全量交叉验证**再动手，否则会去改不该改的 fork 核心。
+5. **「ALL GREEN + golden 通过」不等于「修复生效」**：无退化验证与生效验证是两件事。改动渲染代码后，除 `verify.sh` 外必须做修复前后**逐文件 IoU / 像素差异**比对，确认目标文件真的动了、且没有误伤；本次正是靠这一步拦下了一个看似完整、实则零效果的 PR。
