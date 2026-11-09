@@ -240,6 +240,10 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   IoU 0.70–0.77，非几何错误）→ 归入已定案边界；2 个填充差异
   （`toolbarButton-editorHighlight` 0.40、`altText_spinner` 0.45）→ 低优先级待查，
   不阻塞发版。
+
+> ⚠️ **后续实测推翻（见 `CAIROSVG_IOU.md` 修正 6）**：「50 个 AA/字体边界 + 2 个填充差异」
+> 的定性不成立；even-odd 缺陷实测影响 15 个低分中的 **11 个**，另有 19 个中低分文件受益，
+> 共 **30 个文件**。用「bbox 与像素数都近似」判 AA 会漏掉内部几何错误。
 - **文档一致性**：README / GOSVG_TODO / 包注释 / style.go 四处「所有单位 1:1 近似」
   已补上「根 `<svg>` 视口尺寸例外」的说明，避免文档与代码矛盾。
 
@@ -254,6 +258,10 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   —— `altText_spinner`（`@media` 嵌套块内 `#hourglass{display:none}` 被当顶层规则应用）、
   `toolbarButton-editorHighlight`（even-odd 多子路径被挖空）。详见 `CAIROSVG_IOU.md` 修正 3。
   二者不属于「50 个 AA/字体已定案边界」，值得修，但要先交影响账。
+
+> ⚠️ **后续实测推翻（见 `CAIROSVG_IOU.md` 修正 6）**：不是 2 个，是 11 个低分文件 + 19 个
+> 中低分文件；「二者不属于 50 个 AA 边界」方向对，但计数与优先级判断已作废。PoC 证明
+> 「SVG 预处理等价转换」可零退化把全量平均 IoU 提升 +0.011423，仍未落地、仍需单独授权。
 - **档 2 H-A 七项**：仍按原决策保持子集边界（用户需单独点名才做），其中「元素几何单位真换算」
   与已落地的「视口尺寸换算」已在表中区分清楚。
 - **档 3 外部条件项**：推送外部 Git（用户约束未解除）、Gitea SQLite 根治需重启服务（会中断，
