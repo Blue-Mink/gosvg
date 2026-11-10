@@ -76,9 +76,9 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 逐字节展开为 UTF-8，**其余编码返回带编码名的明确错误**。需要完整 IANA 编码支持时，
 替换包级 `CharsetReader`（例如接 `golang.org/x/text/encoding/htmlindex`）。
 
-**`<image>`**：内置 `DefaultImageDecoder()`（标准库 PNG/JPEG/GIF + `data:` URI 与本地路径，
+**`<image>`**：`data:` URI 由内置解码；另提供需显式注入的 `DefaultImageDecoder()`（标准库 PNG/JPEG/GIF + `data:` URI 与本地路径，
 零外部依赖）；调用方可用包级 `ImageDecoder` 或 `RenderOptions.ImageDecoder` 覆盖。
-两者都为 nil 或解码失败时静默跳过。
+两者都为 nil 时，仅 `data:` URI 由内置解码，其余 href 静默跳过。
 
 > 渲染期跳过事件**已有只读诊断通道**：`Document.Diagnostics()`（累计去重）与
 > `Document.LastRenderDiagnostics()`（最近一次渲染，每次重置），见下文「渲染选项与诊断」。
@@ -116,9 +116,11 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 - **`display` / `visibility`**：`display:none` 跳过整棵子树；`visibility` 是继承属性，
   `hidden` / `collapse` 跳过本节点绘制、子元素可显式 `visible` 覆盖。
   presentation 属性、CSS 规则、内联 `style` 三条路径都生效。
-- **`<image>` 解码**：`DefaultImageDecoder()` 用标准库 PNG/JPEG/GIF 解码 `data:` URI 与
-  本地路径（零外部依赖）；`RenderOptions.ImageDecoder` 支持逐渲染注入，
-  优先级高于包级 `ImageDecoder`。两者都为 nil 时仍静默跳过，**默认行为不变**。
+- **`<image>` 解码**：未注入任何解码器时，仅 `data:` URI 由内置 `decodeDataURIOnly`
+  用标准库解码（不碰文件与网络）；本地路径 / 远程 URL 静默跳过。
+  `DefaultImageDecoder()`（需显式注入）覆盖 `data:` URI 与本地路径，其中非 `data:` 的
+  `href` 会 `os.Open`；`RenderOptions.ImageDecoder` 可逐渲染注入，优先级高于包级
+  `ImageDecoder`。注入默认实现读本地文件属调用方显式选择，见 `SECURITY.md`。
 - **错误分类**：`UnsupportedError` 带 `Code`（`ErrorCode`）与 `Err`，
   提供 `ErrEmptyDocument` / `ErrNonPositiveSize` / `ErrDimensionExceeded` 供 `errors.Is`。
 - **字体**：`RegisteredFonts()` 返回已注册字体族（排序副本）；`ResetFonts()` 清空注册，
@@ -139,9 +141,9 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ## 质量基线
 
 ```sh
-sh ./scripts/verify.sh                         # 全套门禁（含覆盖率与 benchmark 冒烟）
+sh ./scripts/verify.sh                         # 全套门禁（go mod verify / tidy -diff / fmt / vet / test / -race / arm64 / wasm / bench / 6 个 fuzz）
 go test ./...                                  # 单元 + 回归 + golden 哈希
-go test -count=1 -cover ./...                  # 覆盖率（根包 86.2%、cmd/verify 62.3%、
+go test -count=1 -cover ./...                  # 覆盖率（根包 86.5%、cmd/verify 62.3%、
                                                #   cmd/corpus 42.2%、cmd/render 16.7%、
                                                #   internal/vector 24.3%、internal/rasterx 3.9%）
 go test -run '^$' -bench . -benchmem -benchtime 2s .   # 性能基线，见 BENCHMARK.md

@@ -3,9 +3,34 @@
 所有 notable 变更记录在此。提交信息沿用 Conventional Commits
 （`feat:` / `fix:` / `docs:` / `chore:` / `test:`）。
 
-## [Unreleased] — 2026-11-07
+## [Unreleased]
 
-首个可开源基线，同日 29 次提交。
+暂无未发布改动。当前最新为 **v0.2.3**（2026-11-10）。
+
+## [v0.2.3] — 2026-11-10
+
+`v0.2.2..v0.2.3` 共 12 个提交（PR #14–#18）。tag 由 Gitea Release API 自建，
+未先手动 push tag（避开 `is_tag` 占位 UNIQUE 冲突）；`draft=false` / `prerelease=false`，
+tag `v0.2.3` → `3d9072f`。下方各分支条目为明细，净结果：
+
+### 净结果（v0.2.2 → v0.2.3）
+- **even-odd 系统性缺陷修复**（PR #17，修正 7）：解析层把单条 path 内多 `Z` 子路径按
+  交替方向等价转换为 non-zero，零光栅器改动；自交 / 部分重叠自动拒绝转换。全量 848
+  样本 **30 提升 / 0 退化 / 818 不变**，平均 IoU `0.949874 → 0.961272`（+0.011397），
+  `IoU<0.5` **15 → 4**；`golden.sha256` 核验无需重生成。
+- **修正 4 假设证伪并归档**（PR #13 关闭 / #14 合并，修正 5）：`render.go` / `gradient.go`
+  独立 `Filler` 实例经 848 样本逐像素对账为 **no-op**（像素 sha `915deee870f66710`
+  完全一致）。方法论补「文档结论必须与可执行验证同源」。
+- **影响账纠错 + PoC**（PR #15 / #16，修正 6）：15 个低分里 **11 个**同时声明
+  `fill-rule="evenodd"` + `clip-rule="evenodd"`（富集 27 倍）；A/B 实验证明只改
+  `fill-rule` 有效。SVG 预处理 PoC 让 11 文件 `0.2533 → 0.9924`、全量 61 个改动文件
+  30 提升 / 31 不变 / 0 退化；拆 path 方案证伪（`0.7817`，PR #15 初稿分母
+  `0.7107` 已由 #16 更正）。
+- **剩余 4 个低分的结构性修复**（PR #18，修正 8）：`css.go` at-rule 深度扫描、
+  `render.go` 的 `skipNodeTransform` 泄漏、`image.go` 的 `srcRect` 取源切片；3 个回归
+  测试在基线上全 FAIL / 修复版全 PASS；全量 848 平均 IoU `0.961272 → 0.963860`、
+  `IoU<0.5` **4 → 1**；1 处已知退化 −0.0223 已入档。`verify.sh` ALL GREEN
+  （根包覆盖率 86.5%）。
 
 ### Added
 - 纯 Go SVG 子集渲染器：`Render` / `RenderTo` / `Parse` / `Document` 主 API
@@ -14,7 +39,7 @@
 - CSS `<style>` + class/id/类型选择器、hsl()/现代颜色、dasharray/dashoffset
 - preserveAspectRatio 9 种 align + meet/slice/none、MeasureText/MeasureTextEx
 - 可选系统字体目录 `AddFontDir`
-- 5 个 fuzz 目标、97 个测试函数、Gitea + GitHub 双 CI 门禁
+- 6 个 fuzz 目标、215 个测试函数（`go test -list` 实测）、Gitea + GitHub 双 CI 配置
 - `cmd/render` CLI、`cmd/verify` 对账工具、`testdata/` 样例
 
 ### Fixed
@@ -29,7 +54,8 @@
 - 重写 `GOSVG_TODO.md` 为当前状态单一事实来源；补全「明确不支持」清单
 - 新增 CHANGELOG / CONTRIBUTING / SECURITY / examples / UPSTREAM 记录
 - CI 加 `-race` / fuzz 冒烟 / arm64 交叉编译 / Go 缓存
-- 新增 Example / Benchmark / golden 像素哈希回归基线（6 个确定性样例）/ cmd 测试
+- 新增 Example / Benchmark / golden 像素哈希回归基线（自动枚举 `testdata/*.svg`，
+  当前 7 个样例）/ cmd 测试
 - `parseFloat` 拒绝 NaN/Inf、`parseLength` 单位白名单
 - 核对 `internal/rasterx/stroke.go` 依赖链并写入 `UPSTREAM.md`（经编译验证不能删）
 
@@ -42,7 +68,7 @@
 - 后续改动改走分支 + PR，main 不再直推
 
 > 内网 Gitea 已打 `v0.1.0` annotated tag（PR #1 合并到 main 之后）；
-> Release 已发至 `v0.2.2`（见下方各分支条目）；**仅推送外部 Git 仍待办**，
+> Release 已发至 `v0.2.3`（见上方净结果与下方各分支条目）；**仅推送外部 Git 仍待办**，
 > 见 `OPEN_SOURCE_CHECKLIST.md`。
 
 ### 修补（分支 `fix/residual-gaps`）
@@ -94,7 +120,7 @@
 - **无效颜色声明按 CSS 语义忽略**：`mergeStyle` 仅在 `isValidPaint` 通过时覆盖继承值，
   `fill="000000"`（Material Symbols 真实导出写法）从全透明恢复为规范默认 black
 - **`parseColor` 校验十六进制字符**：`#gggggg` 不再被 `hexv` 静默当成 0 渲染为黑色
-- **`<image>` 的 data: URI 开箱可用**：未注入解码器时用标准库内置解码（不碰文件与网络）；
+- **`<image>` 的 data: URI 开箱可用**：未注入解码器时用标准库内置解码（仅限 `data:` URI，不碰文件与网络）；
   文件路径 / 远程 URL 仍需显式注入，并有测试守住这条安全边界
 - **新增 `cmd/corpus`**：批量渲染真实语料，输出成功率 / 全透明清单 / 失败清单 / 诊断分布，
   支持 `-json`；覆盖率 42.2%
@@ -172,6 +198,8 @@
   （bbox 与不透明像素数都近似，IoU 0.70–0.77 已非几何错误）；
   2 个为填充差异（`toolbarButton-editorHighlight` 0.40、`altText_spinner` 0.45）。
   判定为**已定案边界，不值得继续改**，详见 `CAIROSVG_IOU.md`。
+  ⚠️ **此定性已被修正 6 / 7 推翻**：15 个 `IoU<0.5` 中 11 个是 even-odd 系统性缺陷
+  （不是 AA 边界），已由 PR #17 / #18 修复。本段仅作为当时的判断留存，勿据此继续排查。
 
 ### 分支 `fix/viewport-relative-units-and-docs`
 - **修 v0.2.2 新引入的相对单位回归**：`parseViewportLength` 原先把 `width="100em"` 之类的
@@ -184,9 +212,9 @@
 - **文档一致性批量补齐**（本轮盘点出 10 处自相矛盾 / 过时）：包注释与 `GOSVG_TODO.md`
   里「渲染期跳过事件没有诊断通道」→ 已实现 `Diagnostics()` / `LastRenderDiagnostics()`；
   `<image>` 三处仍写「必须注入解码器」→ 已有开箱可用的 `DefaultImageDecoder()`；
-  覆盖率 85.8% → **86.2%**（本轮实测；其余包 62.3% / 42.2% / 16.7% / 24.3% / 3.9% 复核无误）；
+  覆盖率 85.8% → **86.2%**（当时实测；当前 86.5%；其余包 62.3% / 42.2% / 16.7% / 24.3% / 3.9% 复核无误）；
   CHANGELOG / CHECKLIST / GAP TODO 里
-  「Release 待办」→ 已发至 v0.2.2；`ResetFonts()` 隔离、分支保护 `protected=True`、
+  「Release 待办」→ 已发至 v0.2.3；`ResetFonts()` 隔离、分支保护 `protected=True`、
   H-A 表「视口单位例外」逐项同步；`CAIROSVG_IOU.md` 修正 1 的旧结论第 2/4 条
   标注「已被修正 2/3 推翻」，避免被推翻的判断继续误导后续排查。
 - **推翻上一版对 2 个低分文件的定性**：PNG 逐像素复核显示二者是**整块缺失的真 bug**
@@ -213,4 +241,4 @@
   11 个目标文件平均 **0.2560 → 0.9927**（`B__frame-icon` 0.0602 → 1.0000）。
   剩余 4 个低分文件像素零变化，均属 clip-path / `@media` 等非 even-odd 问题。
   详见 `CAIROSVG_IOU.md` 修正 7。
-- 未打 tag、未发 release，发版仍需单独确认。
+- 本行为当时快照；v0.2.3 已于 2026-11-10 发布（见上方「净结果」）。

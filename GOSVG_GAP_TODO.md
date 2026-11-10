@@ -31,12 +31,15 @@
 - **`internal/rasterx/stroke.go` 不是死代码**：删除后 `dash.go` / `shapes.go` 编译失败
   （依赖 `Stroker` / `CapFunc` / `GapFunc` / `JoinMode` 及 Dasher 字段）。原「677 行死代码」
   判断错误，文件已恢复，依赖结论写入 `internal/rasterx/UPSTREAM.md`。
-- **`AddFontDir` 全局状态污染测试**：`font_test.go` 注册系统字体后，包级 `fontRegistry`
-  影响同进程内后续所有 `Render`。实测 `s60s.svg`（带 `<text>`）单独跑 golden 与跑完整
-  `go test ./...` 的像素哈希不同（`bb150194…` vs `dc09dbc6…`），其余 6 个纯图形样例一致。
-  当前处置：golden 基线排除 `s60s`（刻意保持确定性）。**隔离能力已落地**：
-  `ResetFonts()` + `font_test.go` 显式重置注册表（见 `font_extra_test.go`），
-  档 2 F4 的「加隔离 / Reset」已完成，不再是待办。
+- **`AddFontDir` 全局状态污染测试**（**已真正修复，2026-11-10**）：`font_test.go` 的
+  `TestRenderUsesSystemFont` 注册系统字体后污染包级 `fontRegistry`，实测 `s60s.svg`
+  单独跑 golden 与跑完整 `go test ./...` 的像素哈希不同（`bb150194…` vs `dc09dbc6…`）。
+  - **此前本条写「隔离能力已落地 / 档 2 F4 已完成」是错误的**：`font_extra_test.go`
+    只验证了 `ResetFonts()` 幂等，测试本体并未在结束时复位，flaky 一直存在。
+  - **本次修复**：`TestRenderUsesSystemFont` 加 `t.Cleanup(resetFonts)`；`golden_test.go`
+    改为自动枚举 `testdata/*.svg`、纳入 `s60s`（现 7 个样例）、加空图 / 全透明断言。
+    单独跑、全量跑两次、`-shuffle=on` 全过，`s60s` 哈希稳定为 `bb150194…`。
+    档 2 F4 至此才真正关闭。
 
 ## 档 2 — 已处置（分支 `chore/close-gaps`）
 
@@ -98,11 +101,14 @@
 - **P0-1** CI 门禁：新增 `scripts/verify.sh` 让验证可复现、两个 workflow 改调它；
   但 **Gitea Actions runner 数仍为 0、GitHub 出站不通**，CI 尚未真正执行，
   当前以 `sh ./scripts/verify.sh` 手动实跑为准。
+  （2026-11-10 已修正两份 workflow：固定 Go 1.27.3、显式 `tags: ['v*']` 与
+  `workflow_dispatch`、去掉 `GOPROXY` 覆盖、`verify.sh` 覆盖全部 6 个 fuzz 目标；
+  注册 act_runner 需动 .15 上的服务，在用户明确授权前不做。）
 - **P0-3** 分支保护：**已开启**（实测 `protected=True`），PR #2 起全部走分支 + PR 合并。
 
 ## 仍需点名的（P3，未动）
 
-- Release **已发至 `v0.2.2`**，此条关闭；删除已合并的 `chore/close-gaps` 分支仍需点名
+- Release **已发至 `v0.2.3`**，此条关闭；删除已合并的 `chore/close-gaps` 分支仍需点名
 - 修 Gitea SQLite 锁（上轮方案 B：降频刷库的 Actions workflow）
 - 注册 act_runner（当前环境无二进制、GitHub 出站不通，需你提供/授权）
 - 档 2 判为「保持子集边界」的 H-A 七项，想要哪个单独点名
@@ -156,8 +162,10 @@
 | `<image>` data URI 需手动注入 | 内置 data URI 解码（不碰文件/网络） | 语料 B/C 的 7 次 skipped 消除 |
 | 无真实语料回归手段 | `cmd/corpus` + `CORPUS_BASELINE.md` | 958 个 SVG：90.4% → 99.5% |
 
-剩余 4 个全透明样例已逐个定位：3 个是语料本身的空 SVG，1 个是 Figma 的
-`<pattern>` + base64 `<image>`（属下一批 pattern 支持范围）。
+剩余 3 个全透明样例已逐个定位，均为语料本身的空 SVG（`empty.svg` 与
+`annotation-noicon.svg` ×2）。原先的第 4 个 `lock-t_gZZsqx.svg`
+（Figma 的 `<pattern>` + `<use>` + base64 `<image>`）已随 `<pattern>` 支持落地正常渲染，
+详见 `CORPUS_BASELINE.md`。
 
 **仍未做**：`<pattern>`、`strokeCapsules` 复用 Filler（pprof 靶点，占分配 38.9%）、
 文本能力（letter-spacing / textLength / 换行 / shaping）、cairosvg 批量对账、
