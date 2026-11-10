@@ -2,6 +2,7 @@ package gosvg
 
 import (
 	"image"
+	"math"
 	"strings"
 
 	xdraw "golang.org/x/image/draw"
@@ -68,11 +69,27 @@ func (ctx *renderContext) renderImage(n *node) {
 	}
 
 	dst := ctx.img
-	// 裁剪到图像边界。
 	xi, yi := int(px), int(py)
-	drawRect := image.Rect(xi, yi, xi+pw, yi+ph).Intersect(dst.Bounds())
+	full := image.Rect(xi, yi, xi+pw, yi+ph)
+	drawRect := full.Intersect(dst.Bounds())
 	if drawRect.Empty() {
 		return
 	}
-	xdraw.CatmullRom.Scale(dst, drawRect, src, src.Bounds(), xdraw.Over, nil)
+	// 目标矩形超出画布时，必须按比例只取 src 的对应切片，再把这个切片缩放到
+	// 可见矩形。若把「已裁剪的 drawRect」直接配完整 src，等于把整张图压缩进
+	// 可见区（真实语料 C__6ab88ea05959193c 是 1696×240 的 sprite sheet，
+	// viewBox 只有 240×240，本应只显示最左侧一个图标，IoU 0.2432）。
+	sb := src.Bounds()
+	fx := float64(sb.Dx()) / float64(pw)
+	fy := float64(sb.Dy()) / float64(ph)
+	srcRect := image.Rect(
+		sb.Min.X+int(math.Floor(float64(drawRect.Min.X-full.Min.X)*fx)),
+		sb.Min.Y+int(math.Floor(float64(drawRect.Min.Y-full.Min.Y)*fy)),
+		sb.Min.X+int(math.Ceil(float64(drawRect.Max.X-full.Min.X)*fx)),
+		sb.Min.Y+int(math.Ceil(float64(drawRect.Max.Y-full.Min.Y)*fy)),
+	).Intersect(sb)
+	if srcRect.Empty() {
+		return
+	}
+	xdraw.CatmullRom.Scale(dst, drawRect, src, srcRect, xdraw.Over, nil)
 }

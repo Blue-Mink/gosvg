@@ -59,37 +59,69 @@ func parseCSS(text string) []cssRule {
 // parseCSSLimited 同 parseCSS，并报告是否因超出 MaxCSSRules / MaxCSSSelectorLen /
 // MaxCSSDeclLen 而丢弃了内容，供调用方记入 Diagnostics。
 func parseCSSLimited(text string) (rules []cssRule, truncated bool) {
-	for _, block := range strings.Split(stripCSSComments(text), "}") {
+	text = stripCSSComments(text)
+	// 按大括号深度扫描顶层规则。不能用 strings.Split(text, "}") 切块：
+	// @media / @keyframes / @supports 等 at-rule 内部含嵌套的 {}，
+	// 简单切分会把嵌套里的 "#id{display:none}" 当成顶层规则应用，
+	// 在默认媒体下错误隐藏元素（真实语料 D__altText_spinner 的沙漏整块
+	// 消失，gosvg 少画 18661 px）。gosvg 不求值媒体查询，整块跳过
+	// at-rule，与 cairosvg 的行为一致。
+	for pos := 0; pos < len(text); {
+		open := strings.IndexByte(text[pos:], '{')
+		if open < 0 {
+			break
+		}
+		open += pos
+		sel := text[pos:open]
+		// 顶层游离的 '}' 或无块 at-statement（@import ...;）之后的才是选择器。
+		if k := strings.LastIndexAny(sel, "};"); k >= 0 {
+			sel = sel[k+1:]
+		}
+		// 深度感知地找到与 open 匹配的 '}'。
+		depth, end := 1, open+1
+		for end < len(text) && depth > 0 {
+			switch text[end] {
+			case '{':
+				depth++
+			case '}':
+				depth--
+			}
+			end++
+		}
+		var body string
+		if depth > 0 { // 未闭合：保留剩余声明并终止扫描
+			body = text[open+1:]
+			end = len(text)
+		} else {
+			body = text[open+1 : end-1]
+		}
+		pos = end
+		sel = strings.TrimSpace(sel)
+		if sel == "" || strings.HasPrefix(sel, "@") {
+			continue
+		}
 		if len(rules) >= MaxCSSRules {
 			return rules, true
 		}
-		block = strings.TrimSpace(block)
-		if block == "" {
-			continue
-		}
-		parts := strings.SplitN(block, "{", 2)
-		if len(parts) != 2 {
-			continue
-		}
-		if len(parts[1]) > MaxCSSDeclLen {
+		if len(body) > MaxCSSDeclLen {
 			truncated = true
 			continue
 		}
-		decls := parseStyle(parts[1]) // 复用内联样式解析（按 ";" 分割，key:value）
+		decls := parseStyle(body) // 复用内联样式解析（按 ";" 分割，key:value）
 		if len(decls) == 0 {
 			continue
 		}
 		rule := cssRule{decls: decls}
-		for _, sel := range strings.Split(parts[0], ",") {
-			sel = strings.TrimSpace(sel)
-			if sel == "" {
+		for _, s := range strings.Split(sel, ",") {
+			s = strings.TrimSpace(s)
+			if s == "" {
 				continue
 			}
-			if len(sel) > MaxCSSSelectorLen {
+			if len(s) > MaxCSSSelectorLen {
 				truncated = true
 				continue
 			}
-			rule.selectors = append(rule.selectors, parseSelector(sel))
+			rule.selectors = append(rule.selectors, parseSelector(s))
 		}
 		if len(rule.selectors) > 0 {
 			rules = append(rules, rule)

@@ -183,6 +183,11 @@ func (ctx *renderContext) renderNodeBare(n *node, opacity float64) error {
 			ctx.matrix = ctx.matrix.Mult(parseTransform(tr))
 		}
 	}
+	// skipNodeTransform 只表示「上层已经替同一个节点应用过 transform」，是
+	// 一次性标记，不能顺着 ctx 泄漏给整棵子树。否则 <g clip-path="..."> 下的
+	// <rect transform="rotate(...)"/> 会被吞掉（真实语料 B__resizeDiagonal
+	// 本应是两条 45° 斜线，却渲染成底部一条横条，IoU 0.0677）。
+	ctx.skipNodeTransform = false
 	// opacity 对所有可渲染元素生效：本节点有效透明度 = 父级累积 × 自身 opacity。
 	nodeOpacity := opacity
 	if o := parseFloatOr(n.attr("opacity"), 1); o != 1 {
