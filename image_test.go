@@ -80,3 +80,39 @@ func TestImageDefaultSize(t *testing.T) {
 		t.Error("默认尺寸 image 区域外应透明")
 	}
 }
+
+// TestImageWiderThanViewportShowsLeftSlice 验证 <image> 宽度超出画布时
+// 只显示对应的源切片，而不是把整张图压缩进可见区。修复前把已裁剪的
+// drawRect 直接配完整 src（真实语料 1696×240 的 sprite sheet 被压进
+// 240×240 viewBox，IoU 0.2432）。
+func TestImageWiderThanViewportShowsLeftSlice(t *testing.T) {
+	orig := ImageDecoder
+	defer func() { ImageDecoder = orig }()
+	ImageDecoder = func(href string) (image.Image, error) {
+		m := image.NewNRGBA(image.Rect(0, 0, 20, 10))
+		for y := 0; y < 10; y++ {
+			for x := 0; x < 20; x++ {
+				if x < 10 {
+					m.SetNRGBA(x, y, color.NRGBA{R: 255, A: 255})
+				} else {
+					m.SetNRGBA(x, y, color.NRGBA{B: 255, A: 255})
+				}
+			}
+		}
+		return m, nil
+	}
+	data := []byte(`<svg viewBox="0 0 10 10"><image href="test" x="0" y="0" width="20" height="10"/></svg>`)
+	img, err := Render(data, 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// 可见区对应源图左 10 列（红）；若整图被压进来，右半会混入蓝色。
+	for x := 0; x < 10; x++ {
+		if c := img.NRGBAAt(x, 5); c.B > 60 {
+			t.Fatalf("x=%d 出现蓝色，说明整张图被压缩进可见区: %v", x, c)
+		}
+	}
+	if c := img.NRGBAAt(0, 5); c.R < 200 {
+		t.Errorf("左切片应为红色, got %v", c)
+	}
+}

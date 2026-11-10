@@ -83,3 +83,26 @@ func TestClipPathWithNestedTransforms(t *testing.T) {
 		t.Fatal("clip 10x10 in the scale(4) user space covers the whole 40x40 viewBox")
 	}
 }
+
+// TestClipPathPreservesChildTransform 验证 clip-path 分支不会把
+// skipNodeTransform 泄漏给子树。修复前 <g clip-path> 下所有子元素的
+// transform 都被吞掉（真实语料 B__resizeDiagonal 两条 45° 斜线渲染成
+// 底部一条横条，IoU 0.0677）。
+func TestClipPathPreservesChildTransform(t *testing.T) {
+	svg := `<svg viewBox="0 0 10 10">
+  <defs><clipPath id="c"><rect width="10" height="10"/></clipPath></defs>
+  <g clip-path="url(#c)">
+    <rect x="0" y="4" width="10" height="2" fill="red" transform="rotate(90 5 5)"/>
+  </g>
+</svg>`
+	img, err := Render([]byte(svg), 10)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if a := img.NRGBAAt(5, 1).A; a == 0 {
+		t.Error("子元素的 rotate 被 clip-path 分支吞掉了")
+	}
+	if a := img.NRGBAAt(1, 5).A; a != 0 {
+		t.Error("rect 本应旋转成竖条，仍是横条")
+	}
+}
