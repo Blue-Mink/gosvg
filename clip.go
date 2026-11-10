@@ -84,15 +84,16 @@ func (ctx *renderContext) renderClipMask(clipNode, targetNode *node, w, h int) *
 	}
 
 	sub := &renderContext{
-		img:     img,
-		doc:     ctx.doc,
-		matrix:  contentMatrix,
-		style:   defaultShapeStyle(),
-		ctx:     ctx.ctx,
-		opts:    ctx.opts,
-		nesting: ctx.nesting + 1,
-		err:     ctx.err,
-		visible: ctx.visible,
+		img:        img,
+		doc:        ctx.doc,
+		matrix:     contentMatrix,
+		style:      defaultShapeStyle(),
+		ctx:        ctx.ctx,
+		opts:       ctx.opts,
+		nesting:    ctx.nesting + 1,
+		err:        ctx.err,
+		visible:    ctx.visible,
+		inClipPath: true,
 	}
 	sub.dasher = newDasherFor(img)
 	// clip-rule（SVG 1.1，可继承，默认 nonzero）决定 clipPath 内形状的裁剪规则。

@@ -35,6 +35,11 @@ type renderContext struct {
 	// skipNodeTransform 为 true 时 renderNodeBare 不再应用节点自身的 transform，
 	// 用于 clip-path / mask 路径：那里 transform 已在 renderNode 中提前应用过。
 	skipNodeTransform bool
+
+	// inClipPath 标记当前离屏上下文渲染的是 clipPath 的子元素。clip-rule 在
+	// clip.go 里被映射到 style.fillRule，语义由裁剪光栅化决定，不能套用
+	// fill-rule 的等价转换（修正 6 的 PoC 也整文件跳过了含 clipPath 的样本）。
+	inClipPath bool
 }
 
 func newRenderContext(width, height int, d *Document) *renderContext {
@@ -282,16 +287,25 @@ func (ctx *renderContext) renderShape(n *node, opacity float64) {
 		strokeStr = style.color
 	}
 
+	// even-odd 多子路径等价转换：只替换填充用的 path，描边 / marker 仍用原 p，
+	// 保证描边几何零变化。详见 evenodd_convert.go 与 CAIROSVG_IOU.md 修正 6（PoC）/ 修正 7（落地）。
+	fillPath := p
+	fillNonZero := style.fillRule != "evenodd"
+	if style.fillRule == "evenodd" && !ctx.inClipPath &&
+		evenOddPathEligible(n.attr("d"), p) {
+		if converted, ok := convertEvenOddToNonZero(p); ok {
+			fillPath = converted
+			fillNonZero = true
+		}
+	}
+
 	// 填充
 	if c, ok := parseColor(fillStr); ok && c.A > 0 {
-		nonZero := style.fillRule != "evenodd"
-		ctx.fill(p, c, opacity*style.fillOpacity, nonZero)
+		ctx.fill(fillPath, c, opacity*style.fillOpacity, fillNonZero)
 	} else if g := ctx.doc.resolveGradient(fillStr); g != nil {
-		nonZero := style.fillRule != "evenodd"
-		ctx.fillGradient(p, g, opacity*style.fillOpacity, nonZero)
+		ctx.fillGradient(fillPath, g, opacity*style.fillOpacity, fillNonZero)
 	} else if pat := ctx.doc.resolvePattern(fillStr); pat != nil {
-		nonZero := style.fillRule != "evenodd"
-		ctx.fillPattern(p, pat, opacity*style.fillOpacity, nonZero)
+		ctx.fillPattern(fillPath, pat, opacity*style.fillOpacity, fillNonZero)
 	}
 
 	// 描边

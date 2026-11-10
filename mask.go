@@ -84,15 +84,16 @@ func (ctx *renderContext) renderMaskImage(maskNode, targetNode *node, w, h int) 
 	}
 
 	sub := &renderContext{
-		img:     img,
-		doc:     ctx.doc,
-		matrix:  contentMatrix,
-		style:   defaultShapeStyle(),
-		ctx:     ctx.ctx,
-		opts:    ctx.opts,
-		nesting: ctx.nesting + 1,
-		err:     ctx.err,
-		visible: ctx.visible,
+		img:        img,
+		doc:        ctx.doc,
+		matrix:     contentMatrix,
+		style:      defaultShapeStyle(),
+		ctx:        ctx.ctx,
+		opts:       ctx.opts,
+		nesting:    ctx.nesting + 1,
+		err:        ctx.err,
+		visible:    ctx.visible,
+		inClipPath: ctx.inClipPath,
 	}
 	sub.dasher = newDasherFor(img)
 	for _, c := range maskNode.children {
@@ -228,6 +229,7 @@ func (ctx *renderContext) renderSubimage(n *node, opacity float64, w, h int) *im
 		visible: ctx.visible,
 		// 渲染的是同一个 n：若上层已应用过它的 transform，这里不能再应用一次。
 		skipNodeTransform: ctx.skipNodeTransform,
+		inClipPath:        ctx.inClipPath,
 	}
 	sub.dasher = newDasherFor(img)
 	if err := sub.renderNodeBare(n, opacity); err != nil && ctx.err == nil {
