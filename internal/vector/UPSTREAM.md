@@ -9,7 +9,7 @@
 
 ## 本地改动
 
-**even-odd winding 真实现**（上游仅支持 non-zero，`ScannerGV.SetWinding` 原本是 no-op）：
+**even-odd winding 真实现**（上游 `x/image/vector` 仅支持 non-zero）：
 
 1. `Rasterizer` 增加 `UseEvenOdd` 字段。
 2. `accumulateMask` 按 even-odd 分支，禁用 SIMD，走新增的
@@ -17,7 +17,9 @@
    `ceil(|acc|/unit)`，奇数填充、偶数透明。
 3. `Draw` 在 even-odd 时跳过 `*image.Uniform` fast path（否则 SIMD rasterize 绕过
    `accumulateMask`）。
-4. `ScannerGV.SetWinding` 真正写 `UseEvenOdd = !useNonZeroWinding`。
+4. 归属更正：`ScannerGV.SetWinding` 属于 **`internal/rasterx/scan.go`**（另一个 fork），
+   本目录 `internal/vector` 并不含该方法；相关改动见 `internal/rasterx/UPSTREAM.md`。
+   上面 1–3 条（`Rasterizer` / `accumulateMask` / `Draw`）才是本目录的实际改动。
 
 ## 已知边界
 

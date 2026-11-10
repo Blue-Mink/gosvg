@@ -52,13 +52,13 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 | `AddFontDir(dir string) error` | 注册系统字体目录（可选，见[字体](#字体)） |
 | `MeasureText(text string, fontSize float64, fontFamily string) float64` | 测量文本宽度（用户单位），用于手动布局/居中 |
 | `MeasureTextEx(text, fontSize, family, weight, style)` | 带 font-weight/font-style 的文本测量 |
-| `ImageDecoder func(href string) (image.Image, error)` | 覆盖 `<image>` 位图解码；不注入时用 `DefaultImageDecoder()`（PNG/JPEG/GIF + data URI + 本地路径） |
+| `ImageDecoder func(href string) (image.Image, error)` | 覆盖 `<image>` 位图解码；未注入时仅 `data:` URI 由内置解码，其余 href 静默跳过 |
 | `RenderWithOptions(ctx, data, w, h, opts)` | 带取消 / 尺寸上限 / 背景色的渲染入口 |
 | `RenderOptions{MaxDimension, Background}` | 渲染选项；`DefaultRenderOptions()` 取默认值 |
 | `(*Document).RenderWithOptions(ctx, w, h, opts)` | 已解析文档带选项渲染 |
 | `(*Document).Diagnostics() []string` | 渲染期跳过事件（去重、累计），用于排查「少了一块」 |
 | `(*Document).LastRenderDiagnostics() []string` | 最近一次渲染的跳过事件（每次渲染重置） |
-| `DefaultImageDecoder()` | 零外部依赖的默认 `<image>` 解码器（标准库 PNG/JPEG/GIF + data URI） |
+| `DefaultImageDecoder()` | 零外部依赖、供显式注入的 `<image>` 解码器（标准库 PNG/JPEG/GIF + `data:` URI + 本地路径）；不会自动生效，注入后非 `data:` href 会读本地文件，见 `SECURITY.md` |
 | `RenderOptions.ImageDecoder` | 逐渲染注入解码器，避免包级全局状态 |
 | `RegisteredFonts() []string` | 已注册系统字体族（排序后的副本） |
 | `ResetFonts()` | 清空 `AddFontDir` 注册，用于测试隔离 |
@@ -91,9 +91,11 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 >   其余长度（元素几何 / font-size / stroke-width 等）仍统一剥离后按数值 **1:1 近似**，
 >   `%` 与相对单位（em/ex/rem）不按父值/视口基准解析
 > - **字体**：`.ttc` 集合；未调用 `AddFontDir` 时 `font-family` 一律回退 Go Regular
-> - **`<image>`**：内置 `DefaultImageDecoder()` 开箱解码 `data:` URI 与本地路径
->   （标准库 PNG/JPEG/GIF）；远程 URL 需注入 `ImageDecoder`（或
->   `RenderOptions.ImageDecoder`），两者皆空时静默跳过
+> - **`<image>`**：`data:` URI 在**未注入任何解码器**时也由内置 `decodeDataURIOnly`
+>   用标准库解码（PNG/JPEG/GIF，不碰文件与网络）；本地路径 / 远程 URL 必须显式注入
+>   包级 `ImageDecoder` 或 `RenderOptions.ImageDecoder`，否则静默跳过（记入 `Diagnostics()`）。
+>   `DefaultImageDecoder()` 提供这两种能力，但注入后非 `data:` 的 `href` 会被 `os.Open`，
+>   处理不可信 SVG 请自带路径白名单，见 `SECURITY.md`。
 >
 > 完整清单与已知边界见 [GOSVG_TODO.md](GOSVG_TODO.md)；渲染期跳过事件可用
 > `Document.Diagnostics()` / `LastRenderDiagnostics()` 观察（非穷尽）。
@@ -145,7 +147,7 @@ gosvg.AddFontDir("/usr/share/fonts/truetype/dejavu")
 |:--|:--|
 | 圆形国旗（26 国，fill + mask） | 0.9998 |
 | Lucide 线条图标（rock / country / blues / jazz） | 0.9946–0.9985 |
-| 年代唱片标签（text） | 字形一致（DejaVu 对齐） |
+| 年代唱片标签（text） | 目视字形一致（无逐像素基线，字体栅格化差异属已知边界） |
 
 剩余差异为光栅器 AA 与 cairosvg 的亚像素舍入差，肉眼不可辨。
 
@@ -175,13 +177,16 @@ testdata/           对账测试样例
 ## 开发
 
 ```sh
-sh ./scripts/verify.sh   # 全套（fmt/vet/test/race/arm64/cover/bench/fuzz）
-go test ./...      # 单元 + 回归 + golden 像素哈希基线
+sh ./scripts/verify.sh   # 全套：go mod verify / tidy -diff / fmt / vet / test(cover)
+                         #   / -race / arm64 / wasm / bench / 6 个 fuzz 目标
+go test ./...      # 单元 + 回归 + golden 像素哈希基线（testdata 自动枚举）
 go test -race ./...
 go vet ./...
 gofmt -l .         # 无输出 = 通过
 GOARCH=arm64 GOOS=linux go build ./...
-go test -run TestGoldenRegression -update .   # 有意改动渲染输出后重新生成基线
+GOOS=js GOARCH=wasm go build ./...
+# ⚠️ 仅当「有意改变渲染输出」时；该 flag 跳过全部比对并直接覆盖基线，常规开发/CI 绝不传：
+go test -run TestGoldenRegression -update .
 ```
 
 若 `proxy.golang.org` 不通，用 `GOPROXY=https://goproxy.cn,direct`。
@@ -210,7 +215,7 @@ go test -run TestGoldenRegression -update .   # 有意改动渲染输出后重�
 剩余 3 个「全透明」经逐个核查均为语料本身的空 SVG（`empty.svg`、`annotation-noicon.svg`×2），
 即**可渲染的 SVG 失败数为 0**。
 
-Parse / Render 崩溃数为 0。基线数据、剩余 4 个全透明样例的逐个定位与复现方式见
+Parse / Render 崩溃数为 0。基线数据、剩余 3 个全透明样例的逐个定位与复现方式见
 [CORPUS_BASELINE.md](CORPUS_BASELINE.md)。
 
 ```sh
@@ -220,11 +225,24 @@ go run ./cmd/corpus -json <dir>...      # JSON，便于做基线 diff
 
 ## 与 cairosvg 对账
 
+> **口径**：`CAIROSVG_IOU.md` 的历史表格以 `alpha > 8` 判不透明；仓库外全量对账脚本
+> 用 `alpha > 0`（对极淡 AA 像素更敏感）。两套数字**不可直接横比**。
+
+**当前结论（v0.2.3，全量 848 个可对比样本 / 256×256，`alpha > 0` 口径）**：
+平均 alpha IoU **0.963860**，`IoU<0.5` 仅 **1** 个。演进：`0.949874`（even-odd 修复前）
+→ `0.961272`（PR #17）→ `0.963860`（PR #18）。v0.2.3 已在独立沙箱复现 848/848
+逐像素一致。详见 `CHANGELOG.md` [v0.2.3] 与 `CAIROSVG_IOU.md` 修正 6 / 7 / 8。
+
+<details>
+<summary>历史抽样结论（117 个，已由全量对账取代）</summary>
+
 对 117 个真实语料抽样（256×256）算 alpha IoU：**中位 0.9982**、平均 0.8266、
 ≥0.99 的有 85 个。低分集中在 `stroke-width:.25` 的**亚像素细线** + `<text>` 字体差异
 （与「45° 斜线 AA 相位歧义」同源的已定案边界），重叠区 RGB 平均差仅 3–7，
-属「画在同一处但 AA/字形不同」而非语义错误。完整方法、分布、根因分类与复现步骤见
+属「画在同一处但 AA/字形不同」而非语义错误。完整方法、分布与根因分类见
 [CAIROSVG_IOU.md](CAIROSVG_IOU.md)。
+
+</details>
 
 > `cmd/corpus` 的成功率只能回答「有没有画出东西」，对账才能回答「画得对不对」——
 > 本轮就是靠对账定位到一个成功率完全看不到的真 bug（clip/mask 与 transform 的求值顺序）。

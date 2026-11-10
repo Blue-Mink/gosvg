@@ -58,6 +58,76 @@ func parseCSS(text string) []cssRule {
 
 // parseCSSLimited 同 parseCSS，并报告是否因超出 MaxCSSRules / MaxCSSSelectorLen /
 // MaxCSSDeclLen 而丢弃了内容，供调用方记入 Diagnostics。
+// skipCSSQuoted 从 text[i] 处的引号开始，返回闭合引号之后的下标。
+// CSS 字符串里的 { } ; 都不是语法字符：旧实现按裸字节数括号，遇到
+// content:"{" 会把后续规则整条吞进声明值，遇到 content:"}" 会把声明体截断。
+// 支持反斜杠转义；未闭合时返回 len(text)，交由调用方按「未闭合」处理。
+func skipCSSQuoted(text string, i int) int {
+	q := text[i]
+	for i++; i < len(text); {
+		if text[i] == '\\' {
+			i += 2
+			continue
+		}
+		if text[i] == q {
+			return i + 1
+		}
+		i++
+	}
+	return len(text)
+}
+
+func findCSSRuleOpen(text string, from int) int {
+	for i := from; i < len(text); {
+		switch text[i] {
+		case '\'', '"':
+			i = skipCSSQuoted(text, i)
+		case '{':
+			return i
+		default:
+			i++
+		}
+	}
+	return -1
+}
+
+func findCSSRuleClose(text string, from int) int {
+	depth := 1
+	for i := from; i < len(text); {
+		switch text[i] {
+		case '\'', '"':
+			i = skipCSSQuoted(text, i)
+			continue
+		case '{':
+			depth++
+		case '}':
+			depth--
+			if depth == 0 {
+				return i
+			}
+		}
+		i++
+	}
+	return -1
+}
+
+// lastCSSTopLevelSep 找 sel 里最后一个顶层 ; 或 }（跳过属性选择器等引号内容），
+// 用于剥掉游离的 } 与无块 at-statement 前缀。
+func lastCSSTopLevelSep(sel string) int {
+	last := -1
+	for i := 0; i < len(sel); {
+		switch sel[i] {
+		case '\'', '"':
+			i = skipCSSQuoted(sel, i)
+			continue
+		case ';', '}':
+			last = i
+		}
+		i++
+	}
+	return last
+}
+
 func parseCSSLimited(text string) (rules []cssRule, truncated bool) {
 	text = stripCSSComments(text)
 	// 按大括号深度扫描顶层规则。不能用 strings.Split(text, "}") 切块：
@@ -65,35 +135,27 @@ func parseCSSLimited(text string) (rules []cssRule, truncated bool) {
 	// 简单切分会把嵌套里的 "#id{display:none}" 当成顶层规则应用，
 	// 在默认媒体下错误隐藏元素（真实语料 D__altText_spinner 的沙漏整块
 	// 消失，gosvg 少画 18661 px）。gosvg 不求值媒体查询，整块跳过
-	// at-rule，与 cairosvg 的行为一致。
+	// at-rule，与 cairosvg 的行为一致。所有扫描都跳过引号内字符串。
 	for pos := 0; pos < len(text); {
-		open := strings.IndexByte(text[pos:], '{')
+		open := findCSSRuleOpen(text, pos)
 		if open < 0 {
 			break
 		}
-		open += pos
 		sel := text[pos:open]
 		// 顶层游离的 '}' 或无块 at-statement（@import ...;）之后的才是选择器。
-		if k := strings.LastIndexAny(sel, "};"); k >= 0 {
+		if k := lastCSSTopLevelSep(sel); k >= 0 {
 			sel = sel[k+1:]
 		}
 		// 深度感知地找到与 open 匹配的 '}'。
-		depth, end := 1, open+1
-		for end < len(text) && depth > 0 {
-			switch text[end] {
-			case '{':
-				depth++
-			case '}':
-				depth--
-			}
-			end++
-		}
+		close := findCSSRuleClose(text, open+1)
 		var body string
-		if depth > 0 { // 未闭合：保留剩余声明并终止扫描
+		var end int
+		if close < 0 { // 未闭合：保留剩余声明并终止扫描
 			body = text[open+1:]
 			end = len(text)
 		} else {
-			body = text[open+1 : end-1]
+			body = text[open+1 : close]
+			end = close + 1
 		}
 		pos = end
 		sel = strings.TrimSpace(sel)

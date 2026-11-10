@@ -8,6 +8,8 @@ if [ -z "${GOPROXY:-}" ]; then
   export GOPROXY=https://goproxy.cn,direct
 fi
 
+echo "== go mod verify ==";    go mod verify
+echo "== go mod tidy -diff =="; go mod tidy -diff
 echo "== gofmt =="
 FMT=$(gofmt -l .)
 if [ -n "$FMT" ]; then echo "$FMT"; exit 1; fi
@@ -20,4 +22,9 @@ echo "== wasm build ==";        GOOS=js GOARCH=wasm CGO_ENABLED=0 go build ./...
 echo "== bench smoke ==";       go test -run '^$' -bench . -benchtime=1x ./...
 echo "== fuzz FuzzParse 30s =="; go test -run '^$' -fuzz '^FuzzParse$'  -fuzztime 30s .
 echo "== fuzz FuzzRender 20s ==";go test -run '^$' -fuzz '^FuzzRender$' -fuzztime 20s .
+echo "== fuzz 其余目标各 5s =="
+for f in $(go test -list '^Fuzz' . | grep '^Fuzz' | grep -vE '^FuzzParse$|^FuzzRender$'); do
+  echo "  -> $f"
+  go test -run '^$' -fuzz "^${f}$" -fuzztime 5s .
+done
 echo "ALL GREEN"

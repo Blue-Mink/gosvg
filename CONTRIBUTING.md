@@ -15,8 +15,10 @@ go test -race ./...
 GOARCH=arm64 GOOS=linux go build ./...
 ```
 
-CI（`.gitea/workflows/ci.yml` 与 `.github/workflows/ci.yml` **内容保持一致**）会跑同样检查，
-外加 30 秒 `FuzzParse` 冒烟。改了任一 CI 文件请同步改另一个。
+CI（`.gitea/workflows/ci.yml` 与 `.github/workflows/ci.yml` **内容保持一致**）只调
+`sh ./scripts/verify.sh`（含 6 个 fuzz 目标、`go mod tidy -diff`、wasm 构建），与本地同源。
+改了任一 CI 文件请同步改另一个。注意 **Gitea Actions runner 数为 0**、GitHub 出站不通，
+CI 目前未在服务端真正执行，提交前请本地实跑 `verify.sh`。
 
 ## 提交风格
 
@@ -27,7 +29,10 @@ Conventional Commits + 中文描述，沿用现有提交风格：`feat:` / `fix:
 
 - 若**有意**改变渲染输出，重新生成基线：`go test -run TestGoldenRegression -update .`，
   并把 `testdata/golden.sha256` 的变更连同理由写进提交信息。
-- 与 cairosvg 的对账（IoU / alphaAAD）目前在仓库外手工跑，数字更新请同步 `GOSVG_TODO.md`。
+  ⚠️ 该 flag **跳过全部比对**并直接覆盖基线；常规开发 / CI 绝不传它。新增
+  `testdata/*.svg` 会被自动枚举进基线，无需手改列表。
+- 与 cairosvg 的对账（alpha IoU；`alphaAAD` 尚未实现）在仓库外手工跑，数字更新请
+  同步 `CHANGELOG.md` / `CAIROSVG_IOU.md`。
 
 ## 改了 fork 代码
 

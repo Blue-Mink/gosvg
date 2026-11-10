@@ -47,7 +47,7 @@
 //	长度：根 <svg> 的 width/height 按 96dpi 换算物理单位；其余长度统一剥离后
 //	    按数值 1:1 近似，不做物理换算，% 不按基准解析
 //	字体：.ttc 集合；未调用 AddFontDir 时 font-family 一律回退 Go Regular
-//	<image>：内置 DefaultImageDecoder()（PNG/JPEG/GIF + data URI 与本地路径），
+//	<image>：data: URI 内置解码；DefaultImageDecoder()（+本地路径）需显式注入，
 //	    也可用包级 ImageDecoder / RenderOptions.ImageDecoder 覆盖；两者皆空时静默跳过
 //
 // 完整清单见 GOSVG_TODO.md / README.md。渲染期跳过事件可通过

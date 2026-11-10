@@ -15,7 +15,8 @@ gosvg 是**库**，接收不可信 SVG 字节并渲染成位图。预期调用�
 - `parseFloat` 拒绝 `NaN` / `±Inf`（`style.go`）。
 - `parseLength` 只接受已知单位后缀，未知后缀（如 `12abc`）判非法。
 - `<use>` / `marker` / `gradient href` / `elementBounds` 有循环与深度上限。
-- 5 个 fuzz 目标（不变量：任意输入不 panic），CI 跑 30 秒冒烟。
+- 6 个 fuzz 目标（不变量：任意输入不 panic），`verify.sh` 全部覆盖：
+  `FuzzParse` 30s / `FuzzRender` 20s / 其余 4 个各 5s。
 
 **已实现的输入边界**：
 - `Render(data, size)` 有尺寸上限 `DefaultMaxDimension = 8192`，超限返回
@@ -37,8 +38,14 @@ gosvg 是**库**，接收不可信 SVG 字节并渲染成位图。预期调用�
 - XML 编码声明：UTF-8 / ASCII 系透传、ISO-8859-1 逐字节展开，其余编码返回带编码名的
   明确错误（不再是 `encoding/xml` 那句 `CharsetReader is nil`）。替换包级 `CharsetReader`
   可扩展；置 nil 可恢复 `encoding/xml` 的默认严格行为。
-- `<image>` 只有 `data:` URI 会被内置解码；**文件路径与远程 URL 必须显式注入解码器**，
-  库不会自行读文件或发起网络请求（有测试守住该边界）。
+- `<image>` 只有 `data:` URI 会被内置解码（`decodeDataURIOnly`，`image.go:33`）；
+  **文件路径与远程 URL 必须显式注入解码器**，库不会自行读文件或发起网络请求
+  （有测试守住该边界）。其余 href 静默跳过并记入 `Diagnostics()`。
+- **注入 `DefaultImageDecoder()` 后的额外边界**：该实现对非 `data:` 的 `href` 会直接
+  `os.Open(href)`（`imagedecode.go:27`），因此**注入后** SVG 内的
+  `<image href="/path/to/file">` 会读本地文件。处理不可信 SVG 请注入带路径白名单的
+  自定义 `ImageDecoder`；远程 URL 仍不会发起网络请求（无 HTTP 客户端）。
+  这是调用方显式选择的结果，不改变库默认行为，本次仅补记说明、未改渲染代码。
 
 ## 已知边界（非漏洞）
 

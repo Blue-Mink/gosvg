@@ -76,9 +76,9 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 逐字节展开为 UTF-8，**其余编码返回带编码名的明确错误**。需要完整 IANA 编码支持时，
 替换包级 `CharsetReader`（例如接 `golang.org/x/text/encoding/htmlindex`）。
 
-**`<image>`**：内置 `DefaultImageDecoder()`（标准库 PNG/JPEG/GIF + `data:` URI 与本地路径，
+**`<image>`**：`data:` URI 由内置解码；另提供需显式注入的 `DefaultImageDecoder()`（标准库 PNG/JPEG/GIF + `data:` URI 与本地路径，
 零外部依赖）；调用方可用包级 `ImageDecoder` 或 `RenderOptions.ImageDecoder` 覆盖。
-两者都为 nil 或解码失败时静默跳过。
+两者都为 nil 时，仅 `data:` URI 由内置解码，其余 href 静默跳过。
 
 > 渲染期跳过事件**已有只读诊断通道**：`Document.Diagnostics()`（累计去重）与
 > `Document.LastRenderDiagnostics()`（最近一次渲染，每次重置），见下文「渲染选项与诊断」。
@@ -116,9 +116,11 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 - **`display` / `visibility`**：`display:none` 跳过整棵子树；`visibility` 是继承属性，
   `hidden` / `collapse` 跳过本节点绘制、子元素可显式 `visible` 覆盖。
   presentation 属性、CSS 规则、内联 `style` 三条路径都生效。
-- **`<image>` 解码**：`DefaultImageDecoder()` 用标准库 PNG/JPEG/GIF 解码 `data:` URI 与
-  本地路径（零外部依赖）；`RenderOptions.ImageDecoder` 支持逐渲染注入，
-  优先级高于包级 `ImageDecoder`。两者都为 nil 时仍静默跳过，**默认行为不变**。
+- **`<image>` 解码**：未注入任何解码器时，仅 `data:` URI 由内置 `decodeDataURIOnly`
+  用标准库解码（不碰文件与网络）；本地路径 / 远程 URL 静默跳过。
+  `DefaultImageDecoder()`（需显式注入）覆盖 `data:` URI 与本地路径，其中非 `data:` 的
+  `href` 会 `os.Open`；`RenderOptions.ImageDecoder` 可逐渲染注入，优先级高于包级
+  `ImageDecoder`。注入默认实现读本地文件属调用方显式选择，见 `SECURITY.md`。
 - **错误分类**：`UnsupportedError` 带 `Code`（`ErrorCode`）与 `Err`，
   提供 `ErrEmptyDocument` / `ErrNonPositiveSize` / `ErrDimensionExceeded` 供 `errors.Is`。
 - **字体**：`RegisteredFonts()` 返回已注册字体族（排序副本）；`ResetFonts()` 清空注册，
@@ -139,9 +141,9 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ## 质量基线
 
 ```sh
-sh ./scripts/verify.sh                         # 全套门禁（含覆盖率与 benchmark 冒烟）
+sh ./scripts/verify.sh                         # 全套门禁（go mod verify / tidy -diff / fmt / vet / test / -race / arm64 / wasm / bench / 6 个 fuzz）
 go test ./...                                  # 单元 + 回归 + golden 哈希
-go test -count=1 -cover ./...                  # 覆盖率（根包 86.2%、cmd/verify 62.3%、
+go test -count=1 -cover ./...                  # 覆盖率（根包 86.7%、cmd/verify 62.3%、
                                                #   cmd/corpus 42.2%、cmd/render 16.7%、
                                                #   internal/vector 24.3%、internal/rasterx 3.9%）
 go test -run '^$' -bench . -benchmem -benchtime 2s .   # 性能基线，见 BENCHMARK.md
@@ -150,8 +152,9 @@ go vet ./...                                  # 静态检查
 gofmt -l .                                    # 空输出 = 通过
 GOARCH=arm64 GOOS=linux go build ./...         # 交叉编译（真机测试需 arm64 runner）
 GOOS=js GOARCH=wasm go build ./...              # WASM 目标可编译
+# ⚠️ -update 跳过全部比对并直接覆盖基线；仅当有意改变渲染输出时使用，常规开发 / CI 绝不传
 go test -run TestGoldenRegression -update .    # 重新生成 testdata/golden.sha256
-go test -run '^$' -fuzz '^FuzzParse$' -fuzztime 30s .   # fuzz 冒烟
+go test -run '^$' -fuzz '^FuzzParse$' -fuzztime 30s .   # fuzz 冒烟（单目标示例；全套见 verify.sh，6 个目标全覆盖）
 go run ./cmd/corpus -size 64 <dir>...                  # 真实语料回归，见 CORPUS_BASELINE.md
 # 与 cairosvg 对账（需本机 cairosvg，不进 CI）：方法与结果见 CAIROSVG_IOU.md
 ```
@@ -169,8 +172,11 @@ go run ./cmd/corpus -size 64 <dir>...                  # 真实语料回归，�
 | dash 直线/斜线/矩形/奇数数组/dashoffset | 1.0000 | round-cap 0.9998，曲线 0.9957 |
 
 `testdata/golden.sha256` 是 **gosvg 自身输出的像素哈希**回归基线（防止无意改变渲染结果），
-不是 cairosvg 基准；由 `go test -update` 生成。当前覆盖 6 个纯图形样例——带 `<text>` 的
-`s60s` 因 `AddFontDir` 全局字体状态会随测试顺序变化，暂不纳入（见 `GOSVG_GAP_TODO.md`）。
+不是 cairosvg 基准；由 `go test -run TestGoldenRegression -update .` 生成（该 flag 跳过
+全部比对并直接覆盖基线，仅当有意改变渲染输出时使用，常规开发 / CI 绝不传）。
+当前自动枚举 `testdata/*.svg`，覆盖 **7 个样例**；带 `<text>` 的 `s60s` 曾因
+`AddFontDir` 污染包级字体注册表而 flaky，现由 `font_test.go` 的
+`t.Cleanup(resetFonts)` 隔离后稳定纳入（哈希 `bb150194…`，`-shuffle=on` 全过）。
 
 ## 变更记录
 
@@ -183,8 +189,8 @@ go run ./cmd/corpus -size 64 <dir>...                  # 真实语料回归，�
   dasharray/dashoffset、MeasureText、marker 箭头、`<image>`（回调注入）。
 - **字体**：`AddFontDir` 系统字体目录（DejaVu 对齐 cairosvg），修 dominant-baseline 方向。
 - **健壮性**：审计修复 6 项（text opacity 双乘、fill 不继承、形状自身 transform/opacity
-  被忽略、科学计数法切分、带单位长度解析）、`use` 循环深度上限、fuzz 5 目标 +
-  修 fuzz 抓到的两个死循环（path Z 后数字、marker 循环引用）。
+  被忽略、科学计数法切分、带单位长度解析）、`use` 循环深度上限、fuzz 5 目标
+  （当时；现在为 6 个）+ 修 fuzz 抓到的两个死循环（path Z 后数字、marker 循环引用）。
 - **工程**：README / MIT LICENSE / 第三方许可声明、Gitea + GitHub 双 CI 门禁、仓库卫生。
 - **依赖调研**：`tdewolff/canvas`（247 个 go.sum 依赖）只作算法参考，明确不引入为依赖。
 
