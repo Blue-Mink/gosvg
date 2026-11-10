@@ -4,8 +4,10 @@ blind/
 
 # 渲染产物（调试用）
 *.png
-# 例外：golden 基准图可入库
-!testdata/golden/*.png
+/out_*.png
 
 # Go 本地产物
-/out_*.png
+*.test
+coverage.out
+coverage.txt
+*.prof
