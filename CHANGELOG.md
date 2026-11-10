@@ -5,7 +5,7 @@
 
 ## [Unreleased]
 
-以下改动都在**本地分支 `fix/post-release-audit`**，尚未合并 main、未发版、未推任何远端。
+以下改动经 **PR #19** 合入 main（分支 `fix/post-release-audit`）；未发版 —— 零渲染行为变化，待下一个渲染修复（如 `parseStyle` 引号缺口）一并发版。
 
 ### 发版后全量审计修复（v0.2.3 之后）
 - **文档收口**：`CHANGELOG` / `README` / `CONTRIBUTING` / `SECURITY` /
