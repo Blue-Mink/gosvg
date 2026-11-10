@@ -5,7 +5,38 @@
 
 ## [Unreleased]
 
-暂无未发布改动。当前最新为 **v0.2.3**（2026-11-10）。
+以下改动都在**本地分支 `fix/post-release-audit`**，尚未合并 main、未发版、未推任何远端。
+
+### 发版后全量审计修复（v0.2.3 之后）
+- **文档收口**：`CHANGELOG` / `README` / `CONTRIBUTING` / `SECURITY` /
+  `CAIROSVG_IOU.md` 补 v0.2.3 发布状态与 848 样本全量对账结论（此前仍写「未发 release」，
+  README 停在已废弃的 117 抽样结论）；两处 CI workflow 补 `push.branches` / `push.tags` /
+  `workflow_dispatch` 触发、Go 固定 1.27.3、去掉硬编码 GOPROXY（改由 `verify.sh` 兜底）。
+- **CSS 解析**：`css.go` 的 `parseCSSLimited` 加引号感知的选择器 / 声明扫描，修
+  `content:"{"` / `content:"}"` 里的括号被误当规则边界；新增 `css_quote_test.go` 6 例。
+- **golden 稳定性**：`font_test.go` 用 `t.Cleanup(resetFonts)` 复位包级 `fontRegistry`，
+  修 `TestRenderUsesSystemFont` 污染导致的 flaky；`golden_test.go` 改为自动枚举
+  `testdata/*.svg` 并纳入带 `<text>` 的 `s60s`，基线 **6 → 7 个样例**，
+  `-shuffle=on` 全过；`golden.sha256` 仅新增 `s60s` 一行，已有样例哈希未变。
+- **门禁**：`go mod tidy` 修正 `golang.org/x/sys` 误标的 `// indirect`；
+  `scripts/verify.sh` 加 `go mod verify` / `go mod tidy -diff`，fuzz 冒烟从 2 个目标
+  扩为 6 个全覆盖；`.gitignore` 精确化；`internal/vector/UPSTREAM.md` 更正字体隔离结论。
+- **验证**：`sh ./scripts/verify.sh` ALL GREEN（当时根包 86.5%；本次补 fuzz
+  引号种子后 86.7%）；全量 850 语料 0 命中新 CSS 分支，平均 IoU `0.963860` 仍有效。
+
+### 文档二轮收口（本次）
+- `GOSVG_TODO.md` 的 golden 段落同步为 7 个样例（此前仍写「6 个 / s60s 暂不纳入」，
+  与 `GOSVG_GAP_TODO.md` 冲突）、补 `-update` 警示、fuzz 数量与冒烟命令对齐。
+- `CAIROSVG_IOU.md` 修正 7 的「6 个确定性样例」加时间注记（后续审计已扩为 7 个）。
+- `OPEN_SOURCE_CHECKLIST.md` 勾选两项：全历史敏感串扫描（101 提交 / 19337 diff 行
+  0 命中）、许可证核对（3 份 LICENSE 齐全）。其余项依赖推外部 Git，按当前约束保持未勾。
+- `FuzzStyle` 补 3 个 CSS 引号种子（`{` / `}` / `;`），让变异器命中引号感知分支。
+
+### 已知边界（本次未改，待单独决策）
+- `style.go:75` 的 `parseStyle` 仍用裸 `strings.Split(s, ";")`，是同类引号感知缺口：
+  引号内含分号的声明会被误切。影响限于该条声明的属性值，未纳入本次修复。
+- `ImageDecoder` / `CharsetReader` 为包级可变 hook，运行时替换需调用方自行同步；
+  仓库内暂无 IoU 对账工具；内网 Gitea CI runner 数为 0，workflow 语法变更未经服务端实跑。
 
 ## [v0.2.3] — 2026-11-10
 
@@ -212,7 +243,7 @@ tag `v0.2.3` → `3d9072f`。下方各分支条目为明细，净结果：
 - **文档一致性批量补齐**（本轮盘点出 10 处自相矛盾 / 过时）：包注释与 `GOSVG_TODO.md`
   里「渲染期跳过事件没有诊断通道」→ 已实现 `Diagnostics()` / `LastRenderDiagnostics()`；
   `<image>` 三处仍写「必须注入解码器」→ 已有开箱可用的 `DefaultImageDecoder()`；
-  覆盖率 85.8% → **86.2%**（当时实测；当前 86.5%；其余包 62.3% / 42.2% / 16.7% / 24.3% / 3.9% 复核无误）；
+  覆盖率 85.8% → **86.2%**（当时实测；当前 86.7%；其余包 62.3% / 42.2% / 16.7% / 24.3% / 3.9% 复核无误）；
   CHANGELOG / CHECKLIST / GAP TODO 里
   「Release 待办」→ 已发至 v0.2.3；`ResetFonts()` 隔离、分支保护 `protected=True`、
   H-A 表「视口单位例外」逐项同步；`CAIROSVG_IOU.md` 修正 1 的旧结论第 2/4 条

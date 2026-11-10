@@ -265,7 +265,7 @@ D 批 228 个里 **196 个无 viewBox**，bbox 的 Y 方向系统性错位；`st
 
 #### 验证（本机自建 Go 1.27.3，与 .15 同版本；未触碰 .15）
 
-- `sh ./scripts/verify.sh` → **ALL GREEN**：gofmt 空、vet 0、test 86.2%（当时实测；当前 86.5%）、`-race` 全过、arm64/wasm 交叉编译、bench、FuzzParse 30s + FuzzRender 20s 无 crash。
+- `sh ./scripts/verify.sh` → **ALL GREEN**：gofmt 空、vet 0、test 86.2%（当时实测；当前 86.7%）、`-race` 全过、arm64/wasm 交叉编译、bench、FuzzParse 30s + FuzzRender 20s 无 crash。
 - `testdata/golden.sha256` **未变**（6 个基线样本渲染字节未变），无需重生成。
 - 全量 850 个 SVG 重新渲染（零错误），与修复前基线及 cairosvg 参照按同一 alpha IoU（alpha>8）逐文件比对，**848 个可比样本**：
 
@@ -379,7 +379,9 @@ D 批 228 个里 **196 个无 viewBox**，bbox 的 Y 方向系统性错位；`st
 
   > ✅ **已由修正 7 落地**（2026-11-10，用户回复「按你的建议来」授权）：转换在解析层实现、
   > 光栅器核心零改动；`verify.sh` 全套 ALL GREEN；全量 848 样本生效 / 误伤验证完成。
-  > `golden.sha256` 经核验**无需重生成**（6 个确定性样例均不含 `fill-rule` 声明）。
+  > `golden.sha256` 经核验**无需重生成**（当时的 6 个确定性样例均不含 `fill-rule`
+  > 声明）。注：v0.2.3 之后的发版后审计修复把带 `<text>` 的 `s60s` 纳入基线、
+  > 扩为 7 个样例并新增一行哈希，那是字体状态隔离所致，与本次 even-odd 结论无关。
 
 ### 修正 7：even-odd 等价转换的 Go 侧落地与全量生效验证（2026-11-10）
 

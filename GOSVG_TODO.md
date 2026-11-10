@@ -143,7 +143,7 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ```sh
 sh ./scripts/verify.sh                         # 全套门禁（go mod verify / tidy -diff / fmt / vet / test / -race / arm64 / wasm / bench / 6 个 fuzz）
 go test ./...                                  # 单元 + 回归 + golden 哈希
-go test -count=1 -cover ./...                  # 覆盖率（根包 86.5%、cmd/verify 62.3%、
+go test -count=1 -cover ./...                  # 覆盖率（根包 86.7%、cmd/verify 62.3%、
                                                #   cmd/corpus 42.2%、cmd/render 16.7%、
                                                #   internal/vector 24.3%、internal/rasterx 3.9%）
 go test -run '^$' -bench . -benchmem -benchtime 2s .   # 性能基线，见 BENCHMARK.md
@@ -152,8 +152,9 @@ go vet ./...                                  # 静态检查
 gofmt -l .                                    # 空输出 = 通过
 GOARCH=arm64 GOOS=linux go build ./...         # 交叉编译（真机测试需 arm64 runner）
 GOOS=js GOARCH=wasm go build ./...              # WASM 目标可编译
+# ⚠️ -update 跳过全部比对并直接覆盖基线；仅当有意改变渲染输出时使用，常规开发 / CI 绝不传
 go test -run TestGoldenRegression -update .    # 重新生成 testdata/golden.sha256
-go test -run '^$' -fuzz '^FuzzParse$' -fuzztime 30s .   # fuzz 冒烟
+go test -run '^$' -fuzz '^FuzzParse$' -fuzztime 30s .   # fuzz 冒烟（单目标示例；全套见 verify.sh，6 个目标全覆盖）
 go run ./cmd/corpus -size 64 <dir>...                  # 真实语料回归，见 CORPUS_BASELINE.md
 # 与 cairosvg 对账（需本机 cairosvg，不进 CI）：方法与结果见 CAIROSVG_IOU.md
 ```
@@ -171,8 +172,11 @@ go run ./cmd/corpus -size 64 <dir>...                  # 真实语料回归，�
 | dash 直线/斜线/矩形/奇数数组/dashoffset | 1.0000 | round-cap 0.9998，曲线 0.9957 |
 
 `testdata/golden.sha256` 是 **gosvg 自身输出的像素哈希**回归基线（防止无意改变渲染结果），
-不是 cairosvg 基准；由 `go test -update` 生成。当前覆盖 6 个纯图形样例——带 `<text>` 的
-`s60s` 因 `AddFontDir` 全局字体状态会随测试顺序变化，暂不纳入（见 `GOSVG_GAP_TODO.md`）。
+不是 cairosvg 基准；由 `go test -run TestGoldenRegression -update .` 生成（该 flag 跳过
+全部比对并直接覆盖基线，仅当有意改变渲染输出时使用，常规开发 / CI 绝不传）。
+当前自动枚举 `testdata/*.svg`，覆盖 **7 个样例**；带 `<text>` 的 `s60s` 曾因
+`AddFontDir` 污染包级字体注册表而 flaky，现由 `font_test.go` 的
+`t.Cleanup(resetFonts)` 隔离后稳定纳入（哈希 `bb150194…`，`-shuffle=on` 全过）。
 
 ## 变更记录
 
@@ -185,8 +189,8 @@ go run ./cmd/corpus -size 64 <dir>...                  # 真实语料回归，�
   dasharray/dashoffset、MeasureText、marker 箭头、`<image>`（回调注入）。
 - **字体**：`AddFontDir` 系统字体目录（DejaVu 对齐 cairosvg），修 dominant-baseline 方向。
 - **健壮性**：审计修复 6 项（text opacity 双乘、fill 不继承、形状自身 transform/opacity
-  被忽略、科学计数法切分、带单位长度解析）、`use` 循环深度上限、fuzz 5 目标 +
-  修 fuzz 抓到的两个死循环（path Z 后数字、marker 循环引用）。
+  被忽略、科学计数法切分、带单位长度解析）、`use` 循环深度上限、fuzz 5 目标
+  （当时；现在为 6 个）+ 修 fuzz 抓到的两个死循环（path Z 后数字、marker 循环引用）。
 - **工程**：README / MIT LICENSE / 第三方许可声明、Gitea + GitHub 双 CI 门禁、仓库卫生。
 - **依赖调研**：`tdewolff/canvas`（247 个 go.sum 依赖）只作算法参考，明确不引入为依赖。
 

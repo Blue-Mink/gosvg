@@ -100,6 +100,10 @@ func FuzzStyle(f *testing.F) {
 		"fill:url(#g)",
 		"stroke-dasharray:5 5;stroke-linejoin:round",
 		"fill:rgb(1e-5,0,0)",
+		// CSS 字符串里的括号 / 分号不是语法字符：css.go 引号感知扫描的回归种子。
+		`content:"{";fill:red`,
+		`content:"}";fill:blue`,
+		`content:"a;b";fill:green`,
 	} {
 		f.Add(s)
 	}
