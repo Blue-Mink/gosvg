@@ -134,15 +134,16 @@ func (ctx *renderContext) renderPatternTile(pat *node, tileW, tileH int, bw, bh,
 	}
 
 	sub := &renderContext{
-		img:     tile,
-		doc:     ctx.doc,
-		matrix:  m,
-		style:   defaultShapeStyle(),
-		ctx:     ctx.ctx,
-		opts:    ctx.opts,
-		nesting: ctx.nesting + 1,
-		err:     ctx.err,
-		visible: ctx.visible,
+		img:        tile,
+		doc:        ctx.doc,
+		matrix:     m,
+		style:      defaultShapeStyle(),
+		ctx:        ctx.ctx,
+		opts:       ctx.opts,
+		nesting:    ctx.nesting + 1,
+		err:        ctx.err,
+		visible:    ctx.visible,
+		inClipPath: ctx.inClipPath,
 	}
 	sub.dasher = newDasherFor(tile)
 	for _, c := range pat.children {
@@ -174,8 +175,9 @@ func (ctx *renderContext) renderPathMask(p rasterx.Path, bx, by, bw, bh, opacity
 		ctx:    ctx.ctx,
 		opts:   ctx.opts,
 		// 掩膜只关心路径覆盖，不受父级 visibility 影响
-		visible: true,
-		err:     ctx.err,
+		visible:    true,
+		err:        ctx.err,
+		inClipPath: ctx.inClipPath,
 	}
 	sub.dasher = newDasherFor(mask)
 	sub.fill(p, color.NRGBA{R: 0, G: 0, B: 0, A: 255}, opacity, nonZero)

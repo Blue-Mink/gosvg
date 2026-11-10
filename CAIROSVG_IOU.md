@@ -370,6 +370,65 @@ D 批 228 个里 **196 个无 viewBox**，bbox 的 Y 方向系统性错位；`st
 - 等价转换**不是完全通用**：对自交子路径、部分重叠（非嵌套）子路径，even-odd 与「按嵌套深度交替方向的 nonzero」不等价；嵌套判断用代表点 + 面积比较，复杂形状可能误判。落地前需补这些 case 的测试。
 - 若要落地，需在解析 / 渲染层加一个 Go 侧等价转换（**不动光栅器核心**），之后仍需 `verify.sh` 全套 + 全量 IoU 生效 / 误伤验证 + `golden.sha256` 重生成。**需用户单独授权，本次未做。**
 
+  > ✅ **已由修正 7 落地**（2026-11-10，用户回复「按你的建议来」授权）：转换在解析层实现、
+  > 光栅器核心零改动；`verify.sh` 全套 ALL GREEN；全量 848 样本生效 / 误伤验证完成。
+  > `golden.sha256` 经核验**无需重生成**（6 个确定性样例均不含 `fill-rule` 声明）。
+
+### 修正 7：even-odd 等价转换的 Go 侧落地与全量生效验证（2026-11-10）
+
+用户回复「按你的建议来」授权后，把修正 6 的外部 SVG 预处理 PoC 落成库内实现。
+**边界与建议一致**：只在解析 / 渲染层做转换，`internal/rasterx` 与 `internal/vector`
+一行未改；描边与 marker 仍用原始 path，只有填充路径被替换。
+
+#### 实现
+
+| 文件 | 改动 |
+|---|---|
+| `evenodd_convert.go`（新增） | 在已归一化的 `rasterx.Path` 上按 `PathMoveTo` 切子路径，采样折线算 shoelace 有向面积与嵌套深度，按需反转段序列（控制点倒序、终点换成原段起点、`Z` 隐含段补成显式 `Line`），重建一条「方向交替、走 nonzero」的等价 Path |
+| `render.go` | `renderShape` 里把填充改为 `fillPath` + `fillNonZero`；`inClipPath` 标志排除 clipPath 内部路径 |
+| `clip.go` / `mask.go` / `pattern.go` | 创建离屏 `renderContext` 时传递 / 设置 `inClipPath`，避免嵌套离屏渲染漏过排除条件 |
+| `evenodd_convert_test.go`（新增） | 10 项测试：同向嵌套、三层 winding、独立子路径、三次贝塞尔反转控制点顺序、方向交替断言、gradient 填充、clipPath 跳过、A/T 跳过、Path 结构合法性，以及**自交 / 部分重叠两类拒绝用例** |
+
+**保守条件**（任一不满足即放弃转换，回退原 even-odd 光栅化，宁可保留已知缺陷也不引入新错误填充）：
+`style.fillRule == "evenodd"`、不在 clipPath 内、`d` 不含 `A/a/T/t`、至少 2 个子路径、
+无自交、无边界互相穿越（部分重叠）、无零面积子路径、采样总点数 ≤ 512。
+这正面回应了修正 6「落地前需补自交 / 部分重叠 case 测试」的遗留项 —— 不是只补测试，
+而是让实现**检测并拒绝**这两类不等价输入。
+
+#### 验证
+
+- `sh ./scripts/verify.sh` **ALL GREEN**（gofmt / vet / test -cover / `-race` / arm64 /
+  wasm / bench smoke / FuzzParse 30s / FuzzRender 20s）。`testdata/golden.sha256` 未变，
+  经查 6 个样例 `blues` / `cn` / `country` / `jazz` / `lucide` / `rock` 均无 `fill-rule`
+  声明，属于真实的「无需更新」，不是漏检。
+- **全量生效 / 误伤验证**：用 `git archive HEAD` 导出干净基线快照，与改动后代码各编译一个
+  `cmd/render`，以相同参数（`gosvg.Render(data, 256)` + `png.Encode`）各渲染 850 个 SVG；
+  按修正 6 同一口径（`alpha>0` 二值 mask 的 `交/并`）与 `cairo_all` 的 848 个参考图对比。
+
+| 指标 | 基线 | 落地后 |
+|---|---|---|
+| 参与对比样本 | 848 | 848 |
+| 像素发生变化的文件 | — | **30** |
+| IoU 提升 / 退化 / 不变 | — | **30 / 0 / 818** |
+| 全量平均 IoU | 0.949874 | **0.961272（+0.011397）** |
+| IoU < 0.5 的文件数 | 15 | **4** |
+| 11 个目标文件平均 IoU | 0.2560 | **0.9927** |
+
+逐文件提升明细（30 个全部为正向，最大 `B__frame-icon` 0.0602 → **1.0000**、
+`C__1f9fab4e48601ca5` 0.0620 → 0.9986、`D__toolbarButton-editorHighlight` 0.4096 → 0.9981）。
+**11 个低分目标全部救回，另有 19 个此前未计入低分账的中低分文件受益**，与修正 6 的
+PoC 结论（30 提升 / 31 不变 / 0 退化）一致。两套平均 IoU 绝对值略有差异（PoC 为
+0.950746 → 0.962169）是因为 PoC 的输入是外部转换后的 SVG、基线渲染不同，不可逐位对比；
+相对增量 +0.011397 与 +0.011423 一致。
+
+- **剩余 4 个 IoU < 0.5 文件像素零变化**，均非 even-odd 缺陷：`B__resizeDiagonal`
+  0.0677（clip-path + transform）、`C__6ab88ea05959193c` 0.2432、
+  `D__wacom-intuos-pro-2-s` 0.4397、`D__altText_spinner` 0.4549（`@media` 嵌套 CSS）。
+- **性能无劣化**：语料中最重的 `A__CJIHhYwFz-erht8H.svg`（77 KB / 552 个 path /
+  257 个 `Z`）单文件渲染基线 22.567s、落地后 21.707s。全量首次顺序渲染超时是预算被
+  基线批次占用，非转换引入的卡顿（已用单文件计时排除）。
+- **未打 tag、未发 release**，发版仍需用户单独确认。
+
 ### 方法论（再次校准）
 
 1. **抽样会骗人**：117 抽样里 D 批只占 30 个、低分被当作个例；全量 848 才暴露 196 个。

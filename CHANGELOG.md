@@ -190,3 +190,24 @@
   （gosvg 只多画 5px，cairosvg 多画 12220 / 18661 px），不是「填充差异 / AA 边界」。
   只读定位到 `@media` 嵌套 CSS 规则被误应用、even-odd 多子路径被挖空两个根因假设；
   **改动会波及渲染字节与全量 IoU 表，按纪律列为需用户点头项，未动代码**。
+
+### 分支 `feat/evenodd-path-conversion`
+- **修 even-odd 多子路径的系统性渲染缺陷**（用户授权「按你的建议来」后落地修正 6 的 PoC）：
+  新增 `evenodd_convert.go`，在解析层把 `fill-rule="evenodd"` 的多子路径按嵌套深度
+  调整为方向交替、改走 nonzero；`renderShape` 只把转换后的 Path 用于填充，
+  **描边与 marker 仍用原 path**。`internal/rasterx` / `internal/vector` 光栅器核心零改动。
+- 保守触发：`d` 不含 `A/a/T/t`、≥2 子路径、不在 clipPath 内、无自交 / 部分重叠 /
+  零面积子路径、采样点数 ≤ 512；任一不满足即回退原 even-odd，不引入新的错误填充。
+  `inClipPath` 标志由 `clip.go` / `mask.go` / `pattern.go` 的离屏 context 传递，
+  保证 clip-rule 语义不受影响。
+- `evenodd_convert_test.go` 10 项测试覆盖同向嵌套、三层 winding、独立子路径、
+  三次贝塞尔控制点倒序、gradient、clipPath 跳过、A/T 跳过，以及自交 / 部分重叠两类拒绝用例。
+- **`verify.sh` 全套 ALL GREEN**；`golden.sha256` 核验后**无需重生成**（6 个基线样例均无
+  `fill-rule` 声明），不是漏检。
+- **全量生效验证**（干净基线 vs 落地后各渲染 850 个 SVG，848 个与 cairosvg 对账）：
+  **30 个文件像素变化、30 提升 / 0 退化 / 818 不变**，平均 IoU
+  **0.949874 → 0.961272（+0.011397）**，`IoU<0.5` 从 **15 → 4**，
+  11 个目标文件平均 **0.2560 → 0.9927**（`B__frame-icon` 0.0602 → 1.0000）。
+  剩余 4 个低分文件像素零变化，均属 clip-path / `@media` 等非 even-odd 问题。
+  详见 `CAIROSVG_IOU.md` 修正 7。
+- 未打 tag、未发 release，发版仍需单独确认。
