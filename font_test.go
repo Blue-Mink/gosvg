@@ -126,6 +126,10 @@ func TestRenderUsesSystemFont(t *testing.T) {
 	const noFamily = `<svg viewBox="0 0 100 100"><text x="5" y="70" font-size="64" fill="black">80</text></svg>`
 
 	resetFonts()
+	// AddFontDir 会写入包级 fontRegistry；本测试结束必须复位，否则后续测试
+	// （尤其 golden 像素哈希）会随执行顺序拿到不同字体而渲染出不同字节。
+	// 这也是 golden 基线能安全纳入带 <text> 样例的前提。
+	t.Cleanup(resetFonts)
 	imgGo, err := Render([]byte(noFamily), 100)
 	if err != nil {
 		t.Fatalf("render no-family: %v", err)
