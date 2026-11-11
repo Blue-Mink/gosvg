@@ -33,10 +33,28 @@
 - `FuzzStyle` 补 3 个 CSS 引号种子（`{` / `}` / `;`），让变异器命中引号感知分支。
 
 ### 已知边界（本次未改，待单独决策）
-- `style.go:75` 的 `parseStyle` 仍用裸 `strings.Split(s, ";")`，是同类引号感知缺口：
-  引号内含分号的声明会被误切。影响限于该条声明的属性值，未纳入本次修复。
 - `ImageDecoder` / `CharsetReader` 为包级可变 hook，运行时替换需调用方自行同步；
   仓库内暂无 IoU 对账工具；内网 Gitea CI runner 数为 0，workflow 语法变更未经服务端实跑。
+
+### parseStyle 引号/括号感知（PR #20）
+
+- **修复**：`style.go` 的 `parseStyle` 不再用裸 `strings.Split(s, ";")` 切分 style 属性，
+  改由新增的 `splitStyleDecls` 按**顶层分号**切分 —— 引号内字符串复用 `css.go` 的
+  `skipCSSQuoted` 跳过（含 `\'` 转义），括号用深度计数跳过 `url(...)` 等函数式记号
+  内部的分号。
+- **修掉的两种坏值**：`style="content:'a;b';fill:red"` 的 `content` 值曾被截成 `'a`
+  且尾随 `b'` 变非法声明被丢弃；`style="fill:url(data:image/png;base64,AA)"` 的值曾被
+  截成 `url(data:image/png`，图片引用失效。
+- **测试**：新增 `style_quote_test.go` 覆盖引号 / 双引号 / data URI / 转义引号 /
+  引号内花括号 7 个场景，另有一例确认基础语义（key 小写、缺冒号与空值静默跳过）不变。
+  测试有效性：把 `style.go` 回退到修复前版本后，4 个子用例 FAIL（精确复现缺陷）。
+- **验证**：`sh ./scripts/verify.sh` ALL GREEN（RC=0，根包覆盖率 86.7% → 86.8%）；
+  **全量 850 语料唯一变量对比**（HEAD 二进制 vs 修复版二进制渲染同一批输入）
+  **850/850 像素完全一致** —— 现有语料 0 命中新分支，故渲染输出零变化。
+- **基线**：`testdata/golden.sha256` 无需更新（7 个样例哈希不变）；未触碰任何光栅器
+  与渲染路径文件（仅 `style.go` + 新测试文件）。
+- **状态**：经 **PR #20** 合入 main；**尚未发版**，与 v0.2.4 一并发布。
+- 上文「已知边界」中的 `parseStyle` 引号缺口**已由本条修复**，故从该段落移出。
 
 ## [v0.2.3] — 2026-11-10
 
