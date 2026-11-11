@@ -68,11 +68,46 @@ func parseLengthOr(s string, def float64) float64 {
 	return def
 }
 
+// splitStyleDecls 按顶层分号切分 CSS 声明串，跳过引号内字符串与括号内内容。
+// 直接 strings.Split(s, ";") 会把
+//
+//	style="content:'a;b';fill:red"     → content 的值被切成 "'a" 与 "b'"
+//	style="fill:url(data:image/png;base64,AA)" → 值被截成 "url(data:image/png"
+//
+// 两种情况都会丢属性或产生非法值。css.go 的 lastCSSTopLevelSep 同源思路：
+// 引号用 skipCSSQuoted 跳过，括号用深度计数。
+func splitStyleDecls(s string) []string {
+	decls := make([]string, 0, 8)
+	start := 0
+	depth := 0
+	for i := 0; i < len(s); {
+		switch c := s[i]; c {
+		case '\'', '"':
+			i = skipCSSQuoted(s, i)
+			continue
+		case '(':
+			depth++
+		case ')':
+			if depth > 0 {
+				depth--
+			}
+		case ';':
+			if depth == 0 {
+				decls = append(decls, s[start:i])
+				start = i + 1
+			}
+		}
+		i++
+	}
+	decls = append(decls, s[start:])
+	return decls
+}
+
 // parseStyle 解析 CSS 内联样式串 style="fill:red;stroke:blue;stroke-width:2"
 // 为属性表（key 已小写）。空声明/缺冒号的部分静默跳过。
 func parseStyle(s string) map[string]string {
 	out := map[string]string{}
-	for _, decl := range strings.Split(s, ";") {
+	for _, decl := range splitStyleDecls(s) {
 		decl = strings.TrimSpace(decl)
 		if decl == "" {
 			continue
