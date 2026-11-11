@@ -11,3 +11,7 @@ blind/
 coverage.out
 coverage.txt
 *.prof
+
+# Python 深度审计脚本产物
+__pycache__/
+*.pyc

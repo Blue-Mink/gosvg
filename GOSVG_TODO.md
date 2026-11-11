@@ -85,7 +85,7 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 > 渲染期跳过事件**已有只读诊断通道**：`Document.Diagnostics()`（累计去重）与
 > `Document.LastRenderDiagnostics()`（最近一次渲染，每次重置），见下文「渲染选项与诊断」。
 > `UnsupportedError` 仅用于空文档/非正尺寸等**调用方输入错误**，与特性跳过无关。
-> 尚未覆盖的静默分支见 `GOSVG_GAP_TODO.md`。
+> 该通道覆盖主要跳过分支；未覆盖项与各轮处置结论见 `GOSVG_GAP_TODO.md` 档 2 / 档 3。
 
 ## 渲染选项与诊断
 
@@ -143,6 +143,12 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
    4x 边缘放大肉眼不可辨。
 
 ## 质量基线
+
+> **机器校验锚点**（由 `scripts/check_docs.sh` 读取，数字变化时同步更新本行）：
+> `test=228 example=3 fuzz=6 golden=7`。口径：`test` / `example` 用
+> `go test -list '^(Test|Example)' ./...` 分别计数，`fuzz` 为 `*_test.go` 中的 `func Fuzz`
+> 定义数，`golden` 为 `testdata/*.svg` 数（须与 `golden.sha256` 行数相等）。
+> 历史章节里的 215 / 6 个样例等是当时快照，不参与此锚点比对。
 
 ```sh
 sh ./scripts/verify.sh                         # 全套门禁（go mod verify / tidy -diff / fmt / vet / test / -race / arm64 / wasm / bench / 6 个 fuzz）

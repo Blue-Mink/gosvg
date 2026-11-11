@@ -1,5 +1,9 @@
 # 性能基线
 
+> **版本状态**：本文是 2026-11-10 的性能基线快照（Go 1.27.3 / .15 NAS），表中
+> ns/op、B/op、allocs/op 与文末结论均为**当时实测**，不代表最新版本读数；重新
+> 测量用 `go test -run '^$' -bench . -benchmem -benchtime 2s .`。
+
 ## 实测环境
 
 - 机器：.15 NAS，AMD Ryzen 7 5825U with Radeon Graphics

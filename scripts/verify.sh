@@ -27,4 +27,6 @@ for f in $(go test -list '^Fuzz' . | grep '^Fuzz' | grep -vE '^FuzzParse$|^FuzzR
   echo "  -> $f"
   go test -run '^$' -fuzz "^${f}$" -fuzztime 5s .
 done
+echo "== docs consistency =="; sh ./scripts/check_docs.sh
+
 echo "ALL GREEN"

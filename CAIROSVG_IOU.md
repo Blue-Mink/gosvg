@@ -1,10 +1,12 @@
 # cairosvg 批量对账报告
 
-> **版本状态（2026-11-11）**：当前最新为 **v0.2.4**（tag `v0.2.4` → `67564f4`）。
+> **版本状态（2026-11-11）**：最新 release 为 **v0.2.4**（tag `v0.2.4` → `67564f4`）；
+> tag 未移动，main 此后持续前移（当前值以 `git rev-parse HEAD` / `git log` 为准），
+> 两者不再等同。
 > 本报告按时间顺序累积「修正 1–9」，各节末尾的「未打 tag、未发 release」均为**当时快照**，
-> 不代表当前状态；文中散见的「当前 v0.2.3 已发」「当前 86.7%」等相对时间词亦是
-> 2026-11-10 当时的写法，现最新为 v0.2.4 / 根包覆盖率 87.0%。当前发布状态以
-> `CHANGELOG.md` 的 `[v0.2.4]` 为准。
+> 不代表当前状态；文中散见的「当前 v0.2.3 已发」「当前 86.7%」「6 个 golden 样例」等
+> 相对时间词与计数均是 2026-11-10 当时的写法，现最新为 v0.2.4 / 根包覆盖率
+> 87.0% / 7 个 golden 样例。当前发布状态以 `CHANGELOG.md` 的 `[v0.2.4]` 为准。
 
 `cmd/corpus` 的成功率指标只能回答「有没有画出东西」，回答不了「画得对不对」。
 本报告用 **cairosvg 2.9.1** 作为参照实现，对真实语料做 alpha IoU 对账。
@@ -108,6 +110,10 @@ python3 -c "import cairosvg,glob,os;[cairosvg.svg2png(url=f,write_to='cairo/'+os
 4. 下一个待查目标是 B 批 `frame-icon.svg`（0.0594）。
    > ⚠️ **已废弃**：修正 2 的全量交叉验证显示 even-odd + transform 假设被证伪、
    > `frame-icon` 是个例；当前真实待查项见修正 3 末尾列出的 2 个整块缺失文件。
+   >
+   > ⚠️ **二次推翻（修正 6 / 修正 7）**：「个例」与「2 个」均不成立——even-odd
+   > 缺陷实测影响 15 个低分中的 **11 个**（富集约 27 倍），并已由修正 7 在解析层
+   > 等价转换修复。上两行按历史原文保留，见修正 6 开头的影响账重算。
 
 
 ---
@@ -150,7 +156,8 @@ D 批 228 个里 **196 个无 viewBox**，bbox 的 Y 方向系统性错位；`st
 `<text>` 字体确实存在，但只是叠加因素，不是主因。
 
 **修复**：无 viewBox 时按 `width/height` 等比缩放并 `xMidYMid` 居中；
-`preserveAspectRatio="none"` 才保留拉伸。6 个 golden 样例全有 viewBox，基线不受影响。
+`preserveAspectRatio="none"` 才保留拉伸。6 个 golden 样例全有 viewBox，基线不受影响
+（当时的 6 个；v0.2.3 后纳入 `s60s` 扩为 7 个，见文首版本状态）。
 
 **全量复测（848 样本）**：
 
@@ -269,7 +276,8 @@ D 批 228 个里 **196 个无 viewBox**，bbox 的 Y 方向系统性错位；`st
 #### 验证（本机自建 Go 1.27.3，与 .15 同版本；未触碰 .15）
 
 - `sh ./scripts/verify.sh` → **ALL GREEN**：gofmt 空、vet 0、test 86.2%（当时实测；v0.2.4 为 87.0%）、`-race` 全过、arm64/wasm 交叉编译、bench、FuzzParse 30s + FuzzRender 20s 无 crash。
-- `testdata/golden.sha256` **未变**（6 个基线样本渲染字节未变），无需重生成。
+- `testdata/golden.sha256` **未变**（当时的 6 个基线样本渲染字节未变；v0.2.3 后
+  扩为 7 个），无需重生成。
 - 全量 850 个 SVG 重新渲染（零错误），与修复前基线及 cairosvg 参照按同一 alpha IoU（alpha>8）逐文件比对，**848 个可比样本**：
 
   | 指标 | 修复前 | 修复后 |
@@ -294,10 +302,14 @@ D 批 228 个里 **196 个无 viewBox**，bbox 的 Y 方向系统性错位；`st
 
 真正缺陷（`toolbarButton-editorHighlight`：单条 path 含 3 个 `Z` 子路径 + `fill-rule="evenodd"`，gosvg 8343 像素空心轮廓 vs cairosvg 20580 像素实心）出在 **rasterx 对多子路径的 even-odd 奇偶累积算法**层面，与 Filler 实例生命周期无关；`altText_spinner` 主因仍是 CSS `@media` 解析。两者均未在本次改动中触及。
 
+> ⚠️ **后续收窄（修正 6 / 修正 7）**：最小复现与 cairosvg 对照排除了「累积算法整体坏」，
+> 触发条件收窄为单条 `<path>` 内 2–4 个 `Z` 子路径 + `fill-rule="evenodd"`；最终修复
+> 走解析层方向等价转换（`nonzero`），**未改动 `internal/rasterx`**。本段按当时原文保留。
+
 #### 决定与现状
 
 - PR #13 **已关闭、未合并**（标题/正文含「已修复」的不实结论，合并会把错误结论写进 main）。
-- 本次仅追加文档结论：渲染代码、`golden.sha256`、全量 IoU 基线均未改动；未打 tag、未发 release（当时快照；当前 v0.2.3 已发，见文首）。实验分支上曾列出的后续修复/发版计划与环境阻塞说明，随本次撤回一并作废（环境阻塞已通过本机自建工具链解决）。
+- 本次仅追加文档结论：渲染代码、`golden.sha256`、全量 IoU 基线均未改动；未打 tag、未发 release（当时快照；最新 release 见文首版本状态）。实验分支上曾列出的后续修复/发版计划与环境阻塞说明，随本次撤回一并作废（环境阻塞已通过本机自建工具链解决）。
 - 若日后要真修，需另行授权：动 `internal/rasterx` 多子路径 even-odd 算法，或改走 SVG 预处理等价转换；之后必须重跑 `verify.sh` 全套 + 全量 IoU **生效验证** + 更新 `golden.sha256`。当前缺陷收益极小（15 个低分中的 2 个），按既有定调不值得为此改 fork 核心。
 
   > ⚠️ **上一行「当前缺陷收益极小（15 个低分中的 2 个）」已被修正 6 的实测推翻**：
@@ -337,6 +349,8 @@ D 批 228 个里 **196 个无 viewBox**，bbox 的 Y 方向系统性错位；`st
 - 最小复现与对照（`rect_hole_evenodd`、`two_subpaths_evenodd`、`frame-icon` false-positive、`two_disjoint_evenodd`、`evenodd_presubpath_state` 等）排除了「多子路径 even-odd 累积算法整体坏」；触发条件收窄为 **单条 `<path>` 内含 2–4 个 `Z` 子路径 + `fill-rule="evenodd"`**。
 - 修正 2 把 `frame-icon` 归为「transform 分组误判」，实测证伪：它就是 even-odd 缺陷，与 transform 无关。
 - `D__altText_spinner` 主因仍是 CSS `@media` 嵌套块解析，与本节无关。
+  （⚠️ 后续按修正 8 / PR #18 修掉 `css.go` at-rule 深度扫描后，该文件 IoU
+  0.4549 → 0.9990；「与本节无关」的判断当时成立，现已不再是待查项。原判断按历史原文保留。）
 - 11 个文件的 `d` 指令集均为 `M/L/H/V/C/Z` 及相对形式，**无弧线 `A`**，子路径结构都是「外框 + 内孔」或「外圈 + 内圈」。
 
 #### PoC：SVG 预处理等价转换
@@ -411,8 +425,9 @@ D 批 228 个里 **196 个无 viewBox**，bbox 的 Y 方向系统性错位；`st
 
 - `sh ./scripts/verify.sh` **ALL GREEN**（gofmt / vet / test -cover / `-race` / arm64 /
   wasm / bench smoke / FuzzParse 30s / FuzzRender 20s）。`testdata/golden.sha256` 未变，
-  经查 6 个样例 `blues` / `cn` / `country` / `jazz` / `lucide` / `rock` 均无 `fill-rule`
-  声明，属于真实的「无需更新」，不是漏检。
+  经查当时的 6 个样例 `blues` / `cn` / `country` / `jazz` / `lucide` / `rock` 均无
+  `fill-rule` 声明，属于真实的「无需更新」，不是漏检（v0.2.3 后新增第 7 个 `s60s`，
+  见本节前文注记与文首版本状态）。
 - **全量生效 / 误伤验证**：用 `git archive HEAD` 导出干净基线快照，与改动后代码各编译一个
   `cmd/render`，以相同参数（`gosvg.Render(data, 256)` + `png.Encode`）各渲染 850 个 SVG；
   按修正 6 同一口径（`alpha>0` 二值 mask 的 `交/并`）与 `cairo_all` 的 848 个参考图对比。
@@ -439,7 +454,7 @@ PoC 结论（30 提升 / 31 不变 / 0 退化）一致。两套平均 IoU 绝对
 - **性能无劣化**：语料中最重的 `A__CJIHhYwFz-erht8H.svg`（77 KB / 552 个 path /
   257 个 `Z`）单文件渲染基线 22.567s、落地后 21.707s。全量首次顺序渲染超时是预算被
   基线批次占用，非转换引入的卡顿（已用单文件计时排除）。
-- **当时未打 tag、未发 release**（当前 v0.2.3 已发，见文首版本状态）；当前已发 v0.2.3，本行不再代表现状。
+- **当时未打 tag、未发 release**；本行仅为当时快照，当前发布状态见文首版本状态（最新 v0.2.4）。
 
 
 ### 修正 8：剩余 4 个低分的三类结构性缺陷（2026-11-10）
@@ -491,7 +506,7 @@ A/B 显示去掉 `<style>` 后 gosvg 画 9199 px，与**基线**逐像素一致 
 
 #### 现状
 
-三处源码修复 + 3 个回归测试 + 本文档。**当时未打 tag、未发 release**（当前 v0.2.3 已发，见文首版本状态）；当前已发 v0.2.3，本行不再代表现状。
+三处源码修复 + 3 个回归测试 + 本文档。**当时未打 tag、未发 release**；本行仅为当时快照，当前发布状态见文首版本状态（最新 v0.2.4）。
 
 
 ### 方法论（再次校准）

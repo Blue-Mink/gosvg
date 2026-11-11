@@ -31,8 +31,12 @@ Conventional Commits + 中文描述，沿用现有提交风格：`feat:` / `fix:
   并把 `testdata/golden.sha256` 的变更连同理由写进提交信息。
   ⚠️ 该 flag **跳过全部比对**并直接覆盖基线；常规开发 / CI 绝不传它。新增
   `testdata/*.svg` 会被自动枚举进基线，无需手改列表。
-- 与 cairosvg 的对账（alpha IoU；`alphaAAD` 尚未实现）在仓库外手工跑，数字更新请
-  同步 `CHANGELOG.md` / `CAIROSVG_IOU.md`。
+- 与 cairosvg 的对账用入仓工具 `cmd/iou`（v0.2.4 起随仓库提供，取代仓库外一次性
+  脚本；用法见 `README.md`）；`alphaAAD` 口径仍未实现。数字更新请同步
+  `CHANGELOG.md` / `CAIROSVG_IOU.md`，并跑 `sh ./scripts/verify.sh`（含文档一致性门禁
+  `scripts/check_docs.sh`）。发版前建议再跑 `python3 scripts/audit_docs.py` 做深度审计：
+  它列出全仓相对时间词、数字声明、版本号分布与路径引用，供人工逐条确认是否有过期
+  表述（只报告、不阻塞，历史快照按纪律保留原文并就地加注，不要删改当时结论）。
 
 ## 改了 fork 代码
 

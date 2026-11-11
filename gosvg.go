@@ -53,7 +53,7 @@
 //
 // 完整清单见 GOSVG_TODO.md / README.md。渲染期跳过事件可通过
 // Document.Diagnostics() / LastRenderDiagnostics() 观察（只读通道，不改变渲染结果）；
-// 尚未覆盖的静默分支见 GOSVG_GAP_TODO.md。
+// 该通道覆盖主要跳过分支，未覆盖项与各轮处置结论见 GOSVG_GAP_TODO.md 档 2 / 档 3。
 package gosvg
 
 import (

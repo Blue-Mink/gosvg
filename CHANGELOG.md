@@ -5,12 +5,22 @@
 
 ## [Unreleased]
 
-（暂无未发布改动）
+- **文档状态收口（PR #23，纯文档、零渲染改动）**：v0.2.4 发布后 6 个 `.md` 的版本
+  状态收口；main 前移 1 个合并提交，`v0.2.4` tag 未移动。
+- **文档一致性收口（本次，纯文档 / 脚本、零渲染改动）**：修正全仓体检发现的版本
+  状态倒挂（`[Unreleased]` 误写「暂无改动」、「`v0.2.4` = main」失效）、悬空的
+  「静默分支清单」引用、6/7 个 golden 样例、测试函数计数口径（215 历史粗计数 /
+  231 = 228 `Test` + 3 `Example`）、`altText_spinner` 已修却仍写「待查项」、
+  H-A 表自相矛盾等；`verify.sh` 新增
+  `check_docs.sh` 门禁与 `audit_docs.py` 深度审计（可选、不阻塞）。`golden.sha256`、
+  渲染代码、全量 IoU 基线一律未动。
 
 ## [v0.2.4] — 2026-11-11
 
 `v0.2.3..v0.2.4` 共 **15 个提交**（PR #19–#22），tag 由 Gitea Release API 自建，
-tag `v0.2.4` → `67564f4`（= main）。全量对账数字保持不变：平均 alpha IoU
+tag `v0.2.4` → `67564f4`（**发布当时** = main；此后 main 经 PR #23 等提交持续
+前移，tag 未移动，两者不再等同；当前 main 以 `git rev-parse HEAD` 为准）。
+全量对账数字保持不变：平均 alpha IoU
 **`0.963860`** / `IoU<0.5` **1** 个 / 848 个可对比样本（`alpha > 0`、256×256）。
 本版唯一行为变更是 `DefaultImageDecoder()` 收紧为仅 `data:` URI（见下）。
 
@@ -155,7 +165,9 @@ tag `v0.2.3` → `3d9072f`。下方各分支条目为明细，净结果：
 - CSS `<style>` + class/id/类型选择器、hsl()/现代颜色、dasharray/dashoffset
 - preserveAspectRatio 9 种 align + meet/slice/none、MeasureText/MeasureTextEx
 - 可选系统字体目录 `AddFontDir`
-- 6 个 fuzz 目标、215 个测试函数（`go test -list` 实测）、Gitea + GitHub 双 CI 配置
+- 6 个 fuzz 目标、215 个测试函数（**当时粗计数、口径未细分**；v0.2.4 实测为
+  **228 个 `Test` + 3 个 `Example` = 231**，命令 `go test -list '^(Test|Example)' ./...`）、
+  Gitea + GitHub 双 CI 配置
 - `cmd/render` CLI、`cmd/verify` 对账工具、`testdata/` 样例
 
 ### Fixed
