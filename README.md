@@ -250,10 +250,11 @@ go run ./cmd/iou -ref /path/to/cairo_png -svg /path/to/svg -baseline /path/to/ol
 当前 main 用该工具复算得 `average IoU = 0.963860` / `IoU<0.5 = 1` / 848 个可比样本，
 与上表逐位一致。
 
-**当前结论（v0.2.3，全量 848 个可对比样本 / 256×256，`alpha > 0` 口径）**：
+**当前结论（v0.2.4，全量 848 个可对比样本 / 256×256，`alpha > 0` 口径）**：
 平均 alpha IoU **0.963860**，`IoU<0.5` 仅 **1** 个。演进：`0.949874`（even-odd 修复前）
 → `0.961272`（PR #17）→ `0.963860`（PR #18）。v0.2.3 已在独立沙箱复现 848/848
-逐像素一致。详见 `CHANGELOG.md` [v0.2.3] 与 `CAIROSVG_IOU.md` 修正 6 / 7 / 8。
+逐像素一致；v0.2.4 用入仓的 `cmd/iou` 复算**逐位一致**（850 语料渲染零变化）。
+详见 `CHANGELOG.md` [v0.2.4] 与 `CAIROSVG_IOU.md` 修正 6 / 7 / 8 / 9。
 
 <details>
 <summary>历史抽样结论（117 个，已由全量对账取代）</summary>

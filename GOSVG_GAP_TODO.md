@@ -108,7 +108,7 @@
 
 ## 仍需点名的（P3，未动）
 
-- Release **已发至 `v0.2.3`**，此条关闭；删除已合并的 `chore/close-gaps` 分支仍需点名
+- Release **已发至 `v0.2.4`**，此条关闭；删除已合并的 `chore/close-gaps` 分支仍需点名
 - 修 Gitea SQLite 锁（上轮方案 B：降频刷库的 Actions workflow）
 - 注册 act_runner（当前环境无二进制、GitHub 出站不通，需你提供/授权）
 - 档 2 判为「保持子集边界」的 H-A 七项，想要哪个单独点名
