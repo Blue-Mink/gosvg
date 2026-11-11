@@ -13,7 +13,8 @@ import (
 // **data: URI 仍会用标准库内置解码**（不涉及文件与网络 IO），
 // 其余 href（文件路径 / 远程 URL）静默跳过。
 // 这是包级变量，应在渲染前设置一次、不要并发修改；更推荐用
-// RenderOptions.ImageDecoder 或 DefaultImageDecoder() 做逐渲染注入。
+// RenderOptions.ImageDecoder 或 DefaultImageDecoder() 做逐渲染注入（后者仅解
+// data: URI；需本地路径请用 LocalFileImageDecoder）。
 var ImageDecoder func(href string) (image.Image, error)
 
 // renderImage 渲染 <image> 元素：解码位图并缩放到 x/y/width/height 矩形。

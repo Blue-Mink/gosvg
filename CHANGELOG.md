@@ -56,6 +56,60 @@
 - **状态**：经 **PR #20** 合入 main；**尚未发版**，与 v0.2.4 一并发布。
 - 上文「已知边界」中的 `parseStyle` 引号缺口**已由本条修复**，故从该段落移出。
 
+### IoU 对账工具入仓（`cmd/iou`）
+
+- **背景**：全量 848 样本的平均 IoU / `IoU<0.5` 计数等数字此前只能靠仓库外一次性
+  脚本复现（`GOSVG_GAP_TODO.md` 档 3 C1 记为缺口）。新增 `cmd/iou` 把口径固化进仓库。
+- **能力**：按同名 stem 配对参照图与 SVG，算 alpha mask 的 `交/并`；`-alpha 0`（默认，
+  与全量数字同口径）与 `-alpha 8`（`CAIROSVG_IOU.md` 正文口径）可切换，两套数字
+  **不可直接横比**；`-min` 筛低分、`-json` 导出完整结果、`-baseline` 统计
+  提升 / 退化 / 不变、`-out` 落盘渲染 PNG、`-size` 指定边长。
+- **验证**：`cmd/iou` 6 项单元测试全过；工具在当前 main 上实测复算得
+  `average IoU = 0.963860` / `IoU<0.5 = 1` / 848 个可比样本，与 `[v0.2.3]` 记录
+  **逐位一致**；`-alpha 8` 得 `0.964787`；低分清单唯一命中
+  `D__wacom-intuos-pro-2-s` 的 `0.4397`，亦与既有记录一致。
+- **测试有效性**：`TestRenderSVG` 曾抓到 `renderSVG` 未自建输出目录的真 bug，已修。
+- **状态**：**尚未发版**，与 v0.2.4 一并发布。
+
+### `<image>` 解码器安全收紧（行为变更）
+
+- **风险**：此前 `DefaultImageDecoder()` 对非 `data:` 的 `href` 直接 `os.Open(href)`。
+  服务端渲染不可信 SVG 时，`<image href="/path/to/secret">` 可读任意本地文件。
+  （库默认路径一直是安全的：未注入解码器时仅 `data:` URI 内置解码、其余静默跳过；
+  风险只出现在调用方主动注入默认解码器之后。）
+- **收紧**：`DefaultImageDecoder()` 改为**仅解 `data:` URI**，等价于内置
+  `decodeDataURIOnly`，不碰文件系统与网络。
+- **显式开关**：新增 `LocalFileImageDecoder(allowedRoots ...string)`。传入白名单根目录
+  时，路径先解析 `..` 与符号链接再校验是否越界，越界返回错误、不打开文件；远程 URL
+  一律拒绝。不传 `allowedRoots` 则允许任意本地路径（等价旧行为，**仅供完全可信输入**）。
+- **迁移**：依赖旧「注入默认解码器即可读本地文件」的调用方需改用
+  `LocalFileImageDecoder(...)`；只处理 `data:` URI 的代码无需改动。
+- **测试**：新增 `imagedecode_security_test.go` 4 项（拒绝本地文件 / 白名单内放行、
+  白名单外与 `../` 穿越拒绝 / 无白名单旧行为 / 端到端不产生像素）。
+  **测试有效性**：回退到收紧前实现后，独立探针 FAIL（确实读到了本地文件），
+  新实现 PASS —— 确认不是空转。
+- **文档**：`SECURITY.md` / `README.md` / `GOSVG_TODO.md` / `gosvg.go` / `image.go`
+  同步；`image.go` 的 `decodeDataURIOnly` 边界说明不变。
+- **渲染影响**：850 语料中 `<image href>` 仅 9 处且全为 `data:` URI，
+  渲染输出零变化；`testdata/golden.sha256` 无需更新。
+- **状态**：**尚未发版**，与 v0.2.4 一并发布。
+
+### 最后一个低分样本的定性纠错（纯文档）
+
+- 全量 848 样本中唯一 `IoU<0.5` 的 `D__wacom-intuos-pro-2-s`（0.4397），
+  `CAIROSVG_IOU.md` 修正 8 原记为「9 个 `<text>` 的字体度量 / AA 边界」，
+  **该定性被消融实验推翻**。
+- 六组只改 SVG 的 A/B：改 `font-size`、删掉全部 9 个 `<text>`、给 text 显式
+  字号，gosvg 渲染**逐像素完全不变**（537 px）→ 文字根本没画；去掉根
+  `stroke:#7f7f7f` 后像素 537→0 → gosvg 画的 537 px 全是 stroke 线条；
+  给 text 补 `fill:black` 后 IoU 仅 0.4397→0.4439。
+- **真因**：根 `<svg>` 指定灰色描边 + `fill:none`，cairosvg 画了文字轮廓
+  （缺失的 334 px RGB ≈ `[121,121,121]` 正是 `#7f7f7f`）；gosvg 的 `text.go`
+  完全不处理文字描边，且 `fill:none` 按语义跳过填充 → 9 个文字全不画。
+- **定案仍为不修**（要修需实现文字轮廓描边，牵涉字体轮廓转路径、`.25` 亚像素
+  线宽与 `fill:none` 语义，收益仅一个文件、风险覆盖整个 text 路径）。
+  详见 `CAIROSVG_IOU.md` 修正 9。零代码改动、零渲染影响。
+
 ## [v0.2.3] — 2026-11-10
 
 `v0.2.2..v0.2.3` 共 12 个提交（PR #14–#18）。tag 由 Gitea Release API 自建，

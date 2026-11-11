@@ -76,7 +76,7 @@
 |---|---|---|
 | E1 GitHub 侧确认与推送 | `OPEN_SOURCE_CHECKLIST.md` 留清单 | 用户解除「不推外部 Git」后：按清单核 → 建外部仓 → 加 remote → push main + tag |
 | C4 ARM64 真机测试 | CI 已有 `GOARCH=arm64 go build ./...` 交叉编译门禁 | 有 arm64 runner 时加 job `runs-on: [self-hosted, linux, arm64]` + `go test ./...`；或用 `qemu-user-static` 跑交叉编译出的测试二进制。当前 .15 只有 x86_64，**不引入外部 action** 以保持 CI 稳定 |
-| C1 CI 内 cairosvg 对账 | `testdata/golden.sha256` 做 gosvg 自身像素哈希回归 | 愿意加 CI 依赖时：`apt install python3-cairosvg` + 补一个 IoU 脚本（仓库暂无），把 512px 对账表变成门禁 |
+| C1 CI 内 cairosvg 对账 | `testdata/golden.sha256` 做 gosvg 自身像素哈希回归；**`cmd/iou` 已入仓**（可复算 IoU） | 愿意加 CI 依赖时：`apt install python3-cairosvg` 生成参照图 → `go run ./cmd/iou -ref ... -svg ...` 当门禁。当前 .15 只有 x86_64 且 runner 数为 0，尚未接进 CI |
 | D4 低版本 Go 兼容 | **决策：锁定 Go 1.27，不追求低版本兼容** | `go.mod` 声明 `go 1.27.3`；若未来要降级，下调 go 指令并给 CI 加版本矩阵（`1.26.x` 等）验证 |
 | H-B（filter/pattern/foreignObject/动画） | **明确子集边界，不补** | 已在 README / 包注释 / `GOSVG_TODO.md` 三处声明，无需动作 |
 

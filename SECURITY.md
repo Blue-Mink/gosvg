@@ -27,8 +27,8 @@ gosvg 是**库**，接收不可信 SVG 字节并渲染成位图。预期调用�
 **仍需注意**（见 `GOSVG_GAP_TODO.md`）：
 - `ImageDecoder` 由调用方注入；若回调抓取远程 URL，库侧无超时/大小限制，请在回调里自行约束。
 - `ImageDecoder` 是包级变量，**并发写不安全**；应在渲染前设置一次，之后只读。
-  更推荐用 `RenderOptions.ImageDecoder` 逐渲染注入。`DefaultImageDecoder()` 只处理
-  `data:` URI 与本地文件路径，**不会抓取远程 URL**；若自行实现远程解码器，
+  更推荐用 `RenderOptions.ImageDecoder` 逐渲染注入。`DefaultImageDecoder()` **只处理
+  `data:` URI**（v0.2.4 起），不读本地文件、不抓取远程 URL；若自行实现远程解码器，
   请在回调内加超时与大小限制。
 - XML 嵌套深度受 `MaxXMLDepth = 256` 限制（含 `tspan` / `g` 嵌套）；SVG 字节数受
   `MaxSVGSize`（8 MiB）、元素总数受 `MaxElementCount`（10 万）限制，超限返回对应 `Err*`。
@@ -41,11 +41,13 @@ gosvg 是**库**，接收不可信 SVG 字节并渲染成位图。预期调用�
 - `<image>` 只有 `data:` URI 会被内置解码（`decodeDataURIOnly`，`image.go:33`）；
   **文件路径与远程 URL 必须显式注入解码器**，库不会自行读文件或发起网络请求
   （有测试守住该边界）。其余 href 静默跳过并记入 `Diagnostics()`。
-- **注入 `DefaultImageDecoder()` 后的额外边界**：该实现对非 `data:` 的 `href` 会直接
-  `os.Open(href)`（`imagedecode.go:27`），因此**注入后** SVG 内的
-  `<image href="/path/to/file">` 会读本地文件。处理不可信 SVG 请注入带路径白名单的
-  自定义 `ImageDecoder`；远程 URL 仍不会发起网络请求（无 HTTP 客户端）。
-  这是调用方显式选择的结果，不改变库默认行为，本次仅补记说明、未改渲染代码。
+- **本地文件路径是显式选择**：`DefaultImageDecoder()` 自 v0.2.4 起只解 `data:` URI。
+  需要读本地文件时改用 `LocalFileImageDecoder(allowedRoots...)` —— 传入白名单根目录
+  后，路径会先解析 `..` 与符号链接再校验是否越界，越界返回错误、不打开文件；远程
+  URL 一律拒绝。不传 `allowedRoots` 则允许任意本地路径（等价于 v0.2.4 之前的行为），
+  **仅供完全可信输入使用**。处理不可信 SVG 时应只用 `DefaultImageDecoder()`，
+  或给 `LocalFileImageDecoder` 传受限根目录；本次收紧由
+  `imagedecode_security_test.go` 的回归测试守住。
 
 ## 已知边界（非漏洞）
 
