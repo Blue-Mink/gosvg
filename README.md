@@ -58,7 +58,8 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 | `(*Document).RenderWithOptions(ctx, w, h, opts)` | 已解析文档带选项渲染 |
 | `(*Document).Diagnostics() []string` | 渲染期跳过事件（去重、累计），用于排查「少了一块」 |
 | `(*Document).LastRenderDiagnostics() []string` | 最近一次渲染的跳过事件（每次渲染重置） |
-| `DefaultImageDecoder()` | 零外部依赖、供显式注入的 `<image>` 解码器（标准库 PNG/JPEG/GIF + `data:` URI + 本地路径）；不会自动生效，注入后非 `data:` href 会读本地文件，见 `SECURITY.md` |
+| `DefaultImageDecoder()` | 零外部依赖、供显式注入的安全 `<image>` 解码器（标准库 PNG/JPEG/GIF，**仅 `data:` URI**）；不会自动生效，不读本地文件、不抓取远程 URL，见 `SECURITY.md` |
+| `LocalFileImageDecoder(roots...)` | 显式允许读本地文件路径的解码器；`roots` 为白名单目录（解析 `..`/symlink 防越界），不传则允许任意路径（仅可信输入），见 `SECURITY.md` |
 | `RenderOptions.ImageDecoder` | 逐渲染注入解码器，避免包级全局状态 |
 | `RegisteredFonts() []string` | 已注册系统字体族（排序后的副本） |
 | `ResetFonts()` | 清空 `AddFontDir` 注册，用于测试隔离 |
@@ -94,8 +95,10 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 > - **`<image>`**：`data:` URI 在**未注入任何解码器**时也由内置 `decodeDataURIOnly`
 >   用标准库解码（PNG/JPEG/GIF，不碰文件与网络）；本地路径 / 远程 URL 必须显式注入
 >   包级 `ImageDecoder` 或 `RenderOptions.ImageDecoder`，否则静默跳过（记入 `Diagnostics()`）。
->   `DefaultImageDecoder()` 提供这两种能力，但注入后非 `data:` 的 `href` 会被 `os.Open`，
->   处理不可信 SVG 请自带路径白名单，见 `SECURITY.md`。
+>   `DefaultImageDecoder()` 自 v0.2.4 起**只解 `data:` URI**，不读本地文件。仍需读
+>   本地路径时显式改用 `LocalFileImageDecoder(allowedRoots...)`，其中 `allowedRoots`
+>   是路径白名单（解析 `..` 与符号链接防越界）；不传则允许任意路径，仅限可信输入。
+>   见 `SECURITY.md`。
 >
 > 完整清单与已知边界见 [GOSVG_TODO.md](GOSVG_TODO.md)；渲染期跳过事件可用
 > `Document.Diagnostics()` / `LastRenderDiagnostics()` 观察（非穷尽）。
@@ -170,7 +173,9 @@ transform.go        transform / viewBox
 internal/rasterx    fork 自 rasterx（fill 扫描器）
 internal/vector     fork 自 x/image/vector（AA 光栅器，已扩展 even-odd winding）
 cmd/render          CLI 渲染器
-cmd/verify          CLI 校验
+cmd/verify          CLI 校验（渲染 + 可选 PNG 输出）
+cmd/corpus          真实语料成功率回归
+cmd/iou             像素 IoU 对账（cairosvg 参照图 / 两种 alpha 口径 / 基线对比）
 testdata/           对账测试样例
 ```
 
@@ -227,6 +232,23 @@ go run ./cmd/corpus -json <dir>...      # JSON，便于做基线 diff
 
 > **口径**：`CAIROSVG_IOU.md` 的历史表格以 `alpha > 8` 判不透明；仓库外全量对账脚本
 > 用 `alpha > 0`（对极淡 AA 像素更敏感）。两套数字**不可直接横比**。
+
+**复算工具**（v0.2.4 起随仓库提供，取代仓库外一次性脚本）：
+
+```sh
+# 参照图目录（如 cairosvg 输出）与 SVG 目录按同名 stem 配对
+go run ./cmd/iou -ref /path/to/cairo_png -svg /path/to/svg -size 256
+# 报告正文的 alpha>8 口径
+go run ./cmd/iou -ref /path/to/cairo_png -svg /path/to/svg -alpha 8
+# 只看低分文件 / 导出完整 JSON / 与基线比提升-退化
+go run ./cmd/iou -ref /path/to/cairo_png -svg /path/to/svg -min 0.5 -json iou.json
+go run ./cmd/iou -ref /path/to/cairo_png -svg /path/to/svg -baseline /path/to/old_png
+```
+
+工具默认 `alpha > 0`（与上面全量数字同口径），`-alpha 8` 切换到
+`CAIROSVG_IOU.md` 正文口径；两者**不可直接横比**。`-out` 可同时落盘渲染 PNG。
+当前 main 用该工具复算得 `average IoU = 0.963860` / `IoU<0.5 = 1` / 848 个可比样本，
+与上表逐位一致。
 
 **当前结论（v0.2.3，全量 848 个可对比样本 / 256×256，`alpha > 0` 口径）**：
 平均 alpha IoU **0.963860**，`IoU<0.5` 仅 **1** 个。演进：`0.949874`（even-odd 修复前）

@@ -76,8 +76,10 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 逐字节展开为 UTF-8，**其余编码返回带编码名的明确错误**。需要完整 IANA 编码支持时，
 替换包级 `CharsetReader`（例如接 `golang.org/x/text/encoding/htmlindex`）。
 
-**`<image>`**：`data:` URI 由内置解码；另提供需显式注入的 `DefaultImageDecoder()`（标准库 PNG/JPEG/GIF + `data:` URI 与本地路径，
-零外部依赖）；调用方可用包级 `ImageDecoder` 或 `RenderOptions.ImageDecoder` 覆盖。
+**`<image>`**：`data:` URI 由内置解码；`DefaultImageDecoder()`（需显式注入，零外部依赖）
+自 v0.2.4 起**仅解 `data:` URI**，不读本地文件、不抓取远程 URL。需要本地路径时改用
+`LocalFileImageDecoder(allowedRoots...)`（白名单目录，防 `..`/symlink 越界）。
+调用方可用包级 `ImageDecoder` 或 `RenderOptions.ImageDecoder` 覆盖。
 两者都为 nil 时，仅 `data:` URI 由内置解码，其余 href 静默跳过。
 
 > 渲染期跳过事件**已有只读诊断通道**：`Document.Diagnostics()`（累计去重）与
@@ -118,9 +120,11 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
   presentation 属性、CSS 规则、内联 `style` 三条路径都生效。
 - **`<image>` 解码**：未注入任何解码器时，仅 `data:` URI 由内置 `decodeDataURIOnly`
   用标准库解码（不碰文件与网络）；本地路径 / 远程 URL 静默跳过。
-  `DefaultImageDecoder()`（需显式注入）覆盖 `data:` URI 与本地路径，其中非 `data:` 的
-  `href` 会 `os.Open`；`RenderOptions.ImageDecoder` 可逐渲染注入，优先级高于包级
-  `ImageDecoder`。注入默认实现读本地文件属调用方显式选择，见 `SECURITY.md`。
+  `DefaultImageDecoder()`（需显式注入）自 v0.2.4 起也**只解 `data:` URI**。
+  需要本地路径时显式用 `LocalFileImageDecoder(allowedRoots...)`：传入白名单目录后
+  会解析 `..` 与符号链接校验越界，越界返回错误；不传则允许任意本地路径（等价旧行为，
+  仅可信输入）。远程 URL 一律拒绝。`RenderOptions.ImageDecoder` 可逐渲染注入，
+  优先级高于包级 `ImageDecoder`。见 `SECURITY.md`。
 - **错误分类**：`UnsupportedError` 带 `Code`（`ErrorCode`）与 `Err`，
   提供 `ErrEmptyDocument` / `ErrNonPositiveSize` / `ErrDimensionExceeded` 供 `errors.Is`。
 - **字体**：`RegisteredFonts()` 返回已注册字体族（排序副本）；`ResetFonts()` 清空注册，
