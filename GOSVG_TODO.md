@@ -147,9 +147,10 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ```sh
 sh ./scripts/verify.sh                         # 全套门禁（go mod verify / tidy -diff / fmt / vet / test / -race / arm64 / wasm / bench / 6 个 fuzz）
 go test ./...                                  # 单元 + 回归 + golden 哈希
-go test -count=1 -cover ./...                  # 覆盖率（根包 86.7%、cmd/verify 62.3%、
-                                               #   cmd/corpus 42.2%、cmd/render 16.7%、
-                                               #   internal/vector 24.3%、internal/rasterx 3.9%）
+go test -count=1 -cover ./...                  # 覆盖率（根包 87.0%、cmd/verify 62.3%、
+                                               #   cmd/corpus 42.2%、cmd/iou 37.2%、
+                                               #   cmd/render 16.7%、internal/vector 24.3%、
+                                               #   internal/rasterx 3.9%）
 go test -run '^$' -bench . -benchmem -benchtime 2s .   # 性能基线，见 BENCHMARK.md
 go test -race ./...                           # 并发检查
 go vet ./...                                  # 静态检查
