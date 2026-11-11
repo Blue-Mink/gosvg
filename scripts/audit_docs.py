@@ -8,6 +8,8 @@
   B 数字声明（N 个样例 / 覆盖率 / IoU）——对照实测
   C 版本号分布——检查是否有旧版本仍被当作当前
   D 仓库内路径引用悬空（含同目录简写判定）
+  E 疑似过期模式（已就地加注的历史快照）
+  F 源码注释里的数字/时间声明（.md 之外的盲区，PR #24 后新增）
 
 与 check_docs.sh 的分工：
   - check_docs.sh 只查可机械判定的硬不变量，失败即挂；
@@ -49,6 +51,17 @@ def md_files() -> list[pathlib.Path]:
         if ".git" not in p.parts:
             seen.add(p.resolve())
     return sorted(seen)
+
+
+def code_files() -> list[pathlib.Path]:
+    """源码/脚本注释文件（排除检查器自身，其字面量是模式/文案而非状态声明）。"""
+    skip = {"scripts/check_docs.sh", "scripts/audit_docs.py"}
+    return sorted(
+        p for p in ROOT.rglob("*")
+        if p.is_file() and ".git" not in p.parts and "testdata" not in p.parts
+        and p.suffix in {".go", ".sh", ".py"}
+        and p.relative_to(ROOT).as_posix() not in skip
+    )
 
 
 def main() -> int:
@@ -123,6 +136,15 @@ def main() -> int:
             hits += len(locs)
             print(f"  {label}: {', '.join(locs)}")
     print(f"-- 共 {hits} 处命中（命中≠错误，逐条确认有时间限定/⚠️ 注记即可）\n")
+
+    print("## F. 源码注释里的数字/时间声明（.md 盲区，须逐条判定）")
+    n = 0
+    for p in code_files():
+        for i, line in enumerate(p.read_text(errors="ignore").splitlines(), 1):
+            if NUM.search(line) or "样例" in line:
+                n += 1
+                print(f"{p.relative_to(ROOT).as_posix()}:{i}| {line.strip()[:160]}")
+    print(f"-- 共 {n} 行（写死样例数会被 check_docs.sh 硬门禁拦截）\n")
 
     print("提示：历史快照按仓库纪律保留原文、就地加注，不要删改当时结论。")
     if args.strict and hits:

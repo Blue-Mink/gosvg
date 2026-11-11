@@ -149,6 +149,8 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 > `go test -list '^(Test|Example)' ./...` 分别计数，`fuzz` 为 `*_test.go` 中的 `func Fuzz`
 > 定义数，`golden` 为 `testdata/*.svg` 数（须与 `golden.sha256` 行数相等）。
 > 历史章节里的 215 / 6 个样例等是当时快照，不参与此锚点比对。
+> `scripts/check_docs.sh` 同时禁止在 `.go` / `.sh` / `.py` 注释里写死固定样例数
+> （避免 PR #24 只扫 `.md` 的盲区复发）；`audit_docs.py` 的 F 段列出源码注释声明供复核。
 
 ```sh
 sh ./scripts/verify.sh                         # 全套门禁（go mod verify / tidy -diff / fmt / vet / test / -race / arm64 / wasm / bench / 6 个 fuzz）

@@ -3,7 +3,8 @@
 //
 // 用法：gosvg-corpus [-size N] [-json] <dir>...
 //
-// 与 testdata/golden.sha256 的区别：golden 是仓库内 6 个固定样例的像素哈希，
+// 与 testdata/golden.sha256 的区别：golden 是 testdata/*.svg 下固定样例的像素哈希
+// （样例数由目录自动枚举，见 GOSVG_TODO.md 质量基线锚点；勿在此写死数量），
 // 用于防无意改动；corpus 面向**外部真实语料**（系统图标库、node_modules 里的
 // 图标集等），用于回答「这批真实 SVG 有多少能正确渲染、还缺什么能力」。
 package main

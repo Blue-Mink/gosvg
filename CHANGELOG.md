@@ -14,6 +14,13 @@
   H-A 表自相矛盾等；`verify.sh` 新增
   `check_docs.sh` 门禁与 `audit_docs.py` 深度审计（可选、不阻塞）。`golden.sha256`、
   渲染代码、全量 IoU 基线一律未动。
+- **源码注释漏网订正 + 门禁覆盖扩展（纯注释 / 脚本 / 文档，零渲染改动）**：
+  PR #24 的深度审计只扫 `.md`，遗漏 `cmd/corpus/main.go` 包注释里把固定样例数
+  写死为旧值（v0.2.3 纳入 `s60s` 后已扩为 7 个）。该行改为不写死数量、引用
+  `testdata/*.svg` 自动枚举；`check_docs.sh` 新增硬检查「源码注释不得写死固定
+  样例数」，`audit_docs.py` 新增 F 段把扫描范围扩到 `.go` / `.sh` / `.py` 注释；
+  `CONTRIBUTING.md` / `GOSVG_TODO.md` 同步门禁覆盖范围。`golden.sha256`、
+  渲染代码、全量 IoU 基线一律未动。
 
 ## [v0.2.4] — 2026-11-11
 

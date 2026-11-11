@@ -34,9 +34,12 @@ Conventional Commits + 中文描述，沿用现有提交风格：`feat:` / `fix:
 - 与 cairosvg 的对账用入仓工具 `cmd/iou`（v0.2.4 起随仓库提供，取代仓库外一次性
   脚本；用法见 `README.md`）；`alphaAAD` 口径仍未实现。数字更新请同步
   `CHANGELOG.md` / `CAIROSVG_IOU.md`，并跑 `sh ./scripts/verify.sh`（含文档一致性门禁
-  `scripts/check_docs.sh`）。发版前建议再跑 `python3 scripts/audit_docs.py` 做深度审计：
-  它列出全仓相对时间词、数字声明、版本号分布与路径引用，供人工逐条确认是否有过期
-  表述（只报告、不阻塞，历史快照按纪律保留原文并就地加注，不要删改当时结论）。
+  `scripts/check_docs.sh`：既校验 `.md` 的版本/数字/路径不变量，也禁止在 `.go` /
+  `.sh` / `.py` 注释里写死固定样例数）。发版前建议再跑
+  `python3 scripts/audit_docs.py` 做深度审计：它列出全仓相对时间词、数字声明、
+  版本号分布、路径引用，以及 F 段「源码注释里的数字/时间声明」，供人工逐条确认
+  是否有过期表述（只报告、不阻塞，历史快照按纪律保留原文并就地加注，不要删改
+  当时结论）。**别在注释里写死样例数** —— 数量以 `testdata/*.svg` 自动枚举为准。
 
 ## 改了 fork 代码
 

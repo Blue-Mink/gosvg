@@ -17,6 +17,21 @@ N_HASH=$(grep -c . testdata/golden.sha256 | tr -d ' ')
   && ok "testdata/*.svg=$N_SVG 与 golden.sha256 行数=$N_HASH 一致" \
   || bad "testdata/*.svg=$N_SVG 但 golden.sha256=$N_HASH 行（增删样例须同步重生成基线）"
 
+echo "== docs: 源码注释不得写死固定样例数 =="
+# 数据真相是 testdata/*.svg 的实际数量；注释里写死「N 个固定样例」在增删样例后必然
+# 过期。PR #24 的门禁只扫 .md，cmd/corpus/main.go 因此漏网。排除两个检查器自身：
+# 它们含这些字面量是模式/文案，不是状态声明。
+HARD=$(grep -rnE '[0-9]+ 个(固定|基线|确定性|golden)样例' \
+       --include='*.go' --include='*.sh' --include='*.py' \
+       --exclude='check_docs.sh' --exclude='audit_docs.py' \
+       --exclude-dir=.git . 2>/dev/null || true)
+if [ -n "$HARD" ]; then
+  echo "$HARD" | sed 's/^/    /'
+  bad "源码注释写死了固定样例数（改为引用 testdata/*.svg 自动枚举，勿写死）"
+else
+  ok "源码注释未写死固定样例数"
+fi
+
 echo "== docs: 质量基线锚点 =="
 ANCHOR=$(grep -o 'test=[0-9]* example=[0-9]* fuzz=[0-9]* golden=[0-9]*' GOSVG_TODO.md | head -1)
 if [ -z "$ANCHOR" ]; then
