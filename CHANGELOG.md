@@ -14,6 +14,24 @@
   H-A 表自相矛盾等；`verify.sh` 新增
   `check_docs.sh` 门禁与 `audit_docs.py` 深度审计（可选、不阻塞）。`golden.sha256`、
   渲染代码、全量 IoU 基线一律未动。
+- **even-odd 等价转换覆盖补全（修正 10，本次；渲染行为变更）**：PR #17 的
+  `evenOddPathEligible` 有两道过度保守的门槛，把仍受光栅器 even-odd 累积偏差
+  影响的 shape 放过了：① `moves>=2` 让**单子路径**直接跳过（源码注释假设
+  「单子路径 evenodd 与 nonzero 等价，无需转换」，几何上成立，但光栅器实现
+  对这类 shape 同样整块少画，实测证伪）；② 按**原始 d 串**扫描 `A/a/T/t`
+  拒绝，而 `parsePathData` 早已把弧线 / 平滑指令归一化为 `CubicTo`/`QuadTo`
+  （都是 `eoSamplePoly` 支持的段）。落地：单子路径且不自交时 `renderShape`
+  直接用 nonzero 填充（新增 `eoSingleNonSelfIntersecting`，自交者保留原语义）；
+  弧线门槛改为只看归一化后的 `rasterx.Path`。`internal/rasterx` /
+  `internal/vector` 零改动。全量 850 按二值 alpha mask 逐像素：**10 文件变化 / 10 提升 / 0 退化 /
+  838 不变**（848 可比样本），平均 IoU `0.963860 → 0.965544`（Δ +0.001684），
+  `IoU<0.8` 55 → 53、`IoU<0.5` 仍 1（wacom）。完整 RGBA 字节层面另有
+  47 个文件仅 RGB 变化（alpha 逐位相同），参照图 RGB 平均差 `88.73 → 15.02`、
+  43 改善 / 4 局部变差（均 IoU=1.0000，已知局限已入档）—— alpha IoU 口径
+  对这类颜色纠正不敏感。golden 7 样例完整 RGBA 逐像素零变化，
+  `golden.sha256` 未动。新增 4 个回归测试，其中渲染级测试在基线上 FAIL / 修复版 PASS。
+  详见 `CAIROSVG_IOU.md` 修正 10。
+
 - **源码注释漏网订正 + 门禁覆盖扩展（纯注释 / 脚本 / 文档，零渲染改动）**：
   PR #24 的深度审计只扫 `.md`，遗漏 `cmd/corpus/main.go` 包注释里把固定样例数
   写死为旧值（v0.2.3 纳入 `s60s` 后已扩为 7 个）。该行改为不写死数量、引用

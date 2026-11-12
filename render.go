@@ -292,14 +292,19 @@ func (ctx *renderContext) renderShape(n *node, opacity float64) {
 		strokeStr = style.color
 	}
 
-	// even-odd 多子路径等价转换：只替换填充用的 path，描边 / marker 仍用原 p，
-	// 保证描边几何零变化。详见 evenodd_convert.go 与 CAIROSVG_IOU.md 修正 6（PoC）/ 修正 7（落地）。
+	// even-odd 等价转换：只替换填充用的 path，描边 / marker 仍用原 p，
+	// 保证描边几何零变化。多子路径走「方向交替 + nonzero」（修正 6/7）；
+	// 单子路径且不自交时直接用 nonzero 填充（修正 10），两者都是绕开光栅器
+	// even-odd 累积路径的偏差，internal/rasterx 与 internal/vector 零改动。
 	fillPath := p
 	fillNonZero := style.fillRule != "evenodd"
-	if style.fillRule == "evenodd" && !ctx.inClipPath &&
-		evenOddPathEligible(n.attr("d"), p) {
-		if converted, ok := convertEvenOddToNonZero(p); ok {
-			fillPath = converted
+	if style.fillRule == "evenodd" && !ctx.inClipPath {
+		if evenOddPathEligible(n.attr("d"), p) {
+			if converted, ok := convertEvenOddToNonZero(p); ok {
+				fillPath = converted
+				fillNonZero = true
+			}
+		} else if eoSingleNonSelfIntersecting(p) {
 			fillNonZero = true
 		}
 	}

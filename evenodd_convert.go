@@ -7,8 +7,9 @@ import (
 	"golang.org/x/image/math/fixed"
 )
 
-// evenodd_convert.go 把 fill-rule="evenodd" 的多子路径 shape 等价转换成
-// 「方向交替的单条 path + nonzero」，绕开光栅器在多子路径 even-odd 上的偏差。
+// evenodd_convert.go 把 fill-rule="evenodd" 的 shape 等价转换成 nonzero 填充，
+// 绕开光栅器 even-odd 累积路径的偏差：多子路径用「方向交替的单条 path +
+// nonzero」；单子路径且不自交时直接用 nonzero（见 eoSingleNonSelfIntersecting）。
 //
 // 背景：CAIROSVG_IOU.md 修正 6（PoC）/ 修正 7（Go 侧落地）记录，语料中 11 个
 // IoU<0.5 的文件全部
@@ -425,12 +426,7 @@ func convertEvenOddToNonZero(p rasterx.Path) (rasterx.Path, bool) {
 //     等价性尚未验证）；
 //   - 至少两个子路径（单子路径的 evenodd 与 nonzero 等价，无需转换）。
 func evenOddPathEligible(d string, p rasterx.Path) bool {
-	for i := 0; i < len(d); i++ {
-		switch d[i] {
-		case 'A', 'a', 'T', 't':
-			return false
-		}
-	}
+	_ = d // 保留参数以兼容调用方；判定只依赖归一化后的 rasterx.Path
 	moves := 0
 	for i := 0; i < len(p); {
 		switch rasterx.PathCommand(p[i]) {
@@ -448,4 +444,20 @@ func evenOddPathEligible(d string, p rasterx.Path) bool {
 		}
 	}
 	return moves >= 2
+}
+
+// eoSingleNonSelfIntersecting 判定 path 是否只有一条子路径且不自交。
+// 这类 shape 的 even-odd 与 nonzero 填充结果几何等价，可以安全绕过光栅器
+// 的 even-odd 累积路径（实测该路径对单子路径同样存在填充缺失）。
+// 自交的单子路径不适用：even-odd 与 nonzero 结果不同，必须保留原语义。
+func eoSingleNonSelfIntersecting(p rasterx.Path) bool {
+	subs := splitEOSubpaths(p)
+	if len(subs) != 1 {
+		return false
+	}
+	poly := eoSamplePoly(subs[0])
+	if len(poly) < 3 {
+		return false
+	}
+	return !eoSelfIntersect(poly)
 }
