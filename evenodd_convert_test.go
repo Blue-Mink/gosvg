@@ -145,16 +145,19 @@ func TestEOPathEligible(t *testing.T) {
 	if !evenOddPathEligible(`M0 0 C1 1 2 2 3 3 Z M5 5 Q6 6 7 7 Z`, parsePathData(`M0 0 C1 1 2 2 3 3 Z M5 5 Q6 6 7 7 Z`)) {
 		t.Error("C/Q 曲线子路径应可转换")
 	}
+	// 修正 10：A/a/T/t 由 parsePathData 归一化为 CubicTo/QuadTo，
+	// 归一化后的段都是 eoSamplePoly 支持的，不再按原始 d 串拒绝。
 	for _, d := range []string{
 		`M0 0 A5 5 0 0 1 10 10 Z M20 20 h5 v5 h-5 Z`, // 弧线
 		`M0 0 Q1 1 2 2 T3 3 4 4 Z M5 5 h2 v2 h-2 Z`,  // 平滑二次
 	} {
-		if evenOddPathEligible(d, parsePathData(d)) {
-			t.Errorf("含 A/T 指令应跳过转换：%s", d)
+		if !evenOddPathEligible(d, parsePathData(d)) {
+			t.Errorf("A/T 归一化后应可转换：%s", d)
 		}
 	}
+	// 单子路径仍不走「方向交替」转换（改由 renderShape 直接用 nonzero）。
 	if evenOddPathEligible(`M0 0h100v100H0z`, parsePathData(`M0 0h100v100H0z`)) {
-		t.Error("单子路径无需转换")
+		t.Error("单子路径不应进入方向交替转换")
 	}
 }
 
