@@ -32,6 +32,9 @@ type renderContext struct {
 	strokeFiller    *rasterx.Filler
 	strokeFillerImg *image.NRGBA
 
+	// textPath 复用文本描边的 rasterx.Path 缓冲，避免每个 <text> 分配。
+	textPath rasterx.Path
+
 	// skipNodeTransform 为 true 时 renderNodeBare 不再应用节点自身的 transform，
 	// 用于 clip-path / mask 路径：那里 transform 已在 renderNode 中提前应用过。
 	skipNodeTransform bool
@@ -449,6 +452,19 @@ func (ctx *renderContext) strokeColor(p rasterx.Path, clr interface{}, width flo
 	// 用户空间 offset：halfWidth 传用户半宽 width/2，tol 换算到用户单位。
 	strokeCapsules(ctx.strokeFillerFor(ctx.img), p, ctx.matrix, width/2, clr, 0.01/scale, linecap, linejoin, miterLimit, dasharray, dashoffset)
 	return
+}
+
+// strokeDevicePath 对设备空间路径描边（不套 ctx.matrix）。
+// text 描边专用：sfnt.Segments 已是像素级坐标 + dot 偏移，直接传单位矩阵。
+// width 是用户空间的 stroke-width，需乘 matrixScale 转为设备像素半宽。
+func (ctx *renderContext) strokeDevicePath(p rasterx.Path, clr interface{}, width float64, linecap, linejoin string, miterLimit float64, dasharray []float64, dashoffset float64) {
+	scale := ctx.matrixScale()
+	if scale <= 0 {
+		scale = 1
+	}
+	devHalfWidth := width * scale / 2
+	// tol 固定 0.01 像素（设备空间，无矩阵换算）。
+	strokeCapsules(ctx.strokeFillerFor(ctx.img), p, rasterx.Identity, devHalfWidth, clr, 0.01, linecap, linejoin, miterLimit, dasharray, dashoffset)
 }
 
 // isMetadataElement 返回不参与渲染、但完全合法的 SVG 元数据元素名。
