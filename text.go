@@ -2,12 +2,14 @@ package gosvg
 
 import (
 	"image"
+	"image/color"
 	"math"
 	"strings"
 
 	"github.com/Blue-Mink/gosvg/internal/rasterx"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
+	"golang.org/x/image/font/sfnt"
 	"golang.org/x/image/math/fixed"
 )
 
@@ -99,7 +101,22 @@ func (ctx *renderContext) renderTextSpans(n *node, style shapeStyle, opacity flo
 	}
 }
 
+// textSpanGeom 是单个 text 片段的设备几何与光栅化器绑定。
+// 由 drawTextSpan 构造，供描边路径使用（填充路径仍走旧 font.Drawer）。
+type textSpanGeom struct {
+	f         *sfnt.Font    // 底层 OpenType 字体（用于 LoadGlyph 取轮廓）
+	s         fixed.Int26_6 // face scale（与 opentype.NewFace 同公式）
+	px, py    float64       // 设备空间 dot 起点（已含 anchor/baseline 偏移）
+	text      string
+	widthUser float64 // 宽度换算回用户单位
+}
+
 // drawTextSpan 渲染单个文本片段，返回片段宽度（用户空间单位）。
+//
+// 填充路径保持旧实现（font.Drawer + 位图 mask，零字节变化）。
+// 描边路径：字形轮廓（sfnt.LoadGlyph → rasterx.Path）→ strokeCapsules，
+// 复用 shape 的精确轮廓描边管线。SVG 语义：fill 在 stroke 之上，
+// 因此描边先画、填充后画。
 func (ctx *renderContext) drawTextSpan(text string, style shapeStyle, opacity float64, fontSize float64, fontFamily, fontWeight, fontStyle, anchor, baseline string, x, y float64) float64 {
 	if text == "" || fontSize <= 0 {
 		return 0
@@ -111,17 +128,24 @@ func (ctx *renderContext) drawTextSpan(text string, style shapeStyle, opacity fl
 		return 0
 	}
 
+	// 描边参数：currentColor 归一化为 color 属性（与 renderShape 一致）。
+	strokeStr := style.stroke
+	if strings.EqualFold(strokeStr, "currentColor") {
+		strokeStr = style.color
+	}
+	strokeC, strokeOK := parseColor(strokeStr)
+	wantStroke := strokeOK && strokeC.A > 0 && style.strokeWidth > 0
+
 	// fill="none" / fill="url(#...)"（gradient 等未支持）时 parseColor 失败，
 	// 语义应为"不渲染"而非降级成黑色（与 renderShape 的 fill 处理保持一致）。
 	fillStr := style.fill
 	if strings.EqualFold(fillStr, "currentColor") {
 		fillStr = style.color
 	}
-	c, ok := parseColor(fillStr)
-	if !ok || c.A == 0 {
-		return 0
-	}
+	fillC, fillOK := parseColor(fillStr)
+	wantFill := fillOK && fillC.A > 0
 
+	// 设备坐标与字号。
 	px, py := ctx.matrix.Transform(x, y)
 	scale := ctx.matrixScale()
 	if scale <= 0 {
@@ -138,17 +162,13 @@ func (ctx *renderContext) drawTextSpan(text string, style shapeStyle, opacity fl
 	}
 	defer face.Close()
 
-	// 测量宽度（fixed.Int26_6 → px）
 	widthPx := float64(font.MeasureString(face, text)) / 64
-
 	switch anchor {
 	case "middle":
 		px -= widthPx / 2
 	case "end":
 		px -= widthPx
 	}
-
-	// dominant-baseline：把 y（指定的对齐点）换算成 font.Drawer 需要的基线位置。
 	switch baseline {
 	case "central", "middle":
 		m := face.Metrics()
@@ -159,19 +179,129 @@ func (ctx *renderContext) drawTextSpan(text string, style shapeStyle, opacity fl
 		py += float64(m.Ascent) / 64
 	}
 
-	dot := fixed.Point26_6{
-		X: fixed.Int26_6(px * 64),
-		Y: fixed.Int26_6(py * 64),
+	if wantStroke {
+		// 描边先画（fill 在 stroke 之上，与 cairo 一致）。
+		geom := &textSpanGeom{
+			f:         f,
+			s:         faceScale(fontSize * scale),
+			px:        px,
+			py:        py,
+			text:      text,
+			widthUser: widthPx / scale,
+		}
+		ctx.strokeTextSpan(geom, strokeC, style.strokeWidth, style.linecap, style.linejoin, style.miterLimit, style.strokeDasharray, style.strokeDashoffset, opacity*style.strokeOpacity)
 	}
-	drawer := &font.Drawer{
-		Dst:  ctx.img,
-		Src:  image.NewUniform(rasterx.ApplyOpacity(c, opacity*style.fillOpacity)),
-		Face: face,
-		Dot:  dot,
+
+	if wantFill {
+		dot := fixed.Point26_6{
+			X: fixed.Int26_6(px * 64),
+			Y: fixed.Int26_6(py * 64),
+		}
+		drawer := &font.Drawer{
+			Dst:  ctx.img,
+			Src:  image.NewUniform(rasterx.ApplyOpacity(fillC, opacity*style.fillOpacity)),
+			Face: face,
+			Dot:  dot,
+		}
+		drawer.DrawString(text)
 	}
-	drawer.DrawString(text)
 
 	return widthPx / scale
+}
+
+// faceScale 与 opentype.NewFace 的 scale 公式一致（0.5 + Size*DPI*64/72）。
+func faceScale(size float64) fixed.Int26_6 {
+	return fixed.Int26_6(0.5 + size*72*64/72)
+}
+
+// strokeTextSpan 把 geom.text 的字形轮廓描边到目标图（设备空间）。
+// 每个字形经 sfnt.LoadGlyph 取轮廓（sfnt.Segments）→ rasterx.Path →
+// strokeCapsules，复用 shape 描边管线。
+//
+// 坐标约定：sfnt.Segments 已是像素级（LoadGlyph 内部完成 ppem 缩放与 Y 翻转），
+// 因此无需再套 ctx.matrix。字形间推进与 kerning 与 opentype.Face.Glyph 的内部
+// 行为逐位一致：当前字形 advance + 前一对的 kern。
+func (ctx *renderContext) strokeTextSpan(g *textSpanGeom, strokeC color.NRGBA, strokeWidth float64, linecap, linejoin string, miterLimit float64, dasharray []float64, dashoffset float64, opacity float64) {
+	if g == nil || g.f == nil {
+		return
+	}
+
+	// 逐字形收集 outline。字形起点 px（设备像素）由 px 累加 advance 推进。
+	dotX := fixed.Int26_6(g.px * 64)
+	dotY := fixed.Int26_6(g.py * 64)
+
+	buf := &sfnt.Buffer{}
+	rasterPath := ctx.newTextPath()
+	prevIdx := sfnt.GlyphIndex(0)
+	prevSet := false
+
+	for _, r := range g.text {
+		idx, err := g.f.GlyphIndex(buf, r)
+		if err != nil {
+			idx = 0 // 未映射字形 → .notdef（与 opentype.Face.Glyph 一致）
+		}
+
+		// 字形轮廓：LoadGlyph 返回像素级 Segments（Y 已翻转为向下）。
+		// 注意：LoadGlyph 会重置 buf.segments，所以必须**先**加载当前字形、
+		// 再推进 dotX，且推进只用当前字形的 advance + 前一对的 kern。
+		segs, err := g.f.LoadGlyph(buf, idx, g.s, nil)
+		if err == nil && len(segs) > 0 {
+			appendGlyphSegments(&rasterPath, segs, dotX, dotY)
+		}
+
+		// 推进：advance（当前字形）+ kern（前一对）。
+		adv, _ := g.f.GlyphAdvance(buf, idx, g.s, font.HintingFull)
+		dotX += adv
+		if prevSet {
+			if k, kerr := g.f.Kern(buf, prevIdx, idx, g.s, font.HintingFull); kerr == nil {
+				dotX += k
+			}
+		}
+		prevIdx, prevSet = idx, true
+	}
+
+	if len(rasterPath) == 0 {
+		return
+	}
+
+	// 描边：全部 cap/join 走精确轮廓（与 strokeColor 同源，tol=0.01/px）。
+	// 坐标已是设备空间（sfnt.Segments 像素级 + dot 偏移），传单位矩阵。
+	ctx.strokeDevicePath(rasterPath, rasterx.ApplyOpacity(strokeC, opacity), strokeWidth, linecap, linejoin, miterLimit, dasharray, dashoffset)
+}
+
+// newTextPath 返回可复用的 rasterx.Path 缓冲（文本描边专用，避免每次分配）。
+func (ctx *renderContext) newTextPath() rasterx.Path {
+	if ctx.textPath != nil {
+		ctx.textPath.Clear()
+		return ctx.textPath
+	}
+	ctx.textPath = make(rasterx.Path, 0, 256)
+	return ctx.textPath
+}
+
+// appendGlyphSegments 把 sfnt.Segments（像素级、Y 向下）平移到 (ox, oy) 后
+// 写入 p。MoveTo 子路径之间用 PathMoveTo 分隔；QuadTo/CubeTo 直接写
+// rasterx.Path（rasterx Filler 内部会再 flatten 一次，精度足够）。
+func appendGlyphSegments(p *rasterx.Path, segs sfnt.Segments, ox, oy fixed.Int26_6) {
+	for _, seg := range segs {
+		switch seg.Op {
+		case sfnt.SegmentOpMoveTo:
+			*p = append(*p, fixed.Int26_6(rasterx.PathMoveTo),
+				seg.Args[0].X+ox, seg.Args[0].Y+oy)
+		case sfnt.SegmentOpLineTo:
+			*p = append(*p, fixed.Int26_6(rasterx.PathLineTo),
+				seg.Args[0].X+ox, seg.Args[0].Y+oy)
+		case sfnt.SegmentOpQuadTo:
+			*p = append(*p, fixed.Int26_6(rasterx.PathQuadTo),
+				seg.Args[0].X+ox, seg.Args[0].Y+oy,
+				seg.Args[1].X+ox, seg.Args[1].Y+oy)
+		case sfnt.SegmentOpCubeTo:
+			*p = append(*p, fixed.Int26_6(rasterx.PathCubicTo),
+				seg.Args[0].X+ox, seg.Args[0].Y+oy,
+				seg.Args[1].X+ox, seg.Args[1].Y+oy,
+				seg.Args[2].X+ox, seg.Args[2].Y+oy)
+		}
+	}
 }
 
 // MeasureText 测量文本在指定字号下的宽度（用户单位，即与 font-size 同单位）。

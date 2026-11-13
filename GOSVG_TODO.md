@@ -211,3 +211,13 @@ go run ./cmd/corpus -size 64 <dir>...                  # 真实语料回归，�
 
 见 [`GOSVG_GAP_TODO.md`](GOSVG_GAP_TODO.md)：按「已补齐 / 需决策 / 需外部条件」分类的
 缺口清单与进度。
+
+### GOSVG-TODO-P0-1 · text stroke 边界声明（2026-11-11）
+
+P0 text stroke 修复后全量对账（848）：`<0.5` 仅剩 2 个非 text 文件：
+
+- `A__NoPositionDark-PDtWoS9P-PDtWoS9P`（filter 簇，IoU 0.3207）
+- `C__652128cf55a28bb9`（filter 簇，IoU 0.4608）
+
+两者均为 filter 相关，已定案不修（filter 属声明子集边界，见修正 7）。
+P2 文档尾巴：`evenOddPathEligible` 注释、修正 8 表 wacom 定性、本文件补 text-stroke 边界说明。
