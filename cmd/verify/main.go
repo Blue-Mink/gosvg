@@ -83,18 +83,25 @@ func writePNG(path string, img *image.NRGBA) error {
 // 不给 out_dir 时只做渲染校验、不落盘；给定时把每个样例渲染成 PNG。
 // 退出码：0 = 全部成功；1 = 有失败、目录不可读或没有 .svg。
 func main() {
-	inDir, outDir := parseArgs(os.Args)
+	os.Exit(cliMain(os.Args))
+}
+
+// cliMain 是 main 的可测编排：返回进程退出码而不直接终止进程，便于单测覆盖
+// 「目录不可读 / 无 .svg / 有渲染失败 / 全部成功」四条分支。
+func cliMain(args []string) int {
+	inDir, outDir := parseArgs(args)
 	ok, failed, err := run(inDir, outDir)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return 1
 	}
 	if ok+failed == 0 {
 		fmt.Fprintln(os.Stderr, "no .svg found in", inDir)
-		os.Exit(1)
+		return 1
 	}
 	fmt.Printf("%d/%d ok\n", ok, ok+failed)
 	if failed > 0 {
-		os.Exit(1)
+		return 1
 	}
+	return 0
 }

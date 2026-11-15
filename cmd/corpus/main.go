@@ -129,18 +129,31 @@ func normalizeDiag(d string) string {
 }
 
 func main() {
-	size := flag.Int("size", 64, "渲染边长（像素）")
-	asJSON := flag.Bool("json", false, "以 JSON 输出报告")
-	flag.Parse()
-	dirs := flag.Args()
+	os.Exit(cliMain(os.Args))
+}
+
+// cliMain 是 main 的可测编排：用局部 FlagSet 解析参数，避免全局 flag.CommandLine
+// 在测试多次调用间残留；返回退出码，不直接终止进程。printText 仍写标准输出。
+func cliMain(args []string) int {
+	fs := flag.NewFlagSet("gosvg-corpus", flag.ContinueOnError)
+	fs.SetOutput(os.Stderr)
+	size := fs.Int("size", 64, "渲染边长（像素）")
+	asJSON := fs.Bool("json", false, "以 JSON 输出报告")
+	if err := fs.Parse(args[1:]); err != nil {
+		if err == flag.ErrHelp {
+			return 0
+		}
+		return 2
+	}
+	dirs := fs.Args()
 	if len(dirs) == 0 {
 		fmt.Fprintln(os.Stderr, "usage: gosvg-corpus [-size N] [-json] <dir>...")
-		os.Exit(2)
+		return 2
 	}
 	files, err := collect(dirs)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "collect:", err)
-		os.Exit(1)
+		return 1
 	}
 	rep := analyze(files, *size)
 	rep.Dirs = dirs
@@ -149,11 +162,12 @@ func main() {
 		enc.SetIndent("", "  ")
 		if err := enc.Encode(rep); err != nil {
 			fmt.Fprintln(os.Stderr, "encode:", err)
-			os.Exit(1)
+			return 1
 		}
-		return
+		return 0
 	}
 	printText(rep)
+	return 0
 }
 
 func printText(r *Report) {

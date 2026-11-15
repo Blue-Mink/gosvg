@@ -11,31 +11,37 @@ import (
 
 // 用法：gosvg-render <input.svg> <output.png> [size]
 func main() {
-	if len(os.Args) < 3 {
+	os.Exit(cliMain(os.Args))
+}
+
+// cliMain 是 main 的可测编排，返回退出码（0 成功 / 1 读写渲染失败 / 2 参数不足）。
+func cliMain(args []string) int {
+	if len(args) < 3 {
 		fmt.Fprintln(os.Stderr, "usage: gosvg-render in.svg out.png [size]")
-		os.Exit(2)
+		return 2
 	}
-	data, err := os.ReadFile(os.Args[1])
+	data, err := os.ReadFile(args[1])
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "read:", err)
-		os.Exit(1)
+		return 1
 	}
-	size := parseSize(os.Args, 512)
+	size := parseSize(args, 512)
 	img, err := gosvg.Render(data, size)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "render:", err)
-		os.Exit(1)
+		return 1
 	}
-	out, err := os.Create(os.Args[2])
+	out, err := os.Create(args[2])
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "create:", err)
-		os.Exit(1)
+		return 1
 	}
 	defer out.Close()
 	if err := png.Encode(out, img); err != nil {
 		fmt.Fprintln(os.Stderr, "encode:", err)
-		os.Exit(1)
+		return 1
 	}
+	return 0
 }
 
 // parseSize 从 CLI 参数取渲染尺寸；非法或非正一律回退默认值。

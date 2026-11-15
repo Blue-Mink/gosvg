@@ -183,26 +183,39 @@ type report struct {
 }
 
 func main() {
+	os.Exit(cliMain(os.Args))
+}
+
+// cliMain 是 main 的可测编排：局部 FlagSet 解析参数、返回退出码，不直接终止进程；
+// 逻辑与重构前的 main 逐分支等价（含 -h 退出 0、参数错误退出 2）。
+func cliMain(args []string) int {
+	fs := flag.NewFlagSet("gosvg-iou", flag.ContinueOnError)
+	fs.SetOutput(os.Stderr)
 	var (
-		refDir  = flag.String("ref", "", "参照图目录（必填），内含 PNG")
-		svgDir  = flag.String("svg", "", "SVG 目录；为空时只与 -baseline 比")
-		outDir  = flag.String("out", "", "渲染输出目录；为空则不落盘")
-		alpha   = flag.Uint("alpha", 0, "alpha 阈值：alpha>阈值 视为不透明（0=alpha>0，8=报告口径）")
-		baseDir = flag.String("baseline", "", "基线图目录；给定则额外算与基线的 IoU 差异")
-		jsonOut = flag.String("json", "", "把完整结果写成 JSON 到该文件")
-		size    = flag.Int("size", 256, "渲染边长")
-		minVal  = flag.Float64("min", 0, "只列出 IoU 低于此值的文件（0=不限制）")
-		quiet   = flag.Bool("quiet", false, "只输出汇总，不逐文件打印")
+		refDir  = fs.String("ref", "", "参照图目录（必填），内含 PNG")
+		svgDir  = fs.String("svg", "", "SVG 目录；为空时只与 -baseline 比")
+		outDir  = fs.String("out", "", "渲染输出目录；为空则不落盘")
+		alpha   = fs.Uint("alpha", 0, "alpha 阈值：alpha>阈值 视为不透明（0=alpha>0，8=报告口径）")
+		baseDir = fs.String("baseline", "", "基线图目录；给定则额外算与基线的 IoU 差异")
+		jsonOut = fs.String("json", "", "把完整结果写成 JSON 到该文件")
+		size    = fs.Int("size", 256, "渲染边长")
+		minVal  = fs.Float64("min", 0, "只列出 IoU 低于此值的文件（0=不限制）")
+		quiet   = fs.Bool("quiet", false, "只输出汇总，不逐文件打印")
 	)
-	flag.Parse()
+	if err := fs.Parse(args[1:]); err != nil {
+		if err == flag.ErrHelp {
+			return 0
+		}
+		return 2
+	}
 
 	if *refDir == "" {
 		fmt.Fprintln(os.Stderr, "usage: gosvg-iou -ref <参照图目录> [-svg <SVG 目录>] ...")
-		os.Exit(2)
+		return 2
 	}
 	if *svgDir == "" && *baseDir == "" {
 		fmt.Fprintln(os.Stderr, "gosvg-iou: 至少需要 -svg 或 -baseline 之一")
-		os.Exit(2)
+		return 2
 	}
 
 	rep := report{AlphaThreshold: int(*alpha), Size: *size}
@@ -213,13 +226,13 @@ func main() {
 		if *outDir != "" {
 			if err := os.MkdirAll(*outDir, 0o755); err != nil {
 				fmt.Fprintf(os.Stderr, "gosvg-iou: %v\n", err)
-				os.Exit(1)
+				return 1
 			}
 		}
 		r, err := renderSVG(*svgDir, *outDir, *size)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "gosvg-iou: %v\n", err)
-			os.Exit(1)
+			return 1
 		}
 		rendered = r
 	}
@@ -235,7 +248,7 @@ func main() {
 		entries, err := os.ReadDir(*baseDir)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "gosvg-iou: %v\n", err)
-			os.Exit(1)
+			return 1
 		}
 		for _, e := range entries {
 			if e.IsDir() || !strings.HasSuffix(e.Name(), ".png") {
@@ -313,14 +326,15 @@ func main() {
 		blob, err := json.MarshalIndent(rep, "", "  ")
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "gosvg-iou: %v\n", err)
-			os.Exit(1)
+			return 1
 		}
 		if err := os.WriteFile(*jsonOut, blob, 0o644); err != nil {
 			fmt.Fprintf(os.Stderr, "gosvg-iou: %v\n", err)
-			os.Exit(1)
+			return 1
 		}
 		fmt.Printf("JSON written to %s\n", *jsonOut)
 	}
+	return 0
 }
 
 // countTrue 数二值 mask 里 true 的个数（即不透明像素数）。

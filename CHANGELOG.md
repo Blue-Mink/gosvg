@@ -5,6 +5,28 @@
 
 ## [Unreleased]
 
+- **`cmd/*` 低覆盖补测 + CLI 编排可测化（纯测试/CLI 编排，零渲染改动，2026-11-15）**：
+  本节下方所有写「`cmd/*` 低覆盖补测仍未做」的条目均为**各自提交当时的快照**，
+  按纪律保留原文；**当前状态以本条为准**：
+  - 4 个 `cmd/*/main.go` 的 `main()` 拆为 `os.Exit(cliMain(os.Args))` +
+    `cliMain(args []string) int`；`cmd/corpus` / `cmd/iou` 改用局部 `FlagSet`，
+    避免全局 `flag.CommandLine` 在多次测试间残留。`cliMain` 与重构前逐分支等价，
+    **零 `.go` 渲染代码、零 workflow、零 `golden.sha256` 改动**。
+  - 新增 `internal/cmdtestutil`（仅测试辅助）与 4 个 `cli_test.go`（**7 个顶层 Test** + 子用例）：
+    覆盖参数不足 / 未知 flag / `-h` / 读写渲染失败 / 空目录 / 目录不可读 /
+    JSON 落盘 / 全参数组合、`printText` 全条件分支、`compareBaseline` 五条分支。
+  - **实测覆盖率**：`cmd/verify` 62.3 → **81.8%**（`cliMain` 100%）、
+    `cmd/corpus` 42.2 → **85.3%**（`printText` 90.9%）、`cmd/iou` 37.2 →
+    **85.3%**（`compareBaseline` 100%）、`cmd/render` 16.7 → **88.5%**；
+    `internal/vector` 83.4% / `internal/rasterx` 34.8% 不变。唯一 0% 是 4 个
+    `main()`（`os.Exit(...)` 一行，设计上不可测边界，未刷数字）。
+    锚点 `test=261→268`、`GOSVG_TODO.md` 覆盖率段同步。
+  - `-race` 结论不变：仍以 `/tmp` 一次性 gcc 工具链的本地全绿为准，
+    **CI 自动门禁未恢复**（runners=0 / GitHub 出站不通 / 113 run 全 cancelled），
+    「没有任何一次 PR/push 被服务端自动验证」至今有效。档 3 触发条件不变。
+  - **明确未做**：850 语料入仓、rasterx 与 `2ab79fc` 逐文件比对、arm64 真机、
+    CI runner 注册 / 7 queued run 清理（**写 `.15`，须用户明确授权**）、
+    Gitea SQLite 根治（需重启，会中断）。
 - **`internal/vector` 覆盖增强 + `-race` 首次真跑全绿（纯测试/文档，零渲染改动，
   2026-11-15）**：本节下方所有写「`-race` 是唯一未验项 / 需在带 gcc 机器补跑 /
   PR #32 破例」的条目均为**各自提交当时的快照**，按纪律保留原文；**当前状态以本条为准**：
