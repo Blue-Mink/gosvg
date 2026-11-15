@@ -5,13 +5,33 @@
 
 ## [Unreleased]
 
+- **PR #32 合并后 CI 现状收口 + `-race` 硬要求破例记录（纯文档，零渲染改动，
+  2026-11-15）**：本节下方两轮（CI 止血 / 回归保护）的 commit 与文档写于
+  「113 run / 0 success / 7 queued（#107–#113）、runners=0、commit 未 push /
+  未开 PR」的**提交当时状态**；其中「实测 / 现状 / 未做」等措辞按纪律保留原文，
+  **当前状态以本条为准**：
+  - 7 个 queued run（#107–#113）已逐个取消，现 **113 run 全 `cancelled`、
+    `queued=0`**（未删历史 run 记录）；
+  - 两个 commit 已推特性分支并经 **PR #32** 开 PR、合并，远端 main 已前移；
+    推分支与合并后复查 Actions 总 run 仍为 113、`#113` 之后无新 run →
+    **远端 workflow 收窄实证生效**，push 不再堆僵尸 run；
+  - runner 注册数仍为 0、GitHub 出站仍不通 → 「没有任何一次 PR / push 被自动
+    验证过」这一结论**至今有效**，真正恢复自动 CI 仍属长期项（档 3 触发条件不变）；
+  - `README.md` / `CONTRIBUTING.md` / `GOSVG_GAP_TODO.md` 里同样的当时快照已就地加注。
+  - **`-race` 硬要求的首次破例（诚实记录，不放宽规则）**：本轮之前刚把「发版 /
+    合并到 main 前须在带 gcc 的机器跑到**不带 SKIPPED** 的 `ALL GREEN`」写成硬要求，
+    但 PR #32 自身合并时的验证是 `ALL GREEN (race SKIPPED: no C compiler)` ——
+    本机 `CGO_ENABLED=0`、无 gcc/clang。理由：PR #32 为纯文档 / CI 配置 / 测试、
+    **零渲染代码改动**、不触及并发路径；这不构成对该硬要求的豁免，后续凡触及渲染
+    代码的合并仍须在带 gcc 机器补跑全套。`-race` 补跑仍是唯一未验项。
 - **CI 止血 + 发版前 `-race` 硬要求（纯本地配置/文档，零渲染改动，2026-11-15）**：
   - 两份 CI workflow（`.gitea/workflows/ci.yml` 与 `.github/workflows/ci.yml`，
     逐字一致）的触发方式从 `push`（全分支 + `v*` tags）+ `pull_request` +
     `workflow_dispatch` **收窄为仅 `workflow_dispatch` 手动触发**。
     原因：Gitea Actions runner 注册数 0、GitHub 出站不通，自动触发只会在每次
-    push/PR 持续堆积永不执行的 queued run（实测 113 run / 0 success /
-    7 queued，#107–#113 即 v0.3.0 发布相关触发）。配置保留作恢复自动 CI 的
+    push/PR 持续堆积永不执行的 queued run（**提交当时实测** 113 run / 0 success /
+    7 queued，#107–#113 即 v0.3.0 发布相关触发；本组数字按纪律保留原文，
+    当前状态见本节首条）。配置保留作恢复自动 CI 的
     同源模板，恢复前提与步骤写进 workflow 文件头注释。⚠️ 原先已有
     `workflow_dispatch`，本轮是**去掉 push/PR**，不是新增。
   - `CONTRIBUTING.md`「提交前必跑」补明 `go test -race` 需 CGO + gcc，并把
@@ -22,6 +42,8 @@
     真正恢复自动 CI 仍属长期项（档 3 触发条件不变）。
   - **未做**：已存在的 7 个 queued run 未清理（写 `.15`，须单独授权）、
     runner 未注册、commit 未 push / 未开 PR。
+    ⚠️ 以上为**提交当时快照**，按纪律保留原文；事后 7 个 queued run 已取消、
+    两 commit 已推并经 PR #32 合并，runner 仍未注册。当前状态见本节首条。
 - **v0.3.0 发布后文档状态收口（PR #30，纯文档、零渲染改动）**：`v0.3.0` tag
   由 Gitea Release API 自建（tag → `baa0c7d`），发布后补 `CHANGELOG` 的
   `[v0.3.0]` 转正与 PR #29 / #28 条目、`CAIROSVG_IOU.md` 修正 9 的「已被推翻」
@@ -73,6 +95,9 @@
   同时按 Gitea API 实测把 CI 现状写进 `README` / `CONTRIBUTING`：
   **113 次 run / 0 次 success / runners=0 / 7 个 queued（#107–#113）**，
   明确「双 CI 配置同源」≠「自动验证已生效」，ALL GREEN 均指本地手动 `verify.sh`。
+  ⚠️ 以上数字为**提交当时快照**，按纪律保留原文；事后 7 个 queued run 已取消、
+  113 全 cancelled / queued=0、runner 注册数仍为 0。结论「自动验证未生效」至今有效，
+  当前状态见本节首条。
   ⚠️ 按代码实测更正：`paint-order` 属性**未被解析**，实现是无条件「先描边、后填充」；
   `GOSVG_TODO.md` 已改，此前把它列为「已支持」属表述不准。
   ⚠️ 另记录既有边界（非本轮引入、未改）：`text.go:30` 的

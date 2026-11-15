@@ -206,6 +206,13 @@ go test -run TestGoldenRegression -update .
 > gcc 的机器跑到不带 SKIPPED 的 `ALL GREEN`**（`-race` 是唯一未由自动门禁
 > 覆盖的项，见 `CONTRIBUTING.md`）；发版数字（IoU / ALL GREEN）均来自本地
 > 手动实跑，不代表 CI 已验证。详见 `CONTRIBUTING.md` 与 `GOSVG_GAP_TODO.md` 档 3。
+>
+> ⚠️ **数字更新（PR #32 合并后，2026-11-15）**：上面「113 次 run / 106 cancelled /
+> 7 次 queued 挂起」是止血当时快照，按纪律保留原文；7 个 queued run 现已取消，
+> **113 run 全 `cancelled`、`queued=0`**，收窄后的 push/merge 未再新增 run。
+> **结论不变**：runner 注册数仍为 0、GitHub 出站仍不通、门禁仍只在本地手动生效，
+> 合并前本地实跑 `verify.sh` 与发版 `-race` 硬要求都继续有效。详见
+> `CHANGELOG.md` `[Unreleased]` 首条与 `CONTRIBUTING.md`。
 
 若 `proxy.golang.org` 不通，用 `GOPROXY=https://goproxy.cn,direct`。
 更多见 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [GOSVG_TODO.md](GOSVG_TODO.md)。
