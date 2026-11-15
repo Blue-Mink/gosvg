@@ -5,6 +5,30 @@
 
 ## [Unreleased]
 
+- **修正 `url(#id)` paint 引用诊断：合法 `<pattern>` 不再被误报（纯只读，零渲染/像素改动，2026-11-15）**：
+  承接上一条 `-strict` 诊断补漏，清掉其自认欠账里剩下的两点。先经实测探针**纠正上轮判断**：
+  「`url(#不存在)` 措辞误导」只是表象，真正的洞是 `resolveGradient` 在 id 不是
+  gradient 时无条件报 `gradient reference not found: <id>`，而同样的 `url(#id)`
+  完全可能是合法的 `<pattern>` 引用 —— 实测 `fill="url(#p)"` **蓝色正常绘制却凭空
+  多一条诊断**，`-strict` 会因此对合法文档错误退出 3。
+  - `resolveGradient` 改为纯解析、**不产生诊断**（职责回归单一）；诊断移到
+    `renderShape` 的 fill/stroke 分派链末端，新增 `reportUnresolvedPaintRef`，
+    仅在 `parseColor` / `resolveGradient` / `resolvePattern` **三条路都未命中**
+    且值确为 `url(#id)` 时，报中性的 `paint reference not resolved: <id>`。
+    `resolvePattern` 保持静默（是否无法解析由分派处统一判断，不重复）。
+  - 精确排除合法不绘制：`none` / `transparent` / 空串（默认无描边）/
+    `stroke-width=0` 均不报；`stroke="url(#pattern)"` 仍按既有子集边界报
+    `stroke with pattern reference is not supported`，不被新诊断覆盖。
+    `addDiagnostic` 按文本去重不变。
+  - **零渲染改动**：绘制分支一行未动，`golden.sha256` 一行未动；像素逐字节不变
+    （新增断言对照修复前：pattern 仍蓝、gradient 仍红、缺失 id 仍空、纯色仍红）。
+  - `CORPUS_BASELINE.md` 里 `125 × gradient reference not found` 是**历史快照**
+    （当时 850 语料的观测），按仓库纪律保留原文不改；`normalizeDiag` 是通用
+    `: ` 前缀分类，不写死措辞，无需同步改动。
+  - 新增 `paint_ref_diag_test.go` **8 个顶层 Test**：合法 pattern/gradient 零诊断、
+    缺失/错误类型 id 报中性诊断、旧措辞彻底消失、合法不绘制零误报、描边覆盖、
+    stroke-pattern 既有诊断不变、去重、像素不变。锚点 `test=281→289`。
+    `verify.sh` ALL GREEN 含真 `-race`、无 SKIPPED。
 - **修正 PR #35 合并 commit message（2026-11-15）**：合并时 merge 请求误带
   `merge_title_field:"title"` 与空 `merge_message_field`，Gitea 把 `title` 当字面量写进了
   merge commit message。按 Gitea 相邻 merge commit 模板（PR #34）重写 tip：

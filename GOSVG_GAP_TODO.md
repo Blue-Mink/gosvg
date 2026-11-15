@@ -512,3 +512,41 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   `merge_title_field`/`merge_message_field` 即可避免。
 - **本条补档本身**：纯文档（CHANGELOG `[Unreleased]` + 本段），常规 commit
   fast-forward 推 main，不需 force、不动保护规则、零代码/渲染/golden 改动。
+
+## 本轮（修正 url(#id) paint 引用诊断，2026-11-15，接 PR #36 补档）
+
+> 上一段「明确未做」里列的「`resolvePattern` 静默返回、`url(#不存在)` 只报 gradient
+> 措辞误导」是**当时**的判断，本段记录其后经实测探针纠正与修复的结果；旧文字按
+> 「历史快照就近护注」纪律保留不改。
+
+- **纠正判断**：措辞误导只是表象。实测 `fill="url(#p)"`（合法 `<pattern>`）→
+  蓝色正常绘制，却因 `resolveGradient` 里 `d.grads[id]==nil` 无条件报
+  `gradient reference not found: p`。即**合法 pattern 被误报**，`-strict` 会对
+  完全合法的文档错误退出 3 —— 比措辞严重得多，且可能是 `CORPUS_BASELINE.md`
+  里 125 次该事件的来源之一（语料中若有 pattern 引用即命中）。
+  `url(#不存在)` / id 指向 clipPath 等情形虽只有一条 gradient 措辞诊断，但**并非
+  零诊断**，不属于「-strict 漏报」类漏洞。
+- **修复（纯只读、零渲染/像素改动）**：
+  - `resolveGradient` 改为纯解析，`d.grads[id]==nil` 时不报诊断直接返回 nil
+    （同样的 id 可能是 pattern，职责不该在这里判断）。
+  - `renderShape` 的 fill / stroke 分派链各加末端 `else`，调新增的
+    `reportUnresolvedPaintRef(doc, v)`：仅当三条路都未命中、且 `gradientRef(v)`
+    解析出非空 id 时，报 `paint reference not resolved: <id>`。描边侧额外加
+    `style.strokeWidth > 0` 前提，避免 `stroke-width=0`（明确不描边）误报。
+  - `resolvePattern` 保持静默（组合判断在分派处统一做，不重复报）。
+    绘制分支一行未动，`golden.sha256` 一行未动。
+- **边界（实测探针逐一坐实）**：`none` / `transparent` / 空串 / `stroke-width=0`
+  零诊断；有效 gradient、有效 pattern、纯色零诊断；`stroke="url(#pattern)"`
+  仍报既有 `stroke with pattern reference is not supported`（子集边界不变）；
+  缺失 / 错误类型 id 报中性诊断；诊断按文本去重。
+- **验证**：新增 `paint_ref_diag_test.go` 8 个顶层 Test 锁定上述全部不变量与
+  像素逐字节不变；`verify.sh` **ALL GREEN 含真 `-race` 无 SKIPPED**；
+  锚点 `test=281→289`。
+- **历史文档处置**：`CORPUS_BASELINE.md` 的 `125 × gradient reference not found`
+  是当时 850 语料的观测快照，**保留原文不改**（本轮改的是其后的代码行为，不是
+  重跑语料）；`cmd/corpus` 的 `normalizeDiag` 按 `: ` 前缀通用归一化，不写死
+  措辞，无需改动。若日后重跑 850 语料，该行应随之更新并注明基准版本。
+- **明确未做（不因本轮自动推进）**：未重跑 850 语料（语料与参照 PNG 不在仓内，
+  入仓涉及体积+版权须用户拍板）、未动 `internal/rasterx` 覆盖率、未碰 `.15`、
+  未推远端 / 未开 PR / 未合并（对外动作须用户点头）。本轮仅本地提交在特性分支
+  `fix/paint-reference-diagnostics`。
