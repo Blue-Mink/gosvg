@@ -137,6 +137,8 @@
 - **`FuzzRender`** 已加（此前 5 个目标全在解析/数值层，渲染期无 fuzz），corpus 入库 6 个；
   `verify.sh` 现跑 FuzzParse 30s + FuzzRender 20s。
 - **`internal/vector` 覆盖率 0% → 24.3%**（even-odd 是本 fork 对上游的扩展，此前零测试）。
+  ⚠️ **状态更新**：后续又补 `rasterizer_extra_test.go`（12 个 Test），**24.3% → 83.4%**，
+  `Draw` 33.3% → 100%；见「本轮（覆盖增强 + `-race`）」与 `CHANGELOG.md` `[Unreleased]` 首条。
 - **WASM 编译门禁**已加进 `verify.sh`（实测通过）。
 - **性能优化按 pprof 实测结论主动收窄**：CSS 选择器索引、解析缓存、离屏位图池化
   经数据判定为无收益或与基线无关，**明确不做**，理由写在 `BENCHMARK.md`。
@@ -357,13 +359,23 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   更正 `x/sys` 为直接 require；`check_docs.sh` 加双 workflow 一致 +
   Go 版本单一来源两条机械门禁（1.27.3）；锚点 test=249。
 - **仍未做（不因「继续按建议」自动推进）**：带 gcc 机器补跑 `-race`、
-  rasterx 与 2ab79fc 逐文件比对、`internal/vector` 24.3% 与 cmd/* 低覆盖补测、
+  rasterx 与 2ab79fc 逐文件比对、`internal/vector` 24.3% 与 cmd/* 低覆盖补测
+  （⚠️ 两项事后均已完成，见本文件末节「cmd/* 补测」）、
   850 语料入仓、arm64 真机、CI runner 注册 / 7 queued run 清理（**写 `.15`，
   须用户明确授权**）、Gitea SQLite 根治（需重启，会中断）、提交/推 PR
   （对外动作，须用户点头）。本轮所有改动均为**本地、零渲染代码变更**。
   ⚠️ **状态更新（PR #32 合并后）**：这是该轮当时的快照；7 个 queued run 事后已
   逐个取消（非删历史，113 全 cancelled / queued=0）、提交与 PR 已完成并合并。
   「带 gcc 机器补跑 `-race`」「CI runner 注册」等**至今仍未做**，继续按档 3 条件。
+  ⚠️ **再更新（覆盖增强轮，2026-11-15）**：`-race` 已在**本机**用一次性 `/tmp` gcc
+  工具链跑通（`ALL GREEN` 无 SKIPPED，见下节），故「带 gcc 机器补跑」若指
+  **稳定环境复现**仍未做、若指「`-race` 从未实跑」则已不成立；`internal/vector
+  24.3%` 补测已完成（→83.4%）。⚠️ **cmd/* 补测（同轮后续，2026-11-15）**：4 个
+  `main()` 已拆出可测 `cliMain(args) int`，新增 `internal/cmdtestutil`（仅测试用）
+  与 4 个 `cli_test.go`（7 个顶层 Test + 子用例），覆盖率 62.3/42.2/37.2/16.7% →
+  **81.8/85.3/85.3/88.5%**，`cliMain` 最高 100%、`compareBaseline` 100%、
+  `printText` 90.9%；4 个 `main()` 仅剩 `os.Exit(...)` 一行为不可测边界。
+  **CI runner 注册与 7 queued run 清理（写 `.15`）至今未做**，档 3 条件不变。
 
 ## 本轮（CI 止血 + 发布清单，2026-11-15，接上轮「最优方案」第 1+2 步）
 
@@ -390,3 +402,54 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   已推并经 PR #32 合并进 main。runner 仍未注册（此项至今有效）。
 - **结论口径**：这不叫「修好 CI」，叫「停止让 CI 假装会跑」。真正恢复自动
   CI 仍是长期项，触发条件不变（见档 3）。
+
+## 本轮（`internal/vector` 覆盖增强 + `-race` 首次真跑，2026-11-15）
+
+- **覆盖增强（零渲染改动）**：新增 `internal/vector/rasterizer_extra_test.go`
+  （12 个 Test），`internal/vector` 覆盖率 **24.3% → 83.4%**，`Draw`
+  **33.3% → 100%**。补测对象不是「刷数字」而是两类真实裸奔语义：
+  (1) fork 把 `floatingPointMathThreshold` 从 512 改成 0 后，
+  `fixedLineTo`/`fixedAccumulate*` 成为正常调用不可达的死路径；
+  (2) amd64 `haveAccumulateSIMD=true` 让标量 accumulate 全被 SSE4.1 汇编绕过。
+  两类均用**同包白盒**直接锁定数值语义，另加 `TestDrawEvenOddSkipsUniformFastPath`
+  回归锁（防 SIMD fast path 绕过 `accumulateMask` 导致镂空失效）。断言用
+  「0 / 非零 / 相对关系 / 饱和 / fixed-floating 一致性」，避开 AA 相位误报。
+  锚点 `test=249→261`、`GOSVG_TODO.md` 覆盖率段同步。
+- **`-race` 硬要求首次真正满足**：本机（`Linux iStoreOS 6.12.112 x86_64` /
+  `go1.27.3`）原本 `CGO_ENABLED=0`、无 gcc/clang；用 `apt-get download` 把
+  gcc 14.2.0 + 运行库 + 头文件**仅解包到 `/tmp/gcc_probe`**（未 `dpkg install`、
+  未改系统目录），wrapper 拼出工具链后 `CC` 指向它，`sh ./scripts/verify.sh`
+  **rc=0 / `ALL GREEN`（无 SKIPPED）/ `DOCS CHECK PASSED`**；`-race` 全 7 包通过、
+  零 data race，6 fuzz / arm64 / wasm / bench / fmt / vet / tidy-diff 全过。
+  日志 `/tmp/verify_full2_1115.log`。执行机器与结果已登记进 `CHANGELOG.md`。
+- **⚠️ 不改口的两条**：(1) 该 gcc 是一次性 `/tmp` 工具链、非稳定「带 gcc 机器」，
+  `verify.sh` 的「无编译器则 SKIP」兜底与 `CONTRIBUTING.md` 硬要求照旧有效；
+  在稳定环境复现仍属待办。(2) **CI 自动门禁仍未恢复**：runners=0、
+  113 run 全 cancelled、GitHub 出站不通，「没有一次 PR/push 被服务端自动验证」
+  至今有效，这次仍是**本地手动全绿**。档 3 触发条件不变。
+- **明确未做（不因本轮自动推进）**：`cmd/*` 低覆盖补测（⚠️ 事后已在同轮后续
+  完成，见下节）、850 语料入仓、rasterx 与 `2ab79fc` 逐文件比对、arm64 真机、
+  CI runner 注册 / 7 queued run 清理（**写 `.15`，须用户明确授权**）、Gitea SQLite
+  根治（需重启，会中断）、提交 / 推 PR（对外动作，须用户点头）。本轮所有改动均为
+  **本地、零渲染代码变更**。
+
+## 本轮后续（`cmd/*` 低覆盖补测，2026-11-15）
+
+- **CLI 编排可测化（零渲染改动）**：4 个 `cmd/*/main.go` 的 `main()` 从「内联
+  解析 + `os.Exit`」拆为 `os.Exit(cliMain(os.Args))` + `cliMain(args []string) int`，
+  `cmd/corpus` / `cmd/iou` 改用局部 `FlagSet`（避免全局 `flag.CommandLine` 在多次
+  测试间残留）。`cliMain` 逻辑与重构前逐分支等价，仅参数来源与退出方式不同。
+- **补测内容**：新增 `internal/cmdtestutil`（仅 `_test.go` 引用的临时目录 / stdout
+  捕获 helper，不进生产二进制）与 4 个 `cli_test.go`（**7 个顶层 Test** + 子用例）：覆盖
+  参数不足 / 未知 flag / `-h` / 读写渲染失败 / 空目录 / 目录不可读 / JSON 落盘 /
+  全参数组合、`printText` 全条件分支、`compareBaseline` 的
+  improved / regressed / unchanged / ref 缺失 / base 缺失五条分支。
+- **实测覆盖率**（`go test -count=1 -cover ./...`）：`cmd/verify` 62.3 → **81.8%**
+  （`cliMain` 100%）、`cmd/corpus` 42.2 → **85.3%**（`printText` 90.9%）、
+  `cmd/iou` 37.2 → **85.3%**（`compareBaseline` 100%）、`cmd/render` 16.7 →
+  **88.5%**。**唯一 0% 是 4 个 `main()`**：只剩 `os.Exit(cliMain(os.Args))` 一行，
+  是设计上的不可测边界，不用子进程刷数字。锚点 `test=261→268`。
+- **明确未做（不因本轮自动推进）**：850 语料入仓、rasterx 与 `2ab79fc` 逐文件
+  比对、arm64 真机、CI runner 注册 / 7 queued run 清理（**写 `.15`，须用户明确
+  授权**）、Gitea SQLite 根治（需重启，会中断）、提交 / 推 PR（对外动作，须用户
+  点头）。本轮所有改动均为**本地、零渲染代码变更**。

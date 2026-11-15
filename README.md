@@ -213,6 +213,12 @@ go test -run TestGoldenRegression -update .
 > **结论不变**：runner 注册数仍为 0、GitHub 出站仍不通、门禁仍只在本地手动生效，
 > 合并前本地实跑 `verify.sh` 与发版 `-race` 硬要求都继续有效。详见
 > `CHANGELOG.md` `[Unreleased]` 首条与 `CONTRIBUTING.md`。
+>
+> ✅ **`-race` 状态更新（2026-11-15）**：上面写「`-race` 是唯一未由自动门禁覆盖的
+> 项」指的是**自动 CI 从未跑过它**，此结论至今有效；但本地手动验证侧，现已用一次性
+> `/tmp` gcc 工具链跑出**不带 SKIPPED 的 `ALL GREEN`**、`-race` 全包通过（详见
+> `CHANGELOG.md` `[Unreleased]` 首条）。⚠️ 这不改变本块主旨：**服务端 CI 仍未生效**，
+> runner=0 / 0 次 success 不变，发版数字仍全部来自本地手动实跑。
 
 若 `proxy.golang.org` 不通，用 `GOPROXY=https://goproxy.cn,direct`。
 更多见 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [GOSVG_TODO.md](GOSVG_TODO.md)。

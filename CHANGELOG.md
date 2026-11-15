@@ -5,6 +5,56 @@
 
 ## [Unreleased]
 
+- **`cmd/*` 低覆盖补测 + CLI 编排可测化（纯测试/CLI 编排，零渲染改动，2026-11-15）**：
+  本节下方所有写「`cmd/*` 低覆盖补测仍未做」的条目均为**各自提交当时的快照**，
+  按纪律保留原文；**当前状态以本条为准**：
+  - 4 个 `cmd/*/main.go` 的 `main()` 拆为 `os.Exit(cliMain(os.Args))` +
+    `cliMain(args []string) int`；`cmd/corpus` / `cmd/iou` 改用局部 `FlagSet`，
+    避免全局 `flag.CommandLine` 在多次测试间残留。`cliMain` 与重构前逐分支等价，
+    **零 `.go` 渲染代码、零 workflow、零 `golden.sha256` 改动**。
+  - 新增 `internal/cmdtestutil`（仅测试辅助）与 4 个 `cli_test.go`（**7 个顶层 Test** + 子用例）：
+    覆盖参数不足 / 未知 flag / `-h` / 读写渲染失败 / 空目录 / 目录不可读 /
+    JSON 落盘 / 全参数组合、`printText` 全条件分支、`compareBaseline` 五条分支。
+  - **实测覆盖率**：`cmd/verify` 62.3 → **81.8%**（`cliMain` 100%）、
+    `cmd/corpus` 42.2 → **85.3%**（`printText` 90.9%）、`cmd/iou` 37.2 →
+    **85.3%**（`compareBaseline` 100%）、`cmd/render` 16.7 → **88.5%**；
+    `internal/vector` 83.4% / `internal/rasterx` 34.8% 不变。唯一 0% 是 4 个
+    `main()`（`os.Exit(...)` 一行，设计上不可测边界，未刷数字）。
+    锚点 `test=261→268`、`GOSVG_TODO.md` 覆盖率段同步。
+  - `-race` 结论不变：仍以 `/tmp` 一次性 gcc 工具链的本地全绿为准，
+    **CI 自动门禁未恢复**（runners=0 / GitHub 出站不通 / 113 run 全 cancelled），
+    「没有任何一次 PR/push 被服务端自动验证」至今有效。档 3 触发条件不变。
+  - **明确未做**：850 语料入仓、rasterx 与 `2ab79fc` 逐文件比对、arm64 真机、
+    CI runner 注册 / 7 queued run 清理（**写 `.15`，须用户明确授权**）、
+    Gitea SQLite 根治（需重启，会中断）。
+- **`internal/vector` 覆盖增强 + `-race` 首次真跑全绿（纯测试/文档，零渲染改动，
+  2026-11-15）**：本节下方所有写「`-race` 是唯一未验项 / 需在带 gcc 机器补跑 /
+  PR #32 破例」的条目均为**各自提交当时的快照**，按纪律保留原文；**当前状态以本条为准**：
+  - 新增 `internal/vector/rasterizer_extra_test.go`（**12 个 Test**），覆盖率
+    **24.3% → 83.4%**；`Draw` 33.3% → **100%**（Alpha/RGBA/NRGBA dst ×
+    Over/Src × fast-path/通用 × 子矩形分支全覆盖），even-odd 两套标量内核 94%+、
+    `floatingLineTo` 96.6%。补的是此前裸奔的两类语义：fork 强制 floating 后成为
+    死路径的 `fixedLineTo`/`fixedAccumulate*`，以及被 amd64 SSE4.1 汇编绕过的标量
+    accumulate；另加 even-odd 必须跳过 uniform fast path 的回归锁。断言用
+    「0 / 非零 / 相对关系 / 饱和 / fixed-floating 一致性」，非具体像素值。
+    `GOSVG_TODO.md` 锚点 `test=249→261`、覆盖率段同步。
+  - **`-race` 硬要求首次真正满足**：本机（`Linux iStoreOS 6.12.112 x86_64`、
+    `go1.27.3`）原为 `CGO_ENABLED=0`、无 gcc/clang；本轮用 `apt-get download`
+    把 gcc 14.2.0 及其运行库/头文件**仅解包到 `/tmp/gcc_probe`（未 dpkg install、
+    未改系统目录）**，以 wrapper 拼出可用 C 工具链，`CC` 指向它后
+    `sh ./scripts/verify.sh` **退出码 0、末行 `ALL GREEN`（不带 SKIPPED）**、
+    `DOCS CHECK PASSED`；`-race` 全 7 个包实跑通过（根包 18.9s，零 data race），
+    6 fuzz / arm64 / wasm / bench / gofmt / vet / mod tidy-diff 全过。
+    日志 `/tmp/verify_full2_1115.log`。**执行机器与结果在此登记**，符合
+    `CONTRIBUTING.md` 的硬要求字面。
+  - ⚠️ 两条**不能据此改口**的结论：(1) 该 gcc 是临时解包的**一次性本地工具链**，
+    不是稳定的「带 gcc 机器」；后续在别处复现仍需在真正的 gcc 机器上重跑，
+    `verify.sh` 的「无编译器则 SKIP」兜底逻辑保留不动。(2) **CI 自动门禁仍未恢复**：
+    Gitea runner 注册数仍为 0、GitHub 出站仍不通、113 run 全 cancelled，
+    「没有任何一次 PR/push 被服务端自动验证过」至今有效；这次仍是**本地手动全绿**，
+    不代表 CI 已验证。真正恢复自动 CI 仍属长期项（档 3 触发条件不变）。
+  - 本轮**零 `.go` 渲染代码、零 workflow、零 `golden.sha256` 改动**；`internal/vector`
+    下仅新增一个 `_test.go`，其余为 4 个 `.md` 的状态收口。
 - **PR #32 合并后 CI 现状收口 + `-race` 硬要求破例记录（纯文档，零渲染改动，
   2026-11-15）**：本节下方两轮（CI 止血 / 回归保护）的 commit 与文档写于
   「113 run / 0 success / 7 queued（#107–#113）、runners=0、commit 未 push /
@@ -24,6 +74,9 @@
     本机 `CGO_ENABLED=0`、无 gcc/clang。理由：PR #32 为纯文档 / CI 配置 / 测试、
     **零渲染代码改动**、不触及并发路径；这不构成对该硬要求的豁免，后续凡触及渲染
     代码的合并仍须在带 gcc 机器补跑全套。`-race` 补跑仍是唯一未验项。
+    ⚠️ **状态更新（见本节首条）**：后续已用 `/tmp` 临时 gcc 在本机跑出不带
+    SKIPPED 的 `ALL GREEN`、`-race` 全包通过；本段「唯一未验项」是该轮当时快照，
+    按纪律保留原文，但**不再是当前状态**。CI 自动门禁仍未恢复。
 - **CI 止血 + 发版前 `-race` 硬要求（纯本地配置/文档，零渲染改动，2026-11-15）**：
   - 两份 CI workflow（`.gitea/workflows/ci.yml` 与 `.github/workflows/ci.yml`，
     逐字一致）的触发方式从 `push`（全分支 + `v*` tags）+ `pull_request` +
