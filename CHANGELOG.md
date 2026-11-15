@@ -3,6 +3,17 @@
 所有 notable 变更记录在此。提交信息沿用 Conventional Commits
 （`feat:` / `fix:` / `docs:` / `chore:` / `test:`）。
 
+## [Unreleased]
+
+- **v0.3.0 发布后文档状态收口（PR #30，纯文档、零渲染改动）**：`v0.3.0` tag
+  由 Gitea Release API 自建（tag → `baa0c7d`），发布后补 `CHANGELOG` 的
+  `[v0.3.0]` 转正与 PR #29 / #28 条目、`CAIROSVG_IOU.md` 修正 9 的「已被推翻」
+  注记与新增修正 11、`README` / `GOSVG_TODO` / `CORPUS_BASELINE` /
+  `OPEN_SOURCE_CHECKLIST` 的版本状态同步。`sh ./scripts/check_docs.sh`
+  DOCS CHECK PASSED，仅 `.md`、渲染代码与 `golden.sha256` 未动。
+  ⚠️ 本节是 tag 之后的提交记录，**不写「暂无未发布改动」**（该措辞在 tag 后
+  有提交时会被 `check_docs.sh` 拦截）。
+
 ## [v0.3.0] — 2026-11-15
 
 `v0.2.4..v0.3.0` 共 **14 个提交 / 7 个 PR（#23–#29）**，tag 由 Gitea Release API
