@@ -15,12 +15,20 @@ func fpt(x, y float64) fixed.Point26_6 {
 
 // parsePathData 解析 SVG path 的 `d` 属性为 rasterx.Path。
 // 支持全部指令：M/L/H/V/C/S/Q/T/A/Z（含相对小写形式）。
+//
+// lastCmd 仅用于「数字复用上一指令」（顶部 i-- 分支），表示当前正在执行的
+// 指令；prevCmd 记录「上一段已执行的指令」，专供 S/T 的第一控制点反射判断。
+// 两者不能混用：若拿 lastCmd 判断反射，M 后紧跟的 s/S 会把「当前指令 = s」
+// 误当成「上一段是 S」，于是用初值 (0,0) 的 lcx/lcy 做镜像，把曲线甩歪。
+// SVG 1.1 §8.3.7：只有上一段确为 C/c/S/s（T 为 Q/q/T/t）才反射，否则
+// 第一控制点与当前点重合。
 func parsePathData(d string) rasterx.Path {
 	var p rasterx.Path
 	var cx, cy float64   // 当前点
 	var sx, sy float64   // 子路径起点
 	var lcx, lcy float64 // 上一个控制点（S/T 反射用）
-	var lastCmd byte
+	var lastCmd byte     // 当前指令（数字复用用）
+	var prevCmd byte     // 上一段指令（S/T 反射判断用）
 
 	fields := tokenizePath(d)
 	i := 0
@@ -112,7 +120,8 @@ func parsePathData(d string) rasterx.Path {
 			cx, cy = nx, ny
 		case 'S':
 			x1, y1 := cx, cy
-			if lastCmd == 'C' || lastCmd == 'c' || lastCmd == 'S' || lastCmd == 's' {
+			// 仅当上一段确为 C/c/S/s 时反射上一控制点；否则第一控制点 = 当前点。
+			if prevCmd == 'C' || prevCmd == 'c' || prevCmd == 'S' || prevCmd == 's' {
 				x1, y1 = 2*cx-lcx, 2*cy-lcy
 			}
 			x2, y2 := off(args[0], args[1])
@@ -128,7 +137,8 @@ func parsePathData(d string) rasterx.Path {
 			cx, cy = nx, ny
 		case 'T':
 			x1, y1 := cx, cy
-			if lastCmd == 'Q' || lastCmd == 'q' || lastCmd == 'T' || lastCmd == 't' {
+			// 仅当上一段确为 Q/q/T/t 时反射；否则第一控制点 = 当前点。
+			if prevCmd == 'Q' || prevCmd == 'q' || prevCmd == 'T' || prevCmd == 't' {
 				x1, y1 = 2*cx-lcx, 2*cy-lcy
 			}
 			nx, ny := off(args[0], args[1])
@@ -148,8 +158,8 @@ func parsePathData(d string) rasterx.Path {
 			cx, cy = sx, sy
 		}
 
-		// 记录本指令（反射判断用）
-		lastCmd = cmd
+		// 记录本段指令，供下一段的 S/T 反射判断（数字复用的隐式段也会刷新）。
+		prevCmd = cmd
 	}
 
 	return p
