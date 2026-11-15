@@ -197,6 +197,11 @@ func (ctx *renderContext) renderNodeBare(n *node, opacity float64) error {
 		nodeOpacity *= o
 	}
 	ctx.style = mergeStyle(ctx.style, n)
+	// 无效 fill / stroke 声明被 mergeStyle 按 CSS 语义忽略、回退继承值：
+	// 渲染决策不变，但「颜色被悄悄吞掉」此前零诊断，-strict 用户无从得知。
+	// 这里只在确实参与样式继承的节点上补一条只读诊断（定义节点不绘制、
+	// 也不把样式传给外部，跳过以免误报）。诊断按文本去重，不会刷屏。
+	reportInvalidPaints(ctx, n)
 
 	switch n.name {
 	case "svg", "g":
@@ -411,6 +416,35 @@ func mergeStyle(base shapeStyle, n *node) shapeStyle {
 		s.color = v
 	}
 	return s
+}
+
+// paintDefinitionElements 是不绘制、也不把表现样式传给外部子树的纯定义容器。
+// 它们上面的 fill / stroke 声明对渲染无影响，不应因值无效而产生诊断。
+var paintDefinitionElements = map[string]bool{
+	"defs": true, "mask": true, "clippath": true,
+	"lineargradient": true, "radialgradient": true,
+	"marker": true, "pattern": true, "style": true,
+	"stop": true, "title": true, "desc": true, "metadata": true,
+	"namedview": true,
+}
+
+// reportInvalidPaints 对节点最终生效的 fill / stroke 声明做只读校验：
+// mergeStyle 已经把无效声明按 CSS 语义忽略并回退继承值，但此前这一「静默
+// 改写」没有任何诊断。这里只记录事实，不改变任何渲染决策，像素输出零变化。
+//
+// 检查放在 renderNodeBare（而非 renderShape）是因为容器 <svg>/<g> 上的无效
+// 声明会经 ctx.style 影响整棵子树的继承值；而纯定义节点被排除，避免误报。
+func reportInvalidPaints(ctx *renderContext, n *node) {
+	if paintDefinitionElements[n.name] {
+		return
+	}
+	for _, key := range [2]string{"fill", "stroke"} {
+		v, ok := n.attrs[key]
+		if !ok || isValidPaint(v) {
+			continue
+		}
+		ctx.doc.addDiagnostic("invalid " + key + " value ignored: " + strings.TrimSpace(v))
+	}
 }
 
 // fill 用指定颜色填充路径。
