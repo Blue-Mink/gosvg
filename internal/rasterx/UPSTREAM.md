@@ -3,6 +3,13 @@
 - **上游**：[srwiley/rasterx](https://github.com/srwiley/rasterx)
 - **许可证**：MIT，© 2018 the rasterx Authors（见同目录 `LICENSE`）
 - **引入**：2026-11-07，随 gosvg 初始骨架 fork 进 `internal/`
+- **上游锚点（2026-11-15 补记，诚实口径）**：上游仓库**无任何 tag / release**，
+  GitHub API 查到的最新 commit 为 `2ab79fcdd4ef8b552e5b4e4b43d24f74fc87aa61`
+  （2022-07-30，即上游自 2022 起未再改动）。本仓**无法证明** 2026-11-07 引入时
+  对应的是哪个具体 commit（当时未记录、上游也无版本可 pin），故此处只登记
+  「上游已冻结 + 可核对的 HEAD」，**不伪造引入点 hash**。若日后要严格溯源，
+  需拿本 fork 文件与 `2ab79fc` 逐文件硬比对才能确认是否一致——该比对尚未做，
+  属待办（对比 `internal/vector` 已完成的 `v0.47.0` 逐文件比对）。
 - **用途**：fill 扫描器（`Filler` / `ScannerGV`）、`Gradient`、`Dasher`、`Matrix2D`、
   `ApplyOpacity` 等几何工具。**gosvg 的 stroke 不走本包的 Stroker 路径**（改用自研胶囊体并集，见根目录
   `stroke.go`）。但本包 `stroke.go` 定义的 `Stroker` / `CapFunc` / `GapFunc` /

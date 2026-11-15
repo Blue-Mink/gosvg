@@ -20,6 +20,13 @@ CI（`.gitea/workflows/ci.yml` 与 `.github/workflows/ci.yml` **内容保持一�
 改了任一 CI 文件请同步改另一个。注意 **Gitea Actions runner 数为 0**、GitHub 出站不通，
 CI 目前未在服务端真正执行，提交前请本地实跑 `verify.sh`。
 
+> 量化现状（2026-11-15 查 Gitea API `/actions/runs`）：累计 **113 次 run，
+> `conclusion=success` 0 次**（106 cancelled + 7 queued，queued 为 #107–#113，
+> 由 v0.3.0 发布相关 push/PR 触发），`actions/runners` 返回 `total_count=0`。
+> 即：**没有任何一次 PR / push 被自动验证过**。注册 act_runner 需动 `.15` 上的
+> 服务、且当前 GitHub 出站不通，须用户明确授权后才做；清理 queued run 同样会
+> 写 `.15` 的 Gitea，不在本地改动范围内。
+
 ## 提交风格
 
 Conventional Commits + 中文描述，沿用现有提交风格：`feat:` / `fix:` / `docs:` /

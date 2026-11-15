@@ -11,8 +11,56 @@
   注记与新增修正 11、`README` / `GOSVG_TODO` / `CORPUS_BASELINE` /
   `OPEN_SOURCE_CHECKLIST` 的版本状态同步。`sh ./scripts/check_docs.sh`
   DOCS CHECK PASSED，仅 `.md`、渲染代码与 `golden.sha256` 未动。
+- **P1/P2 本地收口（零渲染改动，2026-11-15）**：
+  - `internal/rasterx` 补 `rasterx_extra_test.go`（15 个 Test：ApplyOpacity、Gradient
+    3 种 stop 数 / 3 种 spread、Filler 方形/贝塞尔/Clear/GetPathExtent、Dasher
+    dash 数组/全零退化/dashOffset、ScannerGV clip），覆盖率 **3.9% → 34.8%**。
+    过程中查明两个构造陷阱（非实现缺陷）：`Gradient.Points` 全零 → t=NaN；
+    `Gradient.Matrix` 留零值 → gradT 退化；根包 `gradient.go:99` 构造时显式传
+    Matrix，运行期不受影响。
+  - `scripts/verify.sh`：此前无 gcc 的机器会因 `set -eu` 在 `-race` 行直接退出，
+    导致后面 arm64/wasm/6 个 fuzz/docs **全部不跑**。现改为仅在 `go env CC`
+    不可用时跳过 race 并继续跑完其余门禁，结尾如实输出
+    `ALL GREEN (race SKIPPED: no C compiler)`；**有 gcc 时行为完全不变**
+    （照跑、失败照 fail），不放宽任何检查。
+  - `scripts/check_docs.sh` 新增两条机械门禁：双 CI workflow 逐字一致、
+    `go.mod` 的 go 指令 = 两份 workflow 的 go-version（1.27.3 单一来源）；
+    关键文件清单补 `NOTICE`。
+  - 新增 `NOTICE`：统一登记 2 个 fork（MIT / BSD-3）+ 3 个 x/ 模块 + Go Regular
+    字体的归属与许可证路径。
+  - `internal/vector/UPSTREAM.md` 补**可核对的上游 pin**：`x/image@v0.47.0`
+    （2026-10-09 发布），并附逐文件硬比对表：acc_*.go/.s 逐字节一致，
+    `vector.go` 19 行、`raster_fixed.go` 27 行、`raster_floating.go` 30 行差异。
+    ⚠️ 更正上轮「gen.go 缺失 → 汇编不可再生」：上游同版本**带生成器且汇编一致**，
+    fork 只是未随附；当前无需再生。`internal/rasterx/UPSTREAM.md` 如实登记上游
+    无 tag、最新 commit `2ab79fc`（2022-07-30），**不伪造引入点 hash**。
+  - 一致性：`internal/vector/vector.go` 去掉 fork 后误导的 canonical import
+    comment；`UPSTREAM.md` 更正 `x/sys` 为「直接 require」（原写「间接来源」）。
+  - 锚点 `test=238→249`；`GOSVG_TODO.md` 覆盖率段同步（根包 87.1%、
+    internal/rasterx 34.8%）。
+  - **验证**：`sh ./scripts/verify.sh` 退出码 0、末行
+    `ALL GREEN (race SKIPPED: no C compiler; 其余门禁全部实跑通过)`，
+    `DOCS CHECK PASSED`、6 个 fuzz / arm64 / wasm / bench 全过、FAIL=0。
+    仍**未在带 gcc 的机器补跑 `-race`**，这是唯一未验项（非代码缺陷）。
+
   ⚠️ 本节是 tag 之后的提交记录，**不写「暂无未发布改动」**（该措辞在 tag 后
   有提交时会被 `check_docs.sh` 拦截）。
+
+- **text stroke 回归保护 + CI 现状如实化（本地改动，零渲染代码变更）**：
+  v0.3.0 / PR #29 新增的 `<text>` 描边能力此前**只在仓库外的 117 文件 cairosvg
+  IoU 子集里被间接验证**，仓库内无单测、7 个 `golden` 样例无一含 `text`+`stroke`。
+  新增 `text_stroke_test.go`（6 个 Test：无填充描边必出像素、描边/填充结果不同、
+  stroke-width 影响像素、fill+stroke 双向可见、显式不描边不绘制、重复渲染确定性）
+  与 `testdata/text_stroke.svg`（8 个 golden 样例，其余 7 个哈希一字未变）。
+  `GOSVG_TODO.md` 锚点 `test=232→238`、`golden=7→8` 同步。
+  同时按 Gitea API 实测把 CI 现状写进 `README` / `CONTRIBUTING`：
+  **113 次 run / 0 次 success / runners=0 / 7 个 queued（#107–#113）**，
+  明确「双 CI 配置同源」≠「自动验证已生效」，ALL GREEN 均指本地手动 `verify.sh`。
+  ⚠️ 按代码实测更正：`paint-order` 属性**未被解析**，实现是无条件「先描边、后填充」；
+  `GOSVG_TODO.md` 已改，此前把它列为「已支持」属表述不准。
+  ⚠️ 另记录既有边界（非本轮引入、未改）：`text.go:30` 的
+  `parseLengthOr(font-size, 12)` 会把 `font-size="0"` 当缺失回退到默认 12，
+  故零字号仍会绘制；改它需重跑全量 IoU，属单独议题。
 
 ## [v0.3.0] — 2026-11-15
 

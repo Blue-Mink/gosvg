@@ -145,10 +145,33 @@ fi
 echo "== docs: 关键文件存在 =="
 for f in CHANGELOG.md CAIROSVG_IOU.md GOSVG_TODO.md GOSVG_GAP_TODO.md \
          CORPUS_BASELINE.md BENCHMARK.md CONTRIBUTING.md SECURITY.md \
-         OPEN_SOURCE_CHECKLIST.md README.md scripts/verify.sh scripts/check_docs.sh \
-         scripts/audit_docs.py; do
+         OPEN_SOURCE_CHECKLIST.md README.md NOTICE scripts/verify.sh \
+         scripts/check_docs.sh scripts/audit_docs.py; do
   [ -f "$f" ] || bad "缺少 $f"
 done
+
+echo "== docs: 双 CI workflow 逐字一致 =="
+if cmp -s .gitea/workflows/ci.yml .github/workflows/ci.yml; then
+  ok "两份 workflow 内容一致"
+else
+  bad "两份 workflow 已漂移（改一处须同步改另一处）"
+fi
+
+echo "== docs: Go 版本单一来源 =="
+GO_MOD_VER=$(awk '$1=="go" {print $2; exit}' go.mod)
+VER_BAD=0
+for wf in .gitea/workflows/ci.yml .github/workflows/ci.yml; do
+  WF_VER=$(grep -oE "go-version: *'?[0-9]+\.[0-9]+(\.[0-9]+)?'?" "$wf" \
+           | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1)
+  if [ "$WF_VER" != "$GO_MOD_VER" ]; then
+    echo "    $wf: go-version=$WF_VER ≠ go.mod go $GO_MOD_VER"
+    VER_BAD=1
+  fi
+done
+[ "$VER_BAD" -eq 0 ] \
+  && ok "两份 workflow 的 go-version 与 go.mod 一致（$GO_MOD_VER）" \
+  || bad "Go 版本声明漂移（go.mod 是单一来源，勿在多处硬编码不同值）"
+
 [ "$FAIL" -eq 0 ] && ok "关键文件齐全"
 
 if [ "$FAIL" -ne 0 ]; then
