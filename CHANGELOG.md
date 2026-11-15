@@ -5,6 +5,28 @@
 
 ## [Unreleased]
 
+- **`cmd/render` CLI 增强（纯 CLI 编排，零渲染代码改动，2026-11-15）**：
+  本节下方各条写「`cmd/render` 88.5%」「锚点 `test=261→268`」均为**各自提交当时
+  的快照**，按纪律保留原文；**当前状态以本条为准**：
+  - 补齐文档连续多轮挂着的「`cmd/render` 增强（格式/宽高/stdin-stdout/批量/--strict）」
+    中**单文件可控**的部分：`-W/-H` 独立宽高、`-format png|jpeg`（含按输出扩展名
+    自动推断）、`-quality`、`-bg #RGB|#RRGGBB`、`-strict`（渲染期出现静默跳过事件
+    则退出 3 并打印诊断）、stdin→stdout（`-` 输入 / 省略输出）。**批量渲染未做**：
+    `cmd/corpus` 已覆盖该场景，单文件 CLI 不重复造轮子。
+  - 保留旧用法 `gosvg-render in.svg out.png [size]`；显式 `-size/-W/-H` 与位置参数
+    size 同时出现时报错退出 2（避免两种口径静默互相覆盖）。
+  - 渲染链路改为显式 `Parse` + `doc.RenderWithOptions(nil, w, h, opts)` +
+    `EncodeImage`，与库侧 `RenderTo(data, w, h)` **逐字等价**（opts 为零值时
+    `DefaultRenderOptions` 语义相同），仅额外读取只读的 `LastRenderDiagnostics()`。
+    先编码到内存再落盘，编码失败不留下半截输出文件。**零 `.go` 渲染代码改动、
+    零 `golden.sha256` 改动**。
+  - `cliMain` 改为注入 `stdin/stdout/stderr`（测试无需碰全局 `os.Stdout`）；新增
+    6 个顶层 Test + 子用例，`cmd/render` 覆盖率 **88.5 → 93.5%**。锚点
+    `test=268→274`、`GOSVG_TODO.md` 覆盖率段同步。
+  - **明确未做**：批量渲染（归 `cmd/corpus`）、850 语料入仓、rasterx 与 `2ab79fc`
+    逐文件比对、arm64 真机、CI runner 注册（**写 `.15`，须用户明确授权**）、
+    Gitea SQLite 根治（需重启，会中断）、推远端 / 开 PR / 合并（对外动作，
+    须用户点头；本条改动仅本地提交在特性分支 `feat/render-cli-enhance`）。
 - **`cmd/*` 低覆盖补测 + CLI 编排可测化（纯测试/CLI 编排，零渲染改动，2026-11-15）**：
   本节下方所有写「`cmd/*` 低覆盖补测仍未做」的条目均为**各自提交当时的快照**，
   按纪律保留原文；**当前状态以本条为准**：
