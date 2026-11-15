@@ -300,6 +300,8 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   哈希逐字未变（证明零渲染改动）。锚点 `test=232→238` / `golden=7→8` 同步。
 - **P0 · CI 现状如实化**：查 Gitea API 得 **113 run / 0 success / 106 cancelled /
   7 queued（#107–#113，均为 v0.3.0 发布相关 push/PR）/ runners=0**。
+  ⚠️ 以上为该轮取证快照，按纪律保留原文；事后 7 个 queued 已取消
+  （113 全 cancelled / queued=0），当前状态见本文件末轮「CI 止血 + 发布清单」。
   `CONTRIBUTING.md` 原本已有「runner 数为 0、未在服务端真正执行」一句，本轮不改其
   结论、只补量化证据；`README.md` 开发段新增 IMPORTANT 块，明确「双 CI 配置同源」
   ≠「自动验证已生效」，ALL GREEN / IoU 数字均来自本地手动 `verify.sh`。
@@ -317,6 +319,10 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   `internal/rasterx` 的 `Filler`/`Gradient`/`Dasher` 补测（当前覆盖 3.9%）、
   fork 上游 commit pin、汇编生成器找回 / 汇编冻结声明、NOTICE / dependabot。
   这些不因「按最优建议来」自动推进——本轮只交付本地可验证的两件 P0。
+  ⚠️ **状态更新（后续轮次）**：这是该轮当时快照，按纪律保留原文；此后
+  `internal/rasterx` 补测已落地（3.9% → 34.8%）、NOTICE 已新增、上游 pin 已补、
+  7 个 queued run 已逐个取消。「注册 act_runner」「850 语料入仓」「arm64 真机」
+  等至今仍未做。
 - **本轮验证记录（诚实口径，勿写成 ALL GREEN）**：用 goproxy.cn 下载的
   Go 1.27.3 临时工具链（仅 `/tmp`、未装系统包、未动 `.15`）逐项实跑：
   `go mod verify` / `tidy -diff` / `gofmt -l` / `go vet` / `go test ./...`
@@ -355,13 +361,17 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   850 语料入仓、arm64 真机、CI runner 注册 / 7 queued run 清理（**写 `.15`，
   须用户明确授权**）、Gitea SQLite 根治（需重启，会中断）、提交/推 PR
   （对外动作，须用户点头）。本轮所有改动均为**本地、零渲染代码变更**。
+  ⚠️ **状态更新（PR #32 合并后）**：这是该轮当时的快照；7 个 queued run 事后已
+  逐个取消（非删历史，113 全 cancelled / queued=0）、提交与 PR 已完成并合并。
+  「带 gcc 机器补跑 `-race`」「CI runner 注册」等**至今仍未做**，继续按档 3 条件。
 
 ## 本轮（CI 止血 + 发布清单，2026-11-15，接上轮「最优方案」第 1+2 步）
 
 - **第 1 步 · 止血**：两份 workflow 的 `on:` 从
   `push`（全分支 + `v*` tags）+ `pull_request` + `workflow_dispatch`
   **收窄为仅 `workflow_dispatch`**。此前 #107–#113 这 7 个 queued 正是
-  自动触发在 runner=0 下堆出来的；收窄后不再新增僵尸 run。文件头注释写清
+  自动触发在 runner=0 下堆出来的（该轮取证原文；事后已逐个取消，见下方
+  「状态更新（PR #32 合并后）」）；收窄后不再新增僵尸 run。文件头注释写清
   「恢复自动触发」的两个前提（runners>0 且 GitHub action 可拉取）与步骤，
   `check_docs.sh` 的逐字一致门禁保证 `.gitea` / `.github` 两边同步。
   ⚠️ 注意：原先**已有** `workflow_dispatch`，本轮是「去掉 push/PR」而非新增。
@@ -371,7 +381,12 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   写成硬要求（此前只散落在文档角落）。`README` IMPORTANT 块同步。
 - **取证不变**：113 run / 0 success / 7 queued / runners=0、Gitea 28.3.0、
   runner 注册 token 端点 GET 404、GitHub 出站不通。
+  ⚠️ 该组数字为当时取证快照；事后 queued 已清零（113 全 cancelled），
+  runners=0 / 出站不通 / GET 404 三项结论至今有效。
 - **明确未做**：7 个已存在的 queued run **未清理**（写 `.15`，须单独授权）；
   runner 未注册；`cb87d52` 与本轮 commit **未 push / 未开 PR**。
+  ⚠️ **状态更新（PR #32 合并后）**：以上为该轮取证快照，按纪律保留原文；
+  7 个 queued run 事后已逐个取消（113 全 cancelled、queued=0），两个 commit
+  已推并经 PR #32 合并进 main。runner 仍未注册（此项至今有效）。
 - **结论口径**：这不叫「修好 CI」，叫「停止让 CI 假装会跑」。真正恢复自动
   CI 仍是长期项，触发条件不变（见档 3）。
