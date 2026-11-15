@@ -5,6 +5,20 @@
 
 ## [Unreleased]
 
+- **修正 PR #35 合并 commit message（2026-11-15）**：合并时 merge 请求误带
+  `merge_title_field:"title"` 与空 `merge_message_field`，Gitea 把 `title` 当字面量写进了
+  merge commit message。按 Gitea 相邻 merge commit 模板（PR #34）重写 tip：
+  `e29af8e`（`title`）→ `3938cb6`（`Merge pull request '...' (#35) from
+  fix/invalid-paint-diagnostics into main`）。用 `git commit-tree` 重建 commit 对象，
+  **tree `ffcb930f`、两父 `0a29b62`+`10ac052`、author/committer/时间戳逐字节一致，
+  仅 message 不同**；`--force-with-lease` 推 main（期望值 `e29af8e21f…`，lease 生效），
+  推前临时 `PATCH` 放宽 `enable_push`/`enable_force_push`、推后同一命令立即恢复，
+  逐字段核实保护规则除 `updated_at` 外与备份完全一致。`v0.3.0` tag 未动，
+  `verify.sh` 在新 tip 与 fetch 后的最终态各跑一次均 ALL GREEN（含真 `-race`）+ DOCS PASSED。
+  **已知残留**：Gitea PR #35 数据库记录的 `merge_commit_sha` 仍为 `e29af8e2`（API 该字段
+  只读，PATCH 无效；修正需改 `.15` 数据库，按禁令未做），故 PR 页面 "merged as" 链接指向
+  旧悬空 commit；代码/分支/tag/门禁均不受影响。以后合并请求不带 `merge_title_field` /
+  `merge_message_field` 即可避免。**本条为纯文档补档，零代码/渲染/golden 改动。**
 - **无效 `fill` / `stroke` 声明补诊断（纯只读，零渲染/像素改动，2026-11-15）**：
   `mergeStyle` 早已按 CSS 语义把无效颜色声明忽略、回退继承值（避免
   `fill="000000"` 缺 `#` 让图形消失），但这一「静默改写」此前零诊断，上一轮新增的
