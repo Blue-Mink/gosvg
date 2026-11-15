@@ -3,7 +3,27 @@
 所有 notable 变更记录在此。提交信息沿用 Conventional Commits
 （`feat:` / `fix:` / `docs:` / `chore:` / `test:`）。
 
-## [Unreleased]
+## [v0.3.0] — 2026-11-15
+
+`v0.2.4..v0.3.0` 共 **14 个提交 / 7 个 PR（#23–#29）**，tag 由 Gitea Release API
+自建，tag `v0.3.0` → `baa0c7d`（**发布当时** = main；此后 main 以
+`git rev-parse HEAD` 为准）。相对 v0.2.4 的纯行为收紧，本版是**功能性升级**：
+新增 `<text>` 描边渲染能力，并补全 even-odd 等价转换覆盖。
+
+- **P0 `<text>` stroke 渲染补齐（PR #29；渲染行为新增）**：此前 gosvg 完全缺失
+  text 的 `stroke` / `paint-order: stroke` 渲染——`stroke` 只作用于图形元素，text 的
+  stroke 被解析但不参与绘制，`fill:none` 时整块文字不画（此前实测影响面为 D 批
+  Wacom / Huion / XP-Pen 等 48 个 text 文件）。方案：`sfnt.Segments` 取字形轮廓 →
+  `appendGlyphSegments` 逐字形拼 `rasterx.Path`（含基线偏移与 per-run 累进光标）→
+  `ctx.strokeTextSpan` 在填充前调用（`paint-order: stroke` 时先描边后填充）；
+  `strokeDevicePath` 的 `halfWidth` 改传设备空间值（`strokeWidth × scale / 2`）。
+  同 PR 附带 P1 `D__logo` evenodd 填充差异修复、P2 注释 / 文档清理，
+  `golden.sha256` 重生成。`sh ./scripts/verify.sh` ALL GREEN。
+  全量对账（PR #29 合并后的 main 重算，全量 850 语料 / `alpha > 0` / 256×256）：
+  平均 alpha IoU **`0.960035`**，`IoU<0.5` 仅剩 **2** 个 filter 文件（已声明子集
+  边界、定案不修）；text-stroke 子集（117 文件）平均 **`0.963326`**、`IoU<0.5 = 0`。
+  ⚠️ 该数字与下方 `[v0.2.4]` 的 `0.963860`（**848 个可对比样本**口径）**分母不同，
+  不可直接横比**；详见 `CAIROSVG_IOU.md` 修正 11。
 
 - **文档状态收口（PR #23，纯文档、零渲染改动）**：v0.2.4 发布后 6 个 `.md` 的版本
   状态收口；`v0.2.4` tag 未移动。
@@ -40,6 +60,10 @@
   样例数」，`audit_docs.py` 新增 F 段把扫描范围扩到 `.go` / `.sh` / `.py` 注释；
   `CONTRIBUTING.md` / `GOSVG_TODO.md` 同步门禁覆盖范围。`golden.sha256`、
   渲染代码、全量 IoU 基线一律未动。
+- **`[Unreleased]` PR 编号补齐（PR #28，纯文档、零渲染改动）**：给上列四条补上
+  PR 编号、清除「本次」这类一合并即过期的相对措辞；PR #27 为 PR #26 同一改动的
+  口径订正。合并时曾记「收手，不再开新一轮体检」，其后 P0 text stroke（PR #29）
+  经全量验证后落地，故该收手声明已由后续工作取代。
 
 ## [v0.2.4] — 2026-11-11
 
