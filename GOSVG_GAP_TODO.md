@@ -143,7 +143,9 @@
 - **性能优化按 pprof 实测结论主动收窄**：CSS 选择器索引、解析缓存、离屏位图池化
   经数据判定为无收益或与基线无关，**明确不做**，理由写在 `BENCHMARK.md`。
 - 仍未做（需要外部条件或点名）：fnOS FPK 集成、Lucide / circle-flags 真实语料对账、
-  CI runner 安装、`cmd/verify` 与 `examples/*` 覆盖率、`internal/rasterx` 覆盖率。
+  CI runner 安装、`cmd/verify` 与 `examples/*` 覆盖率、`internal/rasterx` 覆盖率
+  （**当时快照**；`internal/rasterx` 覆盖率已于 2026-11-15 本轮补测落地 34.8% → 64.3%，
+  见文末「rasterx 几何 / 形状补测」小节）。
 
 ## 本轮（分支 `feat/limits-and-coverage`）
 
@@ -550,3 +552,30 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   入仓涉及体积+版权须用户拍板）、未动 `internal/rasterx` 覆盖率、未碰 `.15`、
   未推远端 / 未开 PR / 未合并（对外动作须用户点头）。本轮仅本地提交在特性分支
   `fix/paint-reference-diagnostics`。
+
+## 本轮（rasterx 几何 / 形状补测，2026-11-15，接 PR #37 之后）
+
+纯 `_test.go` 补测，**零实现改动 / 零 golden / 零像素改动**，把
+`internal/rasterx` 覆盖率从 **34.8%（实测 35.2%）→ 64.3%**，清掉档 1 里
+「`internal/rasterx` 覆盖率」这条长期待办（仍非 100%，剩余未覆盖集中在
+`Stroker` 的复杂 join/curvature 内部循环，属 fork 上游逻辑，不改实现）。
+
+- 新增 `internal/rasterx/geomx_extra_test.go` **12 个顶层 Test**：
+  向量工具（`Invert` / `turnStarboard90` / `turnPort90` / `DotProd` 双线性 /
+  `Length`）、`Path` 全套（构建 / `ToSVGPath` / `String` / `Clear` / `Stop` /
+  `AddTo` 回放与 `Stop(false)` 调用序列）、`ToLength`、`ClosestPortside`、
+  `RadCurvature` 共线为 0、`CircleCircleIntersection` 相交与相离 / 内含、
+  `CalcIntersect`、`RayCircleIntersectionF` 与 fixed 包装层。
+- 新增 `internal/rasterx/shapes_extra_test.go` **15 个顶层 Test**：
+  `ToFixedP`、`AddCircle` / `AddEllipse` / `AddRect`（含旋转）/ `AddRoundRect`
+  （退化与倒角）、椭圆参数化 `ellipsePrime` / `ellipsePointAt`、
+  `FindEllipseCenter` 对称性、`AddArc` 末点、`MatrixAdder` 变换与 `Reset`、
+  `NewStroker` 默认值、`GapToCap` 与 5 种 cap、`Dasher` 曲线方法不 panic。
+- 断言一律用数学恒等式 / 结构性质 / 明确边界，不写死像素或浮点尾数。
+  实测坐实两处「注释直觉 ≠ 实现」：`RayCircleIntersectionF` 的有效方向与
+  函数注释的直觉相反（按真实行为断言、不改实现）；`FindEllipseCenter`
+  在 r=5、半弦长=3 时圆心是 (0,±4) 而非原点（弦垂直平分线 + 半径约束）。
+- 锚点 `test=289→316`；`verify.sh` ALL GREEN（含真 `-race` 无 SKIPPED）。
+- **明确未做（不因本轮自动推进）**：850 语料入仓 / 重跑（语料与参照 PNG 不在
+  仓内，入仓涉及体积 + 版权须用户拍板，本机亦无 `cairosvg`）、CI runner 安装
+  （写 `.15` 须单独授权）、`examples/*` 覆盖、fnOS FPK 集成。
