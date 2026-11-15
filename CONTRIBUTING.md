@@ -33,6 +33,12 @@ GOARCH=arm64 GOOS=linux go build ./...
 > 该 PR 为纯文档 / CI 配置 / 测试、零渲染代码改动、不触及并发路径，故按
 > `CHANGELOG.md` `[Unreleased]` 首条如实记账；**规则不放宽**：后续凡触及渲染代码的
 > 合并仍须先在带 gcc 机器跑出不带 SKIPPED 的 `ALL GREEN`。此处是记录例外，不是豁免条款。
+>
+> ✅ **状态更新（2026-11-15，见 `CHANGELOG.md` `[Unreleased]` 首条）**：硬要求现已
+> 首次被真正满足——本机用仅解包到 `/tmp` 的 gcc 14.2.0 工具链（`CC` 指向 wrapper）
+> 跑 `sh ./scripts/verify.sh` 得 `rc=0` / `ALL GREEN`（无 SKIPPED）/ `-race` 全 7 包通过。
+> 该 gcc 是一次性本地工具链、非稳定环境，上面的硬要求与其「无编译器则 SKIP」兜底
+> **照旧有效**；CI runner 仍为 0，自动门禁未恢复。
 
 CI（`.gitea/workflows/ci.yml` 与 `.github/workflows/ci.yml` **内容保持一致**）只调
 `sh ./scripts/verify.sh`，与本地同源。改了任一 CI 文件请同步改另一个（
