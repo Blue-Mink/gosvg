@@ -482,3 +482,33 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   arm64 真机 / CI runner 注册（写 `.15`，须授权）/ Gitea SQLite 根治（需重启，会中断）/
   推远端 / 开 PR / 合并（对外动作，须用户点头）。本轮仅本地提交在特性分支
   `fix/invalid-paint-diagnostics`。
+
+## 本轮（修正 PR #35 合并 commit message + 补档，2026-11-15）
+
+> 注：紧邻上一段末尾「推远端 / 开 PR / 合并（对外动作，须用户点头）」是**当时**的真实
+> 状态，本段记录其后经用户逐次点头完成的动作，旧文字按「历史快照就近护注」纪律保留不改。
+
+- **合并收口**：`fix/invalid-paint-diagnostics@10ac052`（含 `f4e748a` CLI 增强 +
+  `10ac052` 诊断补漏两个 commit）经一次性 askpass 推远端、开 **PR #35**、
+  `Do=merge` 合入 main。合并态 `e29af8e`，父 `0a29b62` + `10ac052`，
+  merge 态 tree 与特性分支逐 blob 一致；合并态 `verify.sh` ALL GREEN 含真 `-race`、
+  `check_docs.sh` PASSED（tag 后 15 提交、`[Unreleased]` 195 行、`test=281`）。
+- **瑕疵**：merge 请求误带 `merge_title_field:"title"` 与空 `merge_message_field`，
+  Gitea 把 `title` 当字面量写进 merge commit message（`git cat-file -p` 确认）。
+- **修正（重写 tip，非改代码）**：`git commit-tree` 重建 commit 对象 → `3938cb6`，
+  message 按 PR #34 模板写全；**tree `ffcb930f`、两父 `0a29b62`+`10ac052`、
+  author/committer/时间戳逐字节一致，仅 message 不同**。改 message 必然换 hash，
+  故 `--force-with-lease=refs/heads/main:e29af8e21f…` 推 main（lease 生效）。
+  推前 `PATCH /branch_protections/main` 仅放宽 `enable_push`/`enable_force_push`
+  两个布尔（GET 复核其余字段未动），推后**同一条命令立即恢复**，逐字段核实与备份
+  除 `updated_at` 外完全一致。`v0.3.0` tag（`baa0c7d`）未动，open PR = 0，
+  askpass 已删、`.git/config` 无凭据残留。
+- **验证**：新 tip 与 `git fetch` 后的最终态各跑一次 `verify.sh`，均
+  **ALL GREEN 含真 `-race` 无 SKIPPED + DOCS PASSED**；本地 = 远端 = `3938cb6`，干净。
+- **已知残留（明确未修）**：Gitea PR #35 数据库 `merge_commit_sha` 仍为 `e29af8e2`
+  （API 该字段只读，空 PATCH 与带字段 PATCH 均核实零副作用、值不变）；修正需改
+  `.15` Gitea 数据库 / 重启，按用户禁令未做。仅影响 PR 页面 "merged as" 链接指向旧
+  悬空 commit，代码/分支/tag/门禁均不受影响。以后合并请求不带
+  `merge_title_field`/`merge_message_field` 即可避免。
+- **本条补档本身**：纯文档（CHANGELOG `[Unreleased]` + 本段），常规 commit
+  fast-forward 推 main，不需 force、不动保护规则、零代码/渲染/golden 改动。
