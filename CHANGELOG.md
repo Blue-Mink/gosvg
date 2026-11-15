@@ -5,6 +5,23 @@
 
 ## [Unreleased]
 
+- **CI 止血 + 发版前 `-race` 硬要求（纯本地配置/文档，零渲染改动，2026-11-15）**：
+  - 两份 CI workflow（`.gitea/workflows/ci.yml` 与 `.github/workflows/ci.yml`，
+    逐字一致）的触发方式从 `push`（全分支 + `v*` tags）+ `pull_request` +
+    `workflow_dispatch` **收窄为仅 `workflow_dispatch` 手动触发**。
+    原因：Gitea Actions runner 注册数 0、GitHub 出站不通，自动触发只会在每次
+    push/PR 持续堆积永不执行的 queued run（实测 113 run / 0 success /
+    7 queued，#107–#113 即 v0.3.0 发布相关触发）。配置保留作恢复自动 CI 的
+    同源模板，恢复前提与步骤写进 workflow 文件头注释。⚠️ 原先已有
+    `workflow_dispatch`，本轮是**去掉 push/PR**，不是新增。
+  - `CONTRIBUTING.md`「提交前必跑」补明 `go test -race` 需 CGO + gcc，并把
+    **发版 / 合并 main 前须在带 gcc 的机器完整跑 `verify.sh`、确认末行是不带
+    SKIPPED 的 `ALL GREEN`、且在发布说明/PR 记录执行机器与结果**写成硬要求；
+    `README` IMPORTANT 块同步。此前 `-race` 是唯一未由自动门禁覆盖的验证项。
+  - `GOSVG_GAP_TODO.md` 记本轮；结论口径：**「停止让 CI 假装会跑」≠「修好 CI」**，
+    真正恢复自动 CI 仍属长期项（档 3 触发条件不变）。
+  - **未做**：已存在的 7 个 queued run 未清理（写 `.15`，须单独授权）、
+    runner 未注册、commit 未 push / 未开 PR。
 - **v0.3.0 发布后文档状态收口（PR #30，纯文档、零渲染改动）**：`v0.3.0` tag
   由 Gitea Release API 自建（tag → `baa0c7d`），发布后补 `CHANGELOG` 的
   `[v0.3.0]` 转正与 PR #29 / #28 条目、`CAIROSVG_IOU.md` 修正 9 的「已被推翻」

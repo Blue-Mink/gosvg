@@ -355,3 +355,23 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   850 语料入仓、arm64 真机、CI runner 注册 / 7 queued run 清理（**写 `.15`，
   须用户明确授权**）、Gitea SQLite 根治（需重启，会中断）、提交/推 PR
   （对外动作，须用户点头）。本轮所有改动均为**本地、零渲染代码变更**。
+
+## 本轮（CI 止血 + 发布清单，2026-11-15，接上轮「最优方案」第 1+2 步）
+
+- **第 1 步 · 止血**：两份 workflow 的 `on:` 从
+  `push`（全分支 + `v*` tags）+ `pull_request` + `workflow_dispatch`
+  **收窄为仅 `workflow_dispatch`**。此前 #107–#113 这 7 个 queued 正是
+  自动触发在 runner=0 下堆出来的；收窄后不再新增僵尸 run。文件头注释写清
+  「恢复自动触发」的两个前提（runners>0 且 GitHub action 可拉取）与步骤，
+  `check_docs.sh` 的逐字一致门禁保证 `.gitea` / `.github` 两边同步。
+  ⚠️ 注意：原先**已有** `workflow_dispatch`，本轮是「去掉 push/PR」而非新增。
+- **第 2 步 · 发布清单正式化**：`CONTRIBUTING.md` 的「提交前必跑」补上
+  「`-race` 需 gcc」的说明，并把**发版 / 合并 main 前必须在带 gcc 机器上
+  跑到不带 SKIPPED 的 `ALL GREEN`、并在发布说明/PR 记执行机器与结果**
+  写成硬要求（此前只散落在文档角落）。`README` IMPORTANT 块同步。
+- **取证不变**：113 run / 0 success / 7 queued / runners=0、Gitea 28.3.0、
+  runner 注册 token 端点 GET 404、GitHub 出站不通。
+- **明确未做**：7 个已存在的 queued run **未清理**（写 `.15`，须单独授权）；
+  runner 未注册；`cb87d52` 与本轮 commit **未 push / 未开 PR**。
+- **结论口径**：这不叫「修好 CI」，叫「停止让 CI 假装会跑」。真正恢复自动
+  CI 仍是长期项，触发条件不变（见档 3）。
