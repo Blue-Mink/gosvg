@@ -453,3 +453,32 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   比对、arm64 真机、CI runner 注册 / 7 queued run 清理（**写 `.15`，须用户明确
   授权**）、Gitea SQLite 根治（需重启，会中断）、提交 / 推 PR（对外动作，须用户
   点头）。本轮所有改动均为**本地、零渲染代码变更**。
+
+## 本轮（无效 paint 声明补诊断，2026-11-15，接 `feat/render-cli-enhance`）
+
+承接上一轮 CLI 增强里的 `-strict`：若诊断通道本身漏报跳过事件，`-strict` 就是假安全网。
+只读盘点全部 19 处 `addDiagnostic` 调用点后，确认主路径（display/visibility 为有意行为、
+定义节点、mask/clip/gradient/image/marker/pattern 的能力缺失点）均已覆盖，**唯一真漏洞**
+在颜色声明这一层：
+
+- **漏洞**：`mergeStyle` 用 `isValidPaint` 把无效 `fill`/`stroke` 声明按 CSS 语义忽略并
+  回退继承值（渲染正确，见 `colorfallback_test.go`），但这一「静默改写」零诊断。实测
+  `fill="notacolor"` / `fill="000000"`（缺 `#`）/ `fill="rgb(999,0,0)"` 中前两者悄悄改画
+  黑色、`-strict` 无从得知。`url(#不存在)` 虽已有 `gradient reference not found` 诊断
+  （措辞偏 gradient，属误导但非「零诊断」），`resolvePattern` 静默返回 nil 也只在同一
+  路径上，均不属于本次要补的洞，未动。
+- **修复（纯只读、零渲染/像素改动）**：`renderNodeBare` 的 `mergeStyle` 之后加
+  `reportInvalidPaints(ctx, n)`，对 `n.attrs["fill"/"stroke"]` 的最终生效值校验
+  `isValidPaint`，为假则 `addDiagnostic`。放在 `renderNodeBare` 而非 `renderShape`，是为
+  覆盖容器 `<svg>/<g>` 上经 `ctx.style` 影响整棵子树的继承值；显式排除纯定义节点
+  （`defs`/`mask`/`clipPath`/gradient/`marker`/`pattern`/`stop`/元数据）以免误报。
+  CSS / 内联 `style` 最终都写回 `n.attrs`，一处覆盖全部来源。`renderShape` / `text.go`
+  分派链、`golden.sha256` 一行未动。
+- **验证**：新增 `invalid_paint_diag_test.go` 7 个顶层 Test（无效有诊断、合法零误报、
+  容器、内联 style、定义节点豁免、去重、像素逐字节不变）。`verify.sh` **ALL GREEN 含真
+  `-race`、无 SKIPPED**（`CC=/tmp/gcc_probe/pathbin/gcc`）；锚点 `test=274→281`。
+- **明确未做（不因本轮自动推进）**：未改 `CORPUS_BASELINE.md` 里 `gradient reference
+  not found` 历史快照措辞、未动 `resolvePattern`、未碰 850 语料 / rasterx 逐文件比对 /
+  arm64 真机 / CI runner 注册（写 `.15`，须授权）/ Gitea SQLite 根治（需重启，会中断）/
+  推远端 / 开 PR / 合并（对外动作，须用户点头）。本轮仅本地提交在特性分支
+  `fix/invalid-paint-diagnostics`。

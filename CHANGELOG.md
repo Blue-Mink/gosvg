@@ -5,6 +5,52 @@
 
 ## [Unreleased]
 
+- **无效 `fill` / `stroke` 声明补诊断（纯只读，零渲染/像素改动，2026-11-15）**：
+  `mergeStyle` 早已按 CSS 语义把无效颜色声明忽略、回退继承值（避免
+  `fill="000000"` 缺 `#` 让图形消失），但这一「静默改写」此前零诊断，上一轮新增的
+  `-strict` 因此存在漏网点：用户写了无效颜色、工具照画黑色却一声不吭。
+  - 在 `renderNodeBare` 的 `mergeStyle` 之后新增 `reportInvalidPaints(ctx, n)`，对节点
+    最终生效的 `fill`/`stroke` 值（presentation 属性、`style` 内联、CSS 规则最终都写回
+    `n.attrs`）做只读校验，`isValidPaint` 为假时报
+    `invalid fill value ignored: <值>` / `invalid stroke value ignored: <值>`。
+    **只记录事实，不改任何渲染决策**：`renderShape` / `text.go` 的分派链一行未动，
+    `golden.sha256` 一行未动，像素逐字节不变（新增断言锁定）。
+  - 纯定义节点（`defs`/`mask`/`clipPath`/gradient/`marker`/`pattern`/`stop`/元数据等）
+    不绘制也不把样式传给外部子树，显式排除以免误报；容器 `<svg>`/`<g>` 上的无效声明
+    会经 `ctx.style` 影响整棵子树继承值，纳入检查。合法值
+    （`none`/`transparent`/`currentColor`/`url(#…)`/可被 clamp 的 `rgb(999,0,0)`）
+    零误报；诊断沿用 `addDiagnostic` 按文本去重。
+  - 新增 `invalid_paint_diag_test.go`（7 个顶层 Test）：覆盖无效值有诊断、合法值无
+    误报、容器继承、内联 style、定义节点豁免、去重、像素不变。锚点
+    `test=274→281`（`GOSVG_TODO.md` 同步）。`verify.sh` 全绿，含**真 `-race`**
+    （`CC=/tmp/gcc_probe/pathbin/gcc`），无 SKIPPED。
+  - **明确未做**：未改 `gradient reference not found` 的历史措辞（CORPUS_BASELINE
+    快照按纪律保留）、未动 `resolvePattern` 静默返回、`url(#不存在)` 仍只报原有
+    gradient 诊断（措辞误导但已有诊断，不属于「零诊断」漏洞，留待单独点名）。
+    推远端 / 开 PR / 合并仍属对外动作，须用户点头；本轮仅本地提交在特性分支
+    `fix/invalid-paint-diagnostics`。
+- **`cmd/render` CLI 增强（纯 CLI 编排，零渲染代码改动，2026-11-15）**：
+  本节下方各条写「`cmd/render` 88.5%」「锚点 `test=261→268`」均为**各自提交当时
+  的快照**，按纪律保留原文；**当前状态以本条为准**：
+  - 补齐文档连续多轮挂着的「`cmd/render` 增强（格式/宽高/stdin-stdout/批量/--strict）」
+    中**单文件可控**的部分：`-W/-H` 独立宽高、`-format png|jpeg`（含按输出扩展名
+    自动推断）、`-quality`、`-bg #RGB|#RRGGBB`、`-strict`（渲染期出现静默跳过事件
+    则退出 3 并打印诊断）、stdin→stdout（`-` 输入 / 省略输出）。**批量渲染未做**：
+    `cmd/corpus` 已覆盖该场景，单文件 CLI 不重复造轮子。
+  - 保留旧用法 `gosvg-render in.svg out.png [size]`；显式 `-size/-W/-H` 与位置参数
+    size 同时出现时报错退出 2（避免两种口径静默互相覆盖）。
+  - 渲染链路改为显式 `Parse` + `doc.RenderWithOptions(nil, w, h, opts)` +
+    `EncodeImage`，与库侧 `RenderTo(data, w, h)` **逐字等价**（opts 为零值时
+    `DefaultRenderOptions` 语义相同），仅额外读取只读的 `LastRenderDiagnostics()`。
+    先编码到内存再落盘，编码失败不留下半截输出文件。**零 `.go` 渲染代码改动、
+    零 `golden.sha256` 改动**。
+  - `cliMain` 改为注入 `stdin/stdout/stderr`（测试无需碰全局 `os.Stdout`）；新增
+    6 个顶层 Test + 子用例，`cmd/render` 覆盖率 **88.5 → 93.5%**。锚点
+    `test=268→274`、`GOSVG_TODO.md` 覆盖率段同步。
+  - **明确未做**：批量渲染（归 `cmd/corpus`）、850 语料入仓、rasterx 与 `2ab79fc`
+    逐文件比对、arm64 真机、CI runner 注册（**写 `.15`，须用户明确授权**）、
+    Gitea SQLite 根治（需重启，会中断）、推远端 / 开 PR / 合并（对外动作，
+    须用户点头；本条改动仅本地提交在特性分支 `feat/render-cli-enhance`）。
 - **`cmd/*` 低覆盖补测 + CLI 编排可测化（纯测试/CLI 编排，零渲染改动，2026-11-15）**：
   本节下方所有写「`cmd/*` 低覆盖补测仍未做」的条目均为**各自提交当时的快照**，
   按纪律保留原文；**当前状态以本条为准**：

@@ -67,6 +67,29 @@ img, err := gosvg.Render(svg, 512) // 512×512 透明底 NRGBA
 | `RenderToWriter(w, data, width, height, format, opts)` | 渲染并按 `png` / `jpeg` 编码写入 `io.Writer` |
 | `EncodeImage(w, img, format, quality, bg)` | 编码位图；JPEG 无 alpha，自动合成到 `bg`（默认白） |
 
+命令行渲染器（单文件；批量用 `cmd/corpus`）：
+
+```sh
+go run ./cmd/render -size 256 icon.svg icon.png
+go run ./cmd/render -W 800 -H 600 -bg '#ffffff' -format jpeg -quality 85 icon.svg icon.jpg
+cat icon.svg | go run ./cmd/render -size 128 - > icon.png   # stdin → stdout
+go run ./cmd/render -strict icon.svg out.png                 # 有静默跳过则退出 3
+```
+
+| flag | 说明 |
+|:--|:--|
+| `-size N` | 宽高相同（默认 512）；`-W` / `-H` 优先 |
+| `-W` / `-H` | 独立宽高 |
+| `-format png\|jpeg` | 输出格式；省略时按输出文件扩展名推断（`.jpg`/`.jpeg` → jpeg，其余 → png） |
+| `-quality N` | JPEG 质量 0–100（默认 90） |
+| `-bg #RGB\|#RRGGBB` | 不透明底色（默认透明）；JPEG 输出时透明区合成到该色，未指定则白 |
+| `-strict` | 渲染期出现静默跳过事件（未识别元素、缺失引用等）时退出 3 并打印诊断 |
+| `-` | 输入为 `-` 从 stdin 读；省略输出路径写到 stdout |
+
+> flag 必须写在位置参数之前（Go `flag` 标准行为）。旧用法
+> `gosvg-render in.svg out.png [size]` 仍兼容；`-size/-W/-H` 与位置参数 size
+> 同时出现会报错退出 2，避免两种口径静默互相覆盖。
+
 ## 特性
 
 **元素**：`svg` / `g` / `defs` / `use` / `linearGradient` / `radialGradient` / `stop` / `clipPath` / `circle` / `ellipse` / `rect` / `line` / `path` / `polygon` / `polyline` / `text` / `tspan` / `mask` / `marker` / `image` / `pattern` / `style`
@@ -172,7 +195,7 @@ style.go            颜色 / 长度 / 内联样式解析
 transform.go        transform / viewBox
 internal/rasterx    fork 自 rasterx（fill 扫描器）
 internal/vector     fork 自 x/image/vector（AA 光栅器，已扩展 even-odd winding）
-cmd/render          CLI 渲染器
+cmd/render          CLI 渲染器（PNG/JPEG、宽高、stdin→stdout、-bg、-strict）
 cmd/verify          CLI 校验（渲染 + 可选 PNG 输出）
 cmd/corpus          真实语料成功率回归
 cmd/iou             像素 IoU 对账（cairosvg 参照图 / 两种 alpha 口径 / 基线对比）
