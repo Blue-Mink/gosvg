@@ -194,6 +194,19 @@ GOOS=js GOARCH=wasm go build ./...
 go test -run TestGoldenRegression -update .
 ```
 
+> [!IMPORTANT]
+> **上面这套门禁目前是「本地手动」门禁，不是已生效的自动 CI。**
+> 内网 Gitea 仓库的 Actions runner 注册数为 **0**，截至 2026-11-15 共 113 次
+> workflow run 中 **0 次 `success`**（106 次 cancelled、7 次 queued 挂起）；GitHub
+> 侧出站亦不通。因此 `.gitea/workflows/ci.yml` / `.github/workflows/ci.yml` 只是
+> 「配置同源」，**没有一次在服务端真正跑完过**。**2026-11-15 起两份 workflow
+> 已收窄为仅 `workflow_dispatch` 手动触发**（此前 `push` / `pull_request`
+> 会在 runner=0 的情况下持续堆积 queued run）；恢复自动触发的条件见 workflow
+> 文件头注释。合并前请务必本地实跑 `sh ./scripts/verify.sh`，且**发版须在带
+> gcc 的机器跑到不带 SKIPPED 的 `ALL GREEN`**（`-race` 是唯一未由自动门禁
+> 覆盖的项，见 `CONTRIBUTING.md`）；发版数字（IoU / ALL GREEN）均来自本地
+> 手动实跑，不代表 CI 已验证。详见 `CONTRIBUTING.md` 与 `GOSVG_GAP_TODO.md` 档 3。
+
 若 `proxy.golang.org` 不通，用 `GOPROXY=https://goproxy.cn,direct`。
 更多见 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [GOSVG_TODO.md](GOSVG_TODO.md)。
 

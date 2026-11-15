@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120">
+  <!-- v0.3.0 / PR #29 text stroke 回归样例：此前 7 个 golden 中无任何含 <text> + stroke 的样例。
+       第一行仅描边（fill:none），第二行描边+填充，第三行仅填充作为对照。 -->
+  <text x="16" y="42" font-size="34" font-family="Go Regular" font-weight="bold"
+        fill="none" stroke="#1f6feb" stroke-width="2">STROKE</text>
+  <text x="16" y="84" font-size="34" font-family="Go Regular" font-weight="bold"
+        fill="#ffd33d" stroke="#d73a49" stroke-width="2.5">BOTH</text>
+  <text x="16" y="116" font-size="20" font-family="Go Regular"
+        fill="#2ea043">fill only</text>
+</svg>

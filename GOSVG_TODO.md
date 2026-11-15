@@ -42,8 +42,11 @@
 **文本**：内置 Go Regular（零依赖）；可选 `AddFontDir(dir)` 注册系统字体目录，命中
 `font-family`（含 CSS 通用名与逗号列表）后按 `font-weight` / `font-style` 择优；未命中回退。
 `MeasureText` / `MeasureTextEx` 供手动布局。自 **v0.3.0** 起 `<text>` 的 `stroke`
-（含 `paint-order: stroke`、`fill:none` 时仅描边）已支持，由 `sfnt.Segments`
+（`fill:none` 时仅描边、`fill`+`stroke` 时两者都画）已支持，由 `sfnt.Segments`
 取字形轮廓后走与图形 stroke 同一套光栅化路径；详见 `CAIROSVG_IOU.md` 修正 11。
+⚠️ **不解析 `paint-order` 属性**：实现无条件「先描边、后填充」（`text.go`
+`wantStroke` 分支在 `wantFill` 之前），`paint-order: stroke` 写进 SVG 也不会改变
+顺序；此前 CHANGELOG / 本文件把该属性列为「已支持」属表述不准，按实测更正。
 
 **底层**：`encoding/xml` 解析 → 元素树 → `viewBox` 坐标系 → fill/stroke 光栅化
 （`internal/rasterx` 扫描器 + `internal/vector` AA 光栅器）+ luminance mask 合成 +
@@ -149,7 +152,7 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ## 质量基线
 
 > **机器校验锚点**（由 `scripts/check_docs.sh` 读取，数字变化时同步更新本行）：
-> `test=232 example=3 fuzz=6 golden=7`。口径：`test` / `example` 用
+> `test=249 example=3 fuzz=6 golden=8`。口径：`test` / `example` 用
 > `go test -list '^(Test|Example)' ./...` 分别计数，`fuzz` 为 `*_test.go` 中的 `func Fuzz`
 > 定义数，`golden` 为 `testdata/*.svg` 数（须与 `golden.sha256` 行数相等）。
 > 历史章节里的 215 / 6 个样例等是当时快照，不参与此锚点比对。
@@ -159,10 +162,11 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ```sh
 sh ./scripts/verify.sh                         # 全套门禁（go mod verify / tidy -diff / fmt / vet / test / -race / arm64 / wasm / bench / 6 个 fuzz）
 go test ./...                                  # 单元 + 回归 + golden 哈希
-go test -count=1 -cover ./...                  # 覆盖率（根包 87.0%、cmd/verify 62.3%、
+go test -count=1 -cover ./...                  # 覆盖率（根包 87.1%、cmd/verify 62.3%、
                                                #   cmd/corpus 42.2%、cmd/iou 37.2%、
                                                #   cmd/render 16.7%、internal/vector 24.3%、
-                                               #   internal/rasterx 3.9%）
+                                               #   internal/rasterx 34.8%（原 3.9%，见
+                                               #   rasterx_extra_test.go 的 15 个补测））
 go test -run '^$' -bench . -benchmem -benchtime 2s .   # 性能基线，见 BENCHMARK.md
 go test -race ./...                           # 并发检查
 go vet ./...                                  # 静态检查
@@ -191,7 +195,8 @@ go run ./cmd/corpus -size 64 <dir>...                  # 真实语料回归，�
 `testdata/golden.sha256` 是 **gosvg 自身输出的像素哈希**回归基线（防止无意改变渲染结果），
 不是 cairosvg 基准；由 `go test -run TestGoldenRegression -update .` 生成（该 flag 跳过
 全部比对并直接覆盖基线，仅当有意改变渲染输出时使用，常规开发 / CI 绝不传）。
-当前自动枚举 `testdata/*.svg`，覆盖 **7 个样例**；带 `<text>` 的 `s60s` 曾因
+当前自动枚举 `testdata/*.svg`，覆盖 **8 个样例**（`text_stroke` 是 v0.3.0
+text stroke 的专门金样，配套回归见 `text_stroke_test.go`）；带 `<text>` 的 `s60s` 曾因
 `AddFontDir` 污染包级字体注册表而 flaky，现由 `font_test.go` 的
 `t.Cleanup(resetFonts)` 隔离后稳定纳入（哈希 `bb150194…`，`-shuffle=on` 全过）。
 

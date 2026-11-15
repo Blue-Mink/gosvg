@@ -1,0 +1,43 @@
+gosvg — third-party notices
+============================
+
+This distribution includes code from the following third-party projects.
+The full license text for each is kept alongside the corresponding source tree.
+
+1. internal/rasterx/
+   Upstream: github.com/srwiley/rasterx (the rasterx Authors)
+   License:  MIT License
+   Full text: internal/rasterx/LICENSE
+   Provenance: internal/rasterx/UPSTREAM.md
+   Local modifications: see internal/rasterx/UPSTREAM.md (fill-rule even-odd,
+   Go 1.27 fixed.Int52_12 → fixed.Int26_6, float32 precision notes, etc.).
+
+2. internal/vector/
+   Upstream: golang.org/x/image/vector (The Go Authors)
+   License:  BSD 3-Clause License
+   Full text: internal/vector/LICENSE
+   Provenance: internal/vector/UPSTREAM.md
+   Local modifications: see internal/vector/UPSTREAM.md (forked into internal/,
+   SIMD accumulate path via golang.org/x/sys/cpu, etc.).
+
+3. golang.org/x/image (v0.47.0) — module dependency (not vendored)
+   Packages used: math/fixed, font, font/opentype, font/sfnt,
+   font/gofont/goregular, colornames, vector (see item 2).
+   License: BSD 3-Clause (part of the Go project).
+   Go Regular font (gofont/goregular) is distributed under the same
+   BSD 3-Clause license as the Go project.
+   Upstream: https://pkg.go.dev/golang.org/x/image
+
+4. golang.org/x/sys (v0.49.0) — module dependency (not vendored)
+   Package used: cpu (internal/vector/acc_amd64.go only).
+   License: BSD 3-Clause (part of the Go project).
+
+5. golang.org/x/text (v0.43.0) — transitive module dependency only.
+   Required by golang.org/x/image's go.mod; no source file in this repository
+   imports it. License: BSD 3-Clause (part of the Go project).
+
+The gosvg project's own code is licensed under the MIT License; see LICENSE.
+
+For questions about bundled third-party code, consult the UPSTREAM.md in each
+internal/ directory. This NOTICE is informational; the LICENSE files are
+authoritative.

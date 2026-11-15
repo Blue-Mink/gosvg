@@ -287,3 +287,91 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   这些不是代码缺口，**不因「继续修」而自动推进**。
 - **`OPEN_SOURCE_CHECKLIST.md` 里本地可补的部分**：全历史敏感串扫描、许可证核对、
   私有地址清单、outside view 验证，仍待用户决定是否要在推送前逐项做；本轮未擅自对外动作。
+
+## 本轮（依赖 / 盲点续查后的本地收口，2026-11-15）
+
+按「继续分析仓库还有哪些依赖、哪些盲点没检查到」的盘点结果，取优先级最高的
+两件 **P0 且完全本地可做** 的落地；凡涉及 `.15` 的写操作一律只出方案、不动手。
+
+- **P0 · v0.3.0 主功能补回归保护**：此前 `strokeTextSpan` / `appendGlyphSegments`
+  （PR #29）在仓库内零单测、7 个 golden 无一含 `text`+`stroke`，唯一验证是仓库外
+  的 117 文件 IoU 子集。新增 `text_stroke_test.go`（6 个 Test）与
+  `testdata/text_stroke.svg`（第 8 个金样）；`golden.sha256` 只多一行，其余 7 个
+  哈希逐字未变（证明零渲染改动）。锚点 `test=232→238` / `golden=7→8` 同步。
+- **P0 · CI 现状如实化**：查 Gitea API 得 **113 run / 0 success / 106 cancelled /
+  7 queued（#107–#113，均为 v0.3.0 发布相关 push/PR）/ runners=0**。
+  `CONTRIBUTING.md` 原本已有「runner 数为 0、未在服务端真正执行」一句，本轮不改其
+  结论、只补量化证据；`README.md` 开发段新增 IMPORTANT 块，明确「双 CI 配置同源」
+  ≠「自动验证已生效」，ALL GREEN / IoU 数字均来自本地手动 `verify.sh`。
+  CHANGELOG `[Unreleased]` 与 `GOSVG_TODO.md` 同步。
+- **按代码实测更正一处文档夸大**：全仓无 `paint-order` 解析器，`text.go` 无条件
+  「先描边、后填充」。此前 `GOSVG_TODO.md` / `CHANGELOG` 把 `paint-order: stroke`
+  列为「已支持」属表述不准，已改；未改渲染行为。
+- **新记录（未修，非本轮范围）**：`text.go:30` `parseLengthOr(font-size, 12)` 把
+  `font-size="0"` 当缺失回退默认 12，零字号仍绘制；`font-size=48 / stroke-width=2`
+  时描边轮廓（288px）比字形填充（148px）更大（两条光栅路径不同，不可凭直觉断言
+  「空心比实心小」）。二者都是既有语义，改需重跑全量 IoU。
+- **本轮明确未做（档 3 外部条件，需用户授权 / 点名）**：注册 act_runner（动 `.15`
+  服务、GitHub 出站不通）、清理 7 个 queued run（写 `.15` Gitea）、Gitea SQLite
+  根治（需重启服务，会中断）、arm64 真机测试、CI 内 cairosvg 对账、850 语料入仓、
+  `internal/rasterx` 的 `Filler`/`Gradient`/`Dasher` 补测（当前覆盖 3.9%）、
+  fork 上游 commit pin、汇编生成器找回 / 汇编冻结声明、NOTICE / dependabot。
+  这些不因「按最优建议来」自动推进——本轮只交付本地可验证的两件 P0。
+- **本轮验证记录（诚实口径，勿写成 ALL GREEN）**：用 goproxy.cn 下载的
+  Go 1.27.3 临时工具链（仅 `/tmp`、未装系统包、未动 `.15`）逐项实跑：
+  `go mod verify` / `tidy -diff` / `gofmt -l` / `go vet` / `go test ./...`
+  （根包 cover **87.1%**，原 87.0%）/ arm64 + wasm 交叉编译 / bench smoke /
+  6 个 fuzz 目标（FuzzParse 30s、FuzzRender 20s、其余各 5s）/ `check_docs.sh
+  **DOCS CHECK PASSED`** 全部通过。**唯一未跑项是 `go test -race`**：本机
+  （临时 Go 工具链所在容器）无任何 C 编译器，`-race` 强制要求 cgo，报
+  `-race requires cgo` / `C compiler "gcc" not found`。这是执行环境限制，
+  **不是仓库缺陷、也不是本次改动引入**；要补跑需在有 gcc 的机器（如 `.15`
+  或有 build-essential 的开发机）上执行 `sh ./scripts/verify.sh` 全套。
+  仓库多处「零 cgo」指运行时零 cgo，未说明 `-race` 自身的 cgo 前提，
+  属已知小盲点，本轮不扩范围。
+
+## 本轮（P1/P2 本地收口，2026-11-15，接上轮）
+
+- **rasterx 补测**：新增 15 个 Test，覆盖率 **3.9% → 34.8%**（档 1 的
+  「Filler/Gradient/Dasher 测试」待办由本轮部分落地；仍非全覆盖）。
+  查实两个构造陷阱（Points 全零 → t=NaN、Matrix 零值 → gradT 退化），
+  根包构造已传 Matrix，运行期无恙。
+- **`-race` 卡死整条门禁**（上轮遗留）已修：`verify.sh` 现在无 gcc 时
+  SKIP race 并继续跑完 arm64/wasm/6 fuzz/docs，结尾标注 SKIPPED，
+  **有 gcc 时行为不变**。本机试过 zig（下载超时 9/47MB、无 xz）、tcc
+  （能编 .o 但缺 crt1.o/-lc）均不装系统包即不可用，故 race 仍未实跑；
+  **这是执行环境限制，不是放宽门禁**。最终 `verify.sh` 退出码 0、FAIL=0。
+- **上游 pin**：`internal/vector` 用本机 module cache 与 `x/image@v0.47.0/vector`
+  逐文件硬比对，补上可核对锚点与差异表。⚠️ **推翻上轮「gen.go 缺失→汇编
+  不可再生」**：上游同版本带 gen.go + 模板，且 acc_amd64.s 逐字节一致；
+  fork 只是未随附、当前无需再生。`internal/rasterx` 上游无 tag，如实记
+  最新 commit 2ab79fc（2022-07-30）、**不伪造引入点 hash**；与 2ab79fc
+  的逐文件比对尚未做，仍属待办。
+- **一致性/合规**：新增 NOTICE；去掉 fork 的 canonical import comment；
+  更正 `x/sys` 为直接 require；`check_docs.sh` 加双 workflow 一致 +
+  Go 版本单一来源两条机械门禁（1.27.3）；锚点 test=249。
+- **仍未做（不因「继续按建议」自动推进）**：带 gcc 机器补跑 `-race`、
+  rasterx 与 2ab79fc 逐文件比对、`internal/vector` 24.3% 与 cmd/* 低覆盖补测、
+  850 语料入仓、arm64 真机、CI runner 注册 / 7 queued run 清理（**写 `.15`，
+  须用户明确授权**）、Gitea SQLite 根治（需重启，会中断）、提交/推 PR
+  （对外动作，须用户点头）。本轮所有改动均为**本地、零渲染代码变更**。
+
+## 本轮（CI 止血 + 发布清单，2026-11-15，接上轮「最优方案」第 1+2 步）
+
+- **第 1 步 · 止血**：两份 workflow 的 `on:` 从
+  `push`（全分支 + `v*` tags）+ `pull_request` + `workflow_dispatch`
+  **收窄为仅 `workflow_dispatch`**。此前 #107–#113 这 7 个 queued 正是
+  自动触发在 runner=0 下堆出来的；收窄后不再新增僵尸 run。文件头注释写清
+  「恢复自动触发」的两个前提（runners>0 且 GitHub action 可拉取）与步骤，
+  `check_docs.sh` 的逐字一致门禁保证 `.gitea` / `.github` 两边同步。
+  ⚠️ 注意：原先**已有** `workflow_dispatch`，本轮是「去掉 push/PR」而非新增。
+- **第 2 步 · 发布清单正式化**：`CONTRIBUTING.md` 的「提交前必跑」补上
+  「`-race` 需 gcc」的说明，并把**发版 / 合并 main 前必须在带 gcc 机器上
+  跑到不带 SKIPPED 的 `ALL GREEN`、并在发布说明/PR 记执行机器与结果**
+  写成硬要求（此前只散落在文档角落）。`README` IMPORTANT 块同步。
+- **取证不变**：113 run / 0 success / 7 queued / runners=0、Gitea 28.3.0、
+  runner 注册 token 端点 GET 404、GitHub 出站不通。
+- **明确未做**：7 个已存在的 queued run **未清理**（写 `.15`，须单独授权）；
+  runner 未注册；`cb87d52` 与本轮 commit **未 push / 未开 PR**。
+- **结论口径**：这不叫「修好 CI」，叫「停止让 CI 假装会跑」。真正恢复自动
+  CI 仍是长期项，触发条件不变（见档 3）。

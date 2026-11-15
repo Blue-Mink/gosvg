@@ -11,14 +11,38 @@
 gofmt -l .                          # 必须无输出
 go vet ./...
 go test ./...                       # 含 golden 哈希回归
-go test -race ./...
+go test -race ./...                 # 需要 CGO_ENABLED=1 + 可用的 C 编译器（gcc）
 GOARCH=arm64 GOOS=linux go build ./...
 ```
 
+或一条命令跑齐（推荐）：`sh ./scripts/verify.sh` —— 含 `go mod verify` /
+`tidy -diff` / gofmt / vet / cover / race / arm64 / wasm / bench /
+6 个 fuzz 目标 / `check_docs.sh`。**在无 C 编译器的最小环境里，`verify.sh`
+会跳过 `-race` 并继续跑完其余门禁，结尾如实标注
+`ALL GREEN (race SKIPPED: no C compiler)`；这不是全绿，别拿它当完整验证。**
+
+> **发版 / 合并到 main 前的硬要求**：必须在**带 gcc 的机器**上完整跑一次
+> `sh ./scripts/verify.sh`，确认末行是**不带 SKIPPED 的** `ALL GREEN`
+> （即 `-race` 真正实跑通过），并在发布说明/PR 里记下执行机器与结果。
+> 内网 Gitea Actions 无法代劳此事（见下），本地精简容器也不行。
+> 这是当前唯一尚未由自动门禁覆盖的验证项，靠流程补齐，不能靠文档角落一句话带过。
+
 CI（`.gitea/workflows/ci.yml` 与 `.github/workflows/ci.yml` **内容保持一致**）只调
-`sh ./scripts/verify.sh`（含 6 个 fuzz 目标、`go mod tidy -diff`、wasm 构建），与本地同源。
-改了任一 CI 文件请同步改另一个。注意 **Gitea Actions runner 数为 0**、GitHub 出站不通，
-CI 目前未在服务端真正执行，提交前请本地实跑 `verify.sh`。
+`sh ./scripts/verify.sh`，与本地同源。改了任一 CI 文件请同步改另一个（
+`check_docs.sh` 有逐字一致门禁）。
+
+> **2026-11-15 止血**：两份 workflow 的触发方式已从
+> `push`（全分支 + tags）+ `pull_request` + `workflow_dispatch`
+> **收窄为仅 `workflow_dispatch` 手动触发**。原因：Gitea Actions runner 数为 0、
+> GitHub 出站不通，自动触发只会持续产生永不执行的 queued run。配置保留作将来
+> 恢复自动 CI 的同源模板，恢复条件与步骤写在 workflow 文件头注释里。
+>
+> 量化现状（2026-11-15 查 Gitea API `/actions/runs`）：累计 **113 次 run，
+> `conclusion=success` 0 次**（106 cancelled + 7 queued，queued 为 #107–#113，
+> 由 v0.3.0 发布相关 push/PR 触发），`actions/runners` 返回 `total_count=0`。
+> 即：**没有任何一次 PR / push 被自动验证过**，且收窄后不再新增僵尸 run。
+> 注册 act_runner 需动 `.15` 上的服务、且当前 GitHub 出站不通，须用户明确授权
+> 后才做；清理已存在的 7 个 queued run 同样会写 `.15` 的 Gitea，不在本地改动范围内。
 
 ## 提交风格
 
