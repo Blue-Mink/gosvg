@@ -21,8 +21,9 @@
 - [ ] **CI 徽章**：README 顶部换成正经的 GitHub Actions badge（当前只有静态 Go/License/deps 徽章）。
 - [x] **首个 tag**：内网 Gitea 已打 `v0.1.0` annotated tag（PR #1 合并后）。
 - [x] **Release**：内网 Gitea 已发 `v0.2.0` / `v0.2.1` / `v0.2.2` / `v0.2.3` /
-      `v0.2.4` Release（notes 以 `CHANGELOG.md` 为准；v0.2.3 起 tag 均由 Release API
-      自建，勿先 push tag）。`go get github.com/Blue-Mink/gosvg@latest` 仍须在推送
+      `v0.2.4` / `v0.3.0` Release（notes 以 `CHANGELOG.md` 为准；v0.2.3 起 tag
+      均由 Release API 自建，勿先 push tag）。`go get github.com/Blue-Mink/gosvg@latest`
+      仍须在推送
       外部 Git 之后才能验证，见下项。
 - [ ] **加 remote 并推送**：`git remote add github <url>` 后 `git push github main --tags`；
       **不要**把 GitHub 设为默认 `origin`，避免内网日常开发误推。

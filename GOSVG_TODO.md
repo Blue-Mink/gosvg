@@ -41,7 +41,9 @@
 
 **文本**：内置 Go Regular（零依赖）；可选 `AddFontDir(dir)` 注册系统字体目录，命中
 `font-family`（含 CSS 通用名与逗号列表）后按 `font-weight` / `font-style` 择优；未命中回退。
-`MeasureText` / `MeasureTextEx` 供手动布局。
+`MeasureText` / `MeasureTextEx` 供手动布局。自 **v0.3.0** 起 `<text>` 的 `stroke`
+（含 `paint-order: stroke`、`fill:none` 时仅描边）已支持，由 `sfnt.Segments`
+取字形轮廓后走与图形 stroke 同一套光栅化路径；详见 `CAIROSVG_IOU.md` 修正 11。
 
 **底层**：`encoding/xml` 解析 → 元素树 → `viewBox` 坐标系 → fill/stroke 光栅化
 （`internal/rasterx` 扫描器 + `internal/vector` AA 光栅器）+ luminance mask 合成 +
@@ -71,6 +73,8 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 详见 `style.go:parseLength`。
 
 **字体**：`.ttc` 字体集合；未调用 `AddFontDir` 时 `font-family` 一律回退 Go Regular。
+> 注：`<text>` 的 `stroke` **不**在本清单内——v0.3.0 起已支持（见上「当前支持范围」）。
+> v0.2.4 及更早的报告里「text stroke 明确不支持 / 定案不修」是当时结论，已作废。
 
 **XML 编码声明**：UTF-8 与 ASCII 系（`US-ASCII` 等）透传，`ISO-8859-1` / `Latin-1`
 逐字节展开为 UTF-8，**其余编码返回带编码名的明确错误**。需要完整 IANA 编码支持时，
@@ -212,12 +216,20 @@ go run ./cmd/corpus -size 64 <dir>...                  # 真实语料回归，�
 见 [`GOSVG_GAP_TODO.md`](GOSVG_GAP_TODO.md)：按「已补齐 / 需决策 / 需外部条件」分类的
 缺口清单与进度。
 
-### GOSVG-TODO-P0-1 · text stroke 边界声明（2026-11-11）
+### GOSVG-TODO-P0-1 · text stroke（已落地，2026-11-15 收口）
 
-P0 text stroke 修复后全量对账（848）：`<0.5` 仅剩 2 个非 text 文件：
+**状态：已完成**。P0 text stroke 渲染于 PR #29 / `3b1f663` 实现并随 `baa0c7d`
+发为 v0.3.0；支持范围、明确不支持清单的注记、以及 `CAIROSVG_IOU.md` 修正 9 的
+「已被推翻」注记与修正 11，均已在本次发布后收口中同步。下方 P2 文档尾巴
+（`evenOddPathEligible` 注释、修正 8 表 wacom 定性、本文件 text-stroke 边界说明）
+一并完成，不再是待办。
+
+发布时全量对账（**850 语料 / `alpha > 0` / 256×256**）：平均 IoU `0.960035`、
+`<0.5` 仅剩 2 个**非 text** 的 filter 文件：
 
 - `A__NoPositionDark-PDtWoS9P-PDtWoS9P`（filter 簇，IoU 0.3207）
 - `C__652128cf55a28bb9`（filter 簇，IoU 0.4608）
 
 两者均为 filter 相关，已定案不修（filter 属声明子集边界，见修正 7）。
-P2 文档尾巴：`evenOddPathEligible` 注释、修正 8 表 wacom 定性、本文件补 text-stroke 边界说明。
+⚠️ 本表与修正 1–10 的 **848 个可对比样本**口径分母不同，不可直接横比；
+详见 `CAIROSVG_IOU.md` 修正 11。
