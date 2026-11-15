@@ -36,7 +36,12 @@ func parseStopOffset(s string) float64 {
 	return parseFloatOr(s, 0)
 }
 
-// resolveGradient 把 fill 值解析为 *rasterx.Gradient（若非 url(#id) 返回 nil）。
+// resolveGradient 把 fill 值解析为 *rasterx.Gradient（若非 url(#id)、id 不存在、
+// 或 id 指向的不是 gradient 元素，均返回 nil）。
+//
+// 这里**不产生诊断**：同样的 url(#id) 也可能是合法的 <pattern> 引用，是否真的
+// 无法解析只能由 render.renderShape 的分派链在「gradient 与 pattern 都未命中」
+// 之后判断。此前在此处报 gradient reference not found，会让合法 pattern 被误报。
 func (d *Document) resolveGradient(fill string) *rasterx.Gradient {
 	id := gradientRef(fill)
 	if id == "" {
@@ -44,7 +49,6 @@ func (d *Document) resolveGradient(fill string) *rasterx.Gradient {
 	}
 	gn := d.grads[id]
 	if gn == nil {
-		d.addDiagnostic("gradient reference not found: " + id)
 		return nil
 	}
 	return d.buildGradient(gn, nil)

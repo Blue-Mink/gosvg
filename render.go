@@ -324,6 +324,8 @@ func (ctx *renderContext) renderShape(n *node, opacity float64) {
 		ctx.fillGradient(fillPath, g, opacity*style.fillOpacity, fillNonZero)
 	} else if pat := ctx.doc.resolvePattern(fillStr); pat != nil {
 		ctx.fillPattern(fillPath, pat, opacity*style.fillOpacity, fillNonZero)
+	} else {
+		reportUnresolvedPaintRef(ctx.doc, fillStr)
 	}
 
 	// 描边
@@ -335,6 +337,12 @@ func (ctx *renderContext) renderShape(n *node, opacity float64) {
 		// stroke="url(#pattern)"：先按纯色黑描边到掩膜再平铺不划算，
 		// 这里退化为用 pattern 填充描边路径的包围盒不可行，故按规范少见用法记诊断。
 		ctx.doc.addDiagnostic("stroke with pattern reference is not supported")
+	} else {
+		// stroke-width=0 / 默认无描边时，三分支都因 >0 条件落空，但那是
+		// 明确的「不描边」，不是引用解析失败，不得报诊断。
+		if style.strokeWidth > 0 {
+			reportUnresolvedPaintRef(ctx.doc, strokeStr)
+		}
 	}
 
 	// marker（箭头）
@@ -444,6 +452,22 @@ func reportInvalidPaints(ctx *renderContext, n *node) {
 			continue
 		}
 		ctx.doc.addDiagnostic("invalid " + key + " value ignored: " + strings.TrimSpace(v))
+	}
+}
+
+// reportUnresolvedPaintRef 在 fill/stroke 分派链的末端调用：parseColor、
+// resolveGradient、resolvePattern 三条路都未命中时才执行。
+//
+// 只对 url(#id) 形式记诊断 —— none / transparent / 空串（默认无描边）/
+// 普通颜色值都是合法或已被 parseColor 处理的值，不在此列。措辞用中性的
+// "paint reference not resolved"，因为该 id 可能既不是 gradient 也不是 pattern
+// （不存在、指向 clipPath 等），此前在 resolveGradient 里报
+// "gradient reference not found" 是误报：合法的 <pattern> 引用同样会走到那里。
+//
+// 纯只读诊断，不改变任何绘制决策。
+func reportUnresolvedPaintRef(d *Document, v string) {
+	if id := gradientRef(v); id != "" {
+		d.addDiagnostic("paint reference not resolved: " + id)
 	}
 }
 
