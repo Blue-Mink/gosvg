@@ -152,7 +152,7 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ## 质量基线
 
 > **机器校验锚点**（由 `scripts/check_docs.sh` 读取，数字变化时同步更新本行）：
-> `test=289 example=3 fuzz=6 golden=8`。口径：`test` / `example` 用
+> `test=316 example=3 fuzz=6 golden=8`。口径：`test` / `example` 用
 > `go test -list '^(Test|Example)' ./...` 分别计数，`fuzz` 为 `*_test.go` 中的 `func Fuzz`
 > 定义数，`golden` 为 `testdata/*.svg` 数（须与 `golden.sha256` 行数相等）。
 > 历史章节里的 215 / 6 个样例等是当时快照，不参与此锚点比对。
@@ -171,6 +171,10 @@ go test -count=1 -cover ./...                  # 覆盖率（根包 87.1%、cmd/
                                                #   rasterizer_extra_test.go 的 12 个补测）、
                                                #   internal/rasterx 34.8%（原 3.9%，见
                                                #   rasterx_extra_test.go 的 15 个补测）；
+                                               #   2026-11-15 再补 geomx_extra_test.go
+                                               #   (12 Test) + shapes_extra_test.go (15 Test)，
+                                               #   internal/rasterx 34.8% → 64.3%（纯 _test.go，
+                                               #   零实现改动，见 CHANGELOG [Unreleased]）；
                                                #   4 个 main() 仅 os.Exit(cliMain(os.Args))
                                                #   一行、为不可测边界，不纳入覆盖目标）
 go test -run '^$' -bench . -benchmem -benchtime 2s .   # 性能基线，见 BENCHMARK.md

@@ -5,6 +5,26 @@
 
 ## [Unreleased]
 
+- **`internal/rasterx` 几何 / 形状补测（纯 `_test.go`，零实现改动，2026-11-15）**：
+  承接「加强点体检」里档 1 的长期待办，把 fork 光栅器覆盖率
+  **34.8%（本轮实测 35.2%）→ 64.3%**。
+  - 新增 `geomx_extra_test.go`（12 Test）：向量工具、`Path` 构建 / `ToSVGPath` /
+    `AddTo` 回放与调用序列、`ToLength`、`ClosestPortside`、`RadCurvature`、
+    圆-圆求交、直线求交、射线-圆求交（F 版 + fixed 包装层）。
+  - 新增 `shapes_extra_test.go`（15 Test）：`AddCircle` / `AddEllipse` /
+    `AddRect`（含旋转）/ `AddRoundRect`（退化与倒角）、椭圆参数化、
+    `FindEllipseCenter`、`AddArc`、`MatrixAdder`、`NewStroker` 默认值、
+    `GapToCap` 与 5 种 cap、`Dasher` 曲线方法。
+  - 断言用数学恒等式 / 结构性质 / 明确边界，不写死像素。实测坐实两处
+    「注释直觉 ≠ 实现」：`RayCircleIntersectionF` 有效方向与注释直觉相反、
+    `FindEllipseCenter` 在 r=5 半弦长 3 时圆心为 (0,±4) 而非原点 —— 均按
+    真实行为断言，**不改 fork 实现**。
+  - **零渲染改动**：未动任何非 `_test.go` 文件，`golden.sha256` 一行未动，
+    像素逐字节不变（由 `verify.sh` 的 golden 哈希回归门禁保证）。
+  - 锚点 `test=289→316`；`verify.sh` ALL GREEN 含真 `-race`、无 SKIPPED。
+  - **明确未做**：850 语料入仓 / 重跑（语料与参照 PNG 不在仓内，入仓涉及
+    体积 + 版权须用户拍板，本机亦无 `cairosvg`）、CI runner 安装（写 `.15`
+    须单独授权）、`examples/*` 覆盖、fnOS FPK 集成。
 - **修正 `url(#id)` paint 引用诊断：合法 `<pattern>` 不再被误报（纯只读，零渲染/像素改动，2026-11-15）**：
   承接上一条 `-strict` 诊断补漏，清掉其自认欠账里剩下的两点。先经实测探针**纠正上轮判断**：
   「`url(#不存在)` 措辞误导」只是表象，真正的洞是 `resolveGradient` 在 id 不是
