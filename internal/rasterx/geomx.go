@@ -72,7 +72,7 @@ func (p Path) ToSVGPath() string {
 				float32(p[i+3])/64, float32(p[i+4])/64)
 			i += 5
 		case PathCubicTo:
-			s += "C" + fmt.Sprintf("C%4.3f,%4.3f,%4.3f,%4.3f,%4.3f,%4.3f", float32(p[i+1])/64, float32(p[i+2])/64,
+			s += fmt.Sprintf("C%4.3f,%4.3f,%4.3f,%4.3f,%4.3f,%4.3f", float32(p[i+1])/64, float32(p[i+2])/64,
 				float32(p[i+3])/64, float32(p[i+4])/64, float32(p[i+5])/64, float32(p[i+6])/64)
 			i += 7
 		case PathClose:

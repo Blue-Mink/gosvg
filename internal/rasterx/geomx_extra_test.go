@@ -104,6 +104,16 @@ func TestPathBuildAndToSVGPath(t *testing.T) {
 	if !strings.Contains(s, "M1.000,2.000") {
 		t.Errorf("MoveTo 未按 fixed 单位输出: %s", s)
 	}
+	// 三次贝塞尔段必须以单个 "C" 开头；历史笔误曾输出 "CC..."。
+	if strings.Contains(s, "CC") {
+		t.Errorf("ToSVGPath 出现重复 'C' 前缀: %s", s)
+	}
+	// 每个命令字母只应出现规定次数（M/L/Q/C/Z 各 1）。
+	for _, tok := range []string{"M", "L", "Q", "C", "Z"} {
+		if n := strings.Count(s, tok); n != 1 {
+			t.Errorf("命令 %q 出现 %d 次, want 1: %s", tok, n, s)
+		}
+	}
 }
 
 func TestPathClearAndStop(t *testing.T) {
