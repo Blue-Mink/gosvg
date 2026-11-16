@@ -11,6 +11,7 @@
 | `corpus/ious/iou_withfont_a8.json` | 848 样本逐项 IoU | 本机带字体复现、alpha 阈值 8 |
 | `corpus/ious/iou_bothfont_a0.json` | 848 样本逐项 IoU | 本机双字体复现、alpha 阈值 0 |
 | `corpus/scripts/render_ref.py` | cairosvg 参照图生成（通用版） | 256x256、透明背景 |
+| `corpus/scripts/verify_cairosvg_safety_net.py` | 安全网一键自检 + 秒级 IoU 复算（只读） | 校验语料/参照/venv/字体 + 复算 |
 
 每个 JSON 的 `samples[]` 记录 `name`（去扩展名 stem）、`iou`、`ref_pixels`、`got_pixels`，
 汇总字段有 `compared` / `missing` / `average_iou` / `below_0.5`。**只有数字与文件名，无任何图像内容。**
@@ -27,8 +28,18 @@
 | `CHANGELOG.md`（.15 有 54 字体） | 0.960035 | 历史权威口径，原始逐项 JSON 已丢失 |
 
 本机 cairosvg 字体环境与 .15 不同（本机字体数为 0，隔离 54 字体后仍未复现），
-加之历史 `cairo_all` 参照图原件已丢失，**这些数字与文档基线口径不同、不可横比**。
+故这些数字与 .15 的 54 字体文档基线口径不同、不可横比。
 保留它们是为记录「每个样本在当前本机环境的表现」，供复算与回归对照，而非宣称新基线。
+
+**口径更正（2026-11-16）**：此前记的「`cairo_all` 参照图原件已丢失」是证伪实验
+的阶段性误判——资产其实一直都在本机 `/tmp/corpus_recheck_850/`：`svg/`（850）、
+`ref/`（848，带字体口径）、`ref_nofont_backup/`（848，无字体口径）、`got/`（850，
+gosvg 渲染）。cairosvg 2.9.1 在 `/tmp/iou_venv`，`libcairo.so.2` 在
+`/tmp/cairo_root/usr/lib/x86_64-linux-gnu`，54 字体在 `/tmp/fontconfig_repro`。
+实测：无字体口径重渲 848/848 与 `ref_nofont_backup/` **逐字节一致**；用现成
+`got/`+`ref/` 复算 IoU 得 alpha>0 **0.950931**、alpha>8 **0.951315**，与上面两个
+JSON **精确吻合**。即 **cairosvg 对账安全网完整可用**，光栅器核心优化的逐像素
+兜底不再缺位。一键自检+复算见 `corpus/scripts/verify_cairosvg_safety_net.py`。
 
 ## 语料来源与版权
 
@@ -57,7 +68,13 @@
 在持有原始语料的机器上：
 
 ```sh
+# 0) 先一键确认安全网完整可用（只读、秒级；资产散落 /tmp 时尤其有用）
+/tmp/iou_venv/bin/python corpus/scripts/verify_cairosvg_safety_net.py \
+    --corpus /tmp/corpus_recheck_850 --recheck \
+    --expect-json /tmp/corpus_recheck_850/iou_bothfont_a0.json
+
 # 1) 生成参照图（需 cairosvg 2.9.1；带字体口径另传 --fontconfig）
+#    LD_LIBRARY_PATH=/tmp/cairo_root/usr/lib/x86_64-linux-gnu
 python3 corpus/scripts/render_ref.py --svg <SVG目录> --ref <参照目录>
 
 # 2) 用 gosvg 渲染并与参照图对账，输出与上面同格式的 JSON
