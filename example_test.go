@@ -95,3 +95,34 @@ func BenchmarkRenderMultiStroke(b *testing.B) {
 		}
 	}
 }
+
+// buildMaskClipSVG 构造 n 个「同时带 clipPath 与 mask」的分组。
+// 每个分组渲染时，clip 与 mask 各要分配一张离屏位图（mask 还要 luminance 合成），
+// 是「大批量 mask/clip 渲染」离屏位图分配热点的基准素材。
+func buildMaskClipSVG(n int) []byte {
+	var sb strings.Builder
+	sb.WriteString(`<svg viewBox="0 0 200 200">`)
+	sb.WriteString(`<defs>`)
+	sb.WriteString(`<clipPath id="c"><circle cx="100" cy="100" r="80"/></clipPath>`)
+	sb.WriteString(`<mask id="m"><rect width="200" height="200" fill="white"/><circle cx="100" cy="100" r="40" fill="black"/></mask>`)
+	sb.WriteString(`</defs>`)
+	for i := 0; i < n; i++ {
+		fmt.Fprintf(&sb, `<g clip-path="url(#c)" mask="url(#m)"><rect x="%d" y="10" width="40" height="180" fill="#4f8ef7"/></g>`, i*3)
+	}
+	sb.WriteString(`</svg>`)
+	return []byte(sb.String())
+}
+
+// BenchmarkRenderMaskClip 用 16 个 mask+clip 分组，量化离屏位图分配开销。
+// 若日后实现离位图池化，本 benchmark 的 B/op 与 allocs/op 应显著下降；
+// 基准样例（BenchmarkRender）不含 mask/clip，无法反映这项收益。
+// 用 -benchtime 控制轮数（单次渲染约数百 ms）。
+func BenchmarkRenderMaskClip(b *testing.B) {
+	data := buildMaskClipSVG(16)
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		if _, err := gosvg.Render(data, 512); err != nil {
+			b.Fatal(err)
+		}
+	}
+}

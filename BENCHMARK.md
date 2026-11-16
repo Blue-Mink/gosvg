@@ -65,8 +65,20 @@
 - **不做 CSS 选择器索引**：`applyCSS` 只在 `Parse` 跑一次，而 `Parse` 仅 3.5 µs
   （< 单次渲染的 0.05%）。加索引是无收益的复杂度。
 - **不做解析缓存 / 强制 Document 复用**：实测 8.87 vs 9.15 ms，差异在噪声内。
-- **暂不做离屏位图池化**：基线样例不含 mask/clip，池化对当前数字无影响；
-  要做应先为「大批量带 mask/clip 渲染」单独建 benchmark。
+- **离屏位图池化：已建 benchmark + 实测，值得做但暂不动 fork 核心**：
+  2026-11-16 新增 `BenchmarkRenderMaskClip`（16 个 mask+clip 分组，512px）。实测
+  （本机 Intel N3700 / Go 1.27.3，`-benchtime=5x`）单次渲染
+  **2.87 s / 147.9 MB / 11.27M allocs**——比无 mask/clip 的 `BenchmarkRender`
+  （8.87 ms / 5.37 MB）高 2~3 个数量级，证明离屏分配确实是热点。
+  pprof `-alloc_space` 显示 `renderClipMask` 独占 **282.89 MB（51.17%）**、
+  `renderSubimage` 261.48 MB（47.3%）；flat 热点为 `setUseFloatingPointMath`
+  130.69 MB、`image.NewNRGBA` 127.22 MB、`NRGBA.At` 126.50 MB、
+  `accumulateMask` 124.90 MB。**结论**：池化可省下 `NewNRGBA` 那 ~127 MB 的
+  离屏位图分配（有明确收益空间），但 `NRGBA.At` / `nrgbaModel` 那部分是逐像素
+  合成的固有成本、池化省不掉，收益上限约在 B/op 减半而非归零。
+  此改动触及 `renderClipMask` / `renderSubimage` 等核心路径，**须 golden 回归 +
+  cairosvg 对账双兜底后再动**；当前 cairosvg 参照图已丢失（见 `CAIROSVG_IOU.md`），
+  安全网缺一半，故先建基准、记录数据，**不在本轮实施池化**。
 - 后续若继续优化，方向是 `Rasterizer` 缓冲区/实例复用（`bufF32`/`bufU32` 已按 cap 复用，
   但每次 `newRenderContext` 都新建 Rasterizer）与光栅器分配。这属于 fork 核心，
   必须靠 golden 回归 + cairosvg 对账兜底后再动。
