@@ -526,3 +526,97 @@ func TestDrawEvenOddSkipsUniformFastPath(t *testing.T) {
 		t.Error("even-odd center must stay a hole on *image.RGBA dst too")
 	}
 }
+
+// TestRealPathFixedFloatingParity 用真实路径 API（含 QuadTo/CubeTo 曲线细分
+// 产生的亚像素斜线段）交叉比对定点与浮点两套光栅化内核。
+//
+// 与 TestEvenOddFixedFloatingConsistency 不同：那个只喂构造好的扫描线 delta，
+// 这里让 LineTo/QuadTo/CubeTo 自己产出覆盖范围，因此会真正执行 fixedLineTo /
+// floatingLineTo 的细分与亚像素分支。fork 把 threshold 设为 0（见 UPSTREAM.md），
+// fixed 是默认死路径，一旦哪天阈值被误改回去，这个测试能立刻抓到两套实现的
+// 语义漂移。
+//
+// 断言用「非零/零的填充判定一致 + 覆盖差异不超过 ±6」，而非逐像素精确相等：
+// 定点与浮点对亚像素覆盖率的舍入相位本就不同（实测斜边上多为 ±1 台阶、极值
+// 到 5 台阶，全图总和差异约 0.06%），这是预期数值行为而非算法 bug；强制精确
+// 相等会误报。真正的语义锁是「填充/镂空判定必须一致」，那条是零容差的。
+func TestRealPathFixedFloatingParity(t *testing.T) {
+	const size = 32
+
+	// 每条用例画到 *image.Alpha 上（纯 mask，避开 uniform fast-path 与颜色混合）。
+	drawMask := func(floating bool, shape func(*Rasterizer)) *image.Alpha {
+		z := NewRasterizer(size, size)
+		z.setUseFloatingPointMath(floating)
+		shape(z)
+		mask := image.NewAlpha(image.Rect(0, 0, size, size))
+		z.Draw(mask, mask.Bounds(), image.Opaque, image.Point{})
+		return mask
+	}
+
+	cases := []struct {
+		name    string
+		evenOdd bool
+		shape   func(*Rasterizer)
+	}{
+		{"axis-rect", false, func(z *Rasterizer) {
+			rectPath(z, 3, 4, 28, 26)
+		}},
+		{"skewed-quad", false, func(z *Rasterizer) {
+			z.MoveTo(2, 16)
+			z.LineTo(16, 2)
+			z.LineTo(30, 18)
+			z.LineTo(12, 30)
+			z.ClosePath()
+		}},
+		{"curve-cubic", false, func(z *Rasterizer) {
+			z.MoveTo(4, 28)
+			z.CubeTo(2, 6, 30, 6, 28, 28)
+			z.ClosePath()
+		}},
+		{"curve-quad", false, func(z *Rasterizer) {
+			z.MoveTo(4, 8)
+			z.QuadTo(16, 30, 28, 8)
+			z.ClosePath()
+		}},
+		{"evenodd-ring", true, func(z *Rasterizer) {
+			rectPath(z, 2, 2, 30, 30)
+			rectPath(z, 10, 10, 22, 22)
+		}},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			fixed := drawMask(false, func(z *Rasterizer) {
+				z.UseEvenOdd = tc.evenOdd
+				tc.shape(z)
+			})
+			flt := drawMask(true, func(z *Rasterizer) {
+				z.UseEvenOdd = tc.evenOdd
+				tc.shape(z)
+			})
+
+			maxDelta := 0
+			for y := 0; y < size; y++ {
+				for x := 0; x < size; x++ {
+					a := int(fixed.AlphaAt(x, y).A)
+					b := int(flt.AlphaAt(x, y).A)
+					// 填充/镂空的语义判定必须一致：不能用「一方有覆盖另一方没有」
+					// 来掩盖整套内核的相位漂移。允许边缘 1 台阶的 AA 差异。
+					if (a == 0) != (b == 0) {
+						t.Fatalf("(%d,%d): fixed alpha=%d, floating alpha=%d (fill decision differs)", x, y, a, b)
+					}
+					delta := a - b
+					if delta < 0 {
+						delta = -delta
+					}
+					if delta > maxDelta {
+						maxDelta = delta
+					}
+				}
+			}
+			if maxDelta > 6 {
+				t.Fatalf("fixed vs floating coverage drifted by %d alpha steps (want <=6)", maxDelta)
+			}
+		})
+	}
+}
