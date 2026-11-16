@@ -1,0 +1,5099 @@
+{
+  "alpha_threshold": 0,
+  "size": 256,
+  "compared": 848,
+  "missing": 2,
+  "average_iou": 0.9509307948551927,
+  "below_0.5": 4,
+  "below_min": 0,
+  "samples": [
+    {
+      "name": "A__-VPIqfkFhURGL0jL",
+      "iou": 1,
+      "ref_pixels": 49408,
+      "got_pixels": 49408
+    },
+    {
+      "name": "A__13HOfeJD0L41v5Tw",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__B-RvQ4HzsUAe2nm_",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__B-w7hFKuKK6wzkJ9",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__B0FsxZiLN1nbUFJy",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__B18i8NGacBDaSxq6",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__B6T3O78gszZ4WrJE",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__B86d445tMO3B6YA-",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__B9-hqIE-mETE5Ibq",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__BBvObpUShMuEzevT",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__BCKHR4_quB-Dbin6",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__BC_zcciEJqMS6FaW",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__BFo5zkKU8alJBv5w",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__BImhNBcdlMzE-xzg",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__BKi5dxWtAmt60D9w",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__BKrUHzrqvyihKHfY",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__BLpn5qMnprSK3-hZ",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__BPAlH32DkZFAMD99",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__BSdsyIxYDxPEU3Sf",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__BTEVCXG-ybWhjKHB",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__BTevY6N27okJVPBk",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__BTo4qm10g9h2A8ic",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__BX2WCaNtu0X-9JkE",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__Bc2fqp73YiAjBv6K",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__BeWfuE30fo4gEvnF",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__BeYgB2z9Sav5p3eP",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__BfwKwXtnkAFwKqs2",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__Bj15g7cpzc9gnTXj",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__Blhdm5jltuUarF7D",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__BmsW91neRjk7lRs8",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__BpiVVBoVabMrG5Jh",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__BqaZHuhfs77HXnsw",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__Bqg4CbbhNBKqOp0Q",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__BuSGTZm_KFg7fkeD",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__Bxz9hxvXPvsOMw19",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__C-KgnQEzzHYF3Tse",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__C4CYPgyCDXiqOzmU",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__C77Rf6cENfPNmWIK",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__C7xY6pichlcxEvaq",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__CHdhvNcrLLvKWWRl",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__CJHJmJj166zLkaep",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__CJIHhYwFz-erht8H",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__CJPJrjiZZdLZ1sOt",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__CJo5DI-7QqoO9AJo",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__CK0XlKT-bBILRMcD",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__CLCX8uk5yRvlFmyG",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__CMlf0YU8cfPAesHY",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__CPJublpinxsn7ap2",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__CPQcA8Ol-XWC_WKC",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__CPnMO1hTAOXaiOas",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__CSuuaw9KJOlvLHU0",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__C_WSgUcvnnGnXRBM",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__CaVOFQ3t_imTcq6a",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__Cag8QTk2NashFrxv",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__Cbhezfe11s45BDV4",
+      "iou": 1,
+      "ref_pixels": 49408,
+      "got_pixels": 49408
+    },
+    {
+      "name": "A__Cc8Ccfe83uv6p0Ck",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__CcFCSQxmA12rSiqS",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__CcUiMqkJE_jUuF7d",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__Cdz2uTvRXdQ_bX4n",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__CfGorN3bltIo0XkE",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__CgxUDvtvszQiDOCG",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__CjfitMyT9xHLbobt",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__ClPo0x1AI_ZBgUhC",
+      "iou": 0.9977840251364313,
+      "ref_pixels": 30226,
+      "got_pixels": 30177
+    },
+    {
+      "name": "A__ClZ-0KpGfi9Z7l1G",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__CnTO3ehkDsb7oWCL",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__CoBdB-p8EqKqoelH",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__CqtQPzWZqthlQTR_",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__CrOApEqWgB6USZ2A",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__Ctpp7grB2q4O58DJ",
+      "iou": 0.917845923709798,
+      "ref_pixels": 33114,
+      "got_pixels": 30990
+    },
+    {
+      "name": "A__Cu5YU29TxrJrJhpf",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__CuaQmCLfKJQX1iEq",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__Cv4GwqahrOEKwPSa",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__CvCwYHGFteFxrVy2",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__CwGQsyAMmh6yQLC6",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__CwKXYZ8s-zgSEbso",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__D-aE2xRW1aaRQQSa",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__D39eIL5dmEPlLVXc",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__D4gikpNqia0qw-EX",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__D8B-0kdx5HBi1yEF",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__D9xG2hYrVAQQvwhX",
+      "iou": 1,
+      "ref_pixels": 49189,
+      "got_pixels": 49189
+    },
+    {
+      "name": "A__DCWxgz1_YPm9OVtG",
+      "iou": 0.9905109168387295,
+      "ref_pixels": 22757,
+      "got_pixels": 22553
+    },
+    {
+      "name": "A__DEAVMg38lZ7zpLVd",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__DGBIRFB_5FAnzGlR",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__DGBJvQaylJp1QUGQ",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__DGrQb42OM73ta-hQ",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__DIMg4gti1XTkK6he",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__DJKnEFYWwaOZd2Zl",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__DOgYbHsY-5JfNYXz",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__DPPHwW2M_EdzMLzv",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__DRlxvNwm9B9XZw4u",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__DSQoDxn_05qNoiog",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__DTi94M3MIw9KeoFc",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__DUkgV9TqMNXON86E",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__DXhVZ333lsyKRvmz",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__DZ2ADgIRtyTXfozn",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__DabL4p35O_-tCqzl",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__DcqxRdQLrn7v1G6-",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__Dd9p-0-TDYCQCPsV",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__DeRnbj4dnaoJWbb0",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__Dekqy8OfoVPl3ByB",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__DgxdtieEHIhpHfMD",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__Dh79zbT9VBbn600i",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__Di1JYREkQBTUTyQd",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__DiiNa0F5JUWaOX7a",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__Dkyx6q-ph4SUikAb",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__Dl00mlk2yK_nKuBL",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__DnlyVVKxA8oUKLWx",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__Dpsu1myADVIevsVO",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__DqkWLbnkrxjn7dun",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__Dr5rMAMbPrQdOKtz",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__Dry0C6UAOd6eyyzc",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__DvNWWcPMZWJ_KJ6p",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__DwOkwyQ0u5eNW6K8",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__DxciGbUuxsN2_TEd",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__DyWbhIiCKZMDHNQd",
+      "iou": 0.999633923123856,
+      "ref_pixels": 49152,
+      "got_pixels": 49170
+    },
+    {
+      "name": "A__FjwY7RYrNbgVhN6u",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__HTSFWgj6Ygs5ONd4",
+      "iou": 0.9993265363389767,
+      "ref_pixels": 53430,
+      "got_pixels": 53444
+    },
+    {
+      "name": "A__NoCollectDark-CGUvtE_V-CGUvtE_V",
+      "iou": 0.973553433300203,
+      "ref_pixels": 23134,
+      "got_pixels": 22536
+    },
+    {
+      "name": "A__NoCollectLight-DYK50VRY-DYK50VRY",
+      "iou": 0.9955378838082616,
+      "ref_pixels": 22635,
+      "got_pixels": 22534
+    },
+    {
+      "name": "A__NoDataDark-ByuJ4E1m-ByuJ4E1m",
+      "iou": 0.9281390908721615,
+      "ref_pixels": 23233,
+      "got_pixels": 24232
+    },
+    {
+      "name": "A__NoDataLight-CVVKLaiK-CVVKLaiK",
+      "iou": 0.9943420559970046,
+      "ref_pixels": 24035,
+      "got_pixels": 23903
+    },
+    {
+      "name": "A__NoDeviceDark-3Y67AAAT-nWy3hhsP",
+      "iou": 0.9977840251364313,
+      "ref_pixels": 30226,
+      "got_pixels": 30177
+    },
+    {
+      "name": "A__NoDeviceLight-JKDWOYWM-ClPo0x1A",
+      "iou": 0.9977840251364313,
+      "ref_pixels": 30226,
+      "got_pixels": 30177
+    },
+    {
+      "name": "A__NoFaceDark-DYY8c0ey-DYY8c0ey",
+      "iou": 0.901843120445778,
+      "ref_pixels": 22320,
+      "got_pixels": 22050
+    },
+    {
+      "name": "A__NoFaceLight-CD2yu5GF-CD2yu5GF",
+      "iou": 0.9869310099573257,
+      "ref_pixels": 22429,
+      "got_pixels": 22269
+    },
+    {
+      "name": "A__NoPermissionDark-BU9iGkra-BU9iGkra",
+      "iou": 0.9552403572742783,
+      "ref_pixels": 29011,
+      "got_pixels": 29437
+    },
+    {
+      "name": "A__NoPermissionLight-U4LL5R6U-DCWxgz1_",
+      "iou": 0.9905109168387295,
+      "ref_pixels": 22757,
+      "got_pixels": 22553
+    },
+    {
+      "name": "A__NoPermissionLight-aIzhBP-W-aIzhBP-W",
+      "iou": 0.982195350080171,
+      "ref_pixels": 29919,
+      "got_pixels": 29420
+    },
+    {
+      "name": "A__NoPositionDark-PDtWoS9P-PDtWoS9P",
+      "iou": 0.9602921895486046,
+      "ref_pixels": 26166,
+      "got_pixels": 26164
+    },
+    {
+      "name": "A__NoPositionLight-BLUFJ5sc-BLUFJ5sc",
+      "iou": 0.9806113997439951,
+      "ref_pixels": 26562,
+      "got_pixels": 26047
+    },
+    {
+      "name": "A__NoRecDark-DvTcUKJb-DvTcUKJb",
+      "iou": 0.9331547279195397,
+      "ref_pixels": 21796,
+      "got_pixels": 22220
+    },
+    {
+      "name": "A__NoRecLight-PtavKbx1-PtavKbx1",
+      "iou": 0.9869748833074017,
+      "ref_pixels": 22428,
+      "got_pixels": 22269
+    },
+    {
+      "name": "A__NoShareLinkDark-Bi1YdA19-Bi1YdA19",
+      "iou": 0.9957207385688248,
+      "ref_pixels": 25238,
+      "got_pixels": 25130
+    },
+    {
+      "name": "A__NoShareLinkLight-CkQHI7ZT-CkQHI7ZT",
+      "iou": 0.9957603613598542,
+      "ref_pixels": 25238,
+      "got_pixels": 25131
+    },
+    {
+      "name": "A__NoTagDark-D89cCB70-D89cCB70",
+      "iou": 0.9765336004932182,
+      "ref_pixels": 25950,
+      "got_pixels": 25345
+    },
+    {
+      "name": "A__NoTagLight-BTtp7u2d-BTtp7u2d",
+      "iou": 0.9953058868795691,
+      "ref_pixels": 25989,
+      "got_pixels": 25869
+    },
+    {
+      "name": "A__NoTrashDark-BNoHXCOs-BNoHXCOs",
+      "iou": 0.9914050822122571,
+      "ref_pixels": 18732,
+      "got_pixels": 18571
+    },
+    {
+      "name": "A__NoTrashLight-s6GJ2kLv-s6GJ2kLv",
+      "iou": 0.9936955708714004,
+      "ref_pixels": 18716,
+      "got_pixels": 18600
+    },
+    {
+      "name": "A__PhotoFrameDark-CA0Kw36i-CA0Kw36i",
+      "iou": 0.9965787810047971,
+      "ref_pixels": 26890,
+      "got_pixels": 26800
+    },
+    {
+      "name": "A__PhotoFrameLight-DcGSoyUK-DcGSoyUK",
+      "iou": 0.9964690577959487,
+      "ref_pixels": 26904,
+      "got_pixels": 26811
+    },
+    {
+      "name": "A__Q03Mij62qDOlR7Cn",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__RKKs0ph6EDRxMJ8C",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__RZ39q5hOGV6jurYm",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__RecognizingDark-CVNMiGjZ-CVNMiGjZ",
+      "iou": 0.9859176029962546,
+      "ref_pixels": 13350,
+      "got_pixels": 13162
+    },
+    {
+      "name": "A__RecognizingLight-BHvcq2Q_-BHvcq2Q_",
+      "iou": 0.9933848669540657,
+      "ref_pixels": 13454,
+      "got_pixels": 13365
+    },
+    {
+      "name": "A__SbvrH0uZCCnm1n1y",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__SsdCacheFormatFailedDark-ijmd-VSo-ijmd-VSo",
+      "iou": 0.9992904358217873,
+      "ref_pixels": 26766,
+      "got_pixels": 26769
+    },
+    {
+      "name": "A__SsdCacheFormatFailedLight-BkSU_sUe-BkSU_sUe",
+      "iou": 0.9693351720133546,
+      "ref_pixels": 27501,
+      "got_pixels": 26766
+    },
+    {
+      "name": "A__SsdCacheFormattedDark-l6u9llsb-l6u9llsb",
+      "iou": 0.9993605416588301,
+      "ref_pixels": 26573,
+      "got_pixels": 26580
+    },
+    {
+      "name": "A__SsdCacheFormattedLight-Brun8GpY-Brun8GpY",
+      "iou": 0.9697538439327221,
+      "ref_pixels": 27657,
+      "got_pixels": 26917
+    },
+    {
+      "name": "A__StoragePoolCreatedDark-DPlFckAZ-DPlFckAZ",
+      "iou": 0.9994492692226223,
+      "ref_pixels": 23597,
+      "got_pixels": 23600
+    },
+    {
+      "name": "A__StoragePoolCreatedLight-C_jPbfFa-C_jPbfFa",
+      "iou": 0.9740056144956069,
+      "ref_pixels": 27305,
+      "got_pixels": 26840
+    },
+    {
+      "name": "A__SxWnbWW0kB-NFDyc",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__U0m7oJ5ejxztmgXt",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__UploadGuideDark-DG-dgJV1-DG-dgJV1",
+      "iou": 0.9839317985385401,
+      "ref_pixels": 25192,
+      "got_pixels": 25307
+    },
+    {
+      "name": "A__UploadGuideLight-pKnKTMtA-pKnKTMtA",
+      "iou": 0.983966909592279,
+      "ref_pixels": 25130,
+      "got_pixels": 25233
+    },
+    {
+      "name": "A__W0PWLK5pDu-h1C6f",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__YC70hswZu1Ifn87X",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__YDa8zgzO2dKyC_YH",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__YqzKx9xldQ3N6dKj",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__bZuP8hmfNvBD8Y95",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__beginner-guide-icon-Jq8mcDLZ",
+      "iou": 0.9919367664365915,
+      "ref_pixels": 62871,
+      "got_pixels": 62378
+    },
+    {
+      "name": "A__cCIgaNf6TBdhBnrc",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__cwfBJlvFY3F9-ysQ",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__d5m8M5h8zNAQCwob",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__dark-D2HmIVUB",
+      "iou": 0.9998017708470992,
+      "ref_pixels": 45398,
+      "got_pixels": 45397
+    },
+    {
+      "name": "A__dtelpZmcFnKHoiia",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__fuIMkEYQcRHifw2L",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__fzLfaANM7yG-VcM8",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__h4QKADREn4O0RblO",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__light-cFGI37Gc",
+      "iou": 0.9998238001894147,
+      "ref_pixels": 45398,
+      "got_pixels": 45400
+    },
+    {
+      "name": "A__lock-t_gZZsqx",
+      "iou": 0.9219167456692234,
+      "ref_pixels": 34809,
+      "got_pixels": 32091
+    },
+    {
+      "name": "A__logo",
+      "iou": 0.998701579744644,
+      "ref_pixels": 13857,
+      "got_pixels": 13851
+    },
+    {
+      "name": "A__mNzh0mZCWdvuJeUt",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__nDhIaDNbcrOiCCIH",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__nN8zP2Bu2rY9dZb2",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__nWy3hhsP4m28lU0T",
+      "iou": 0.9977840251364313,
+      "ref_pixels": 30226,
+      "got_pixels": 30177
+    },
+    {
+      "name": "A__nuUF_Ak36MnXy7ua",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__p_fAQGbSKGzUH9wW",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__pweRl6ZP0wCkR3ME",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__qxMwa2gsNwhKfGTd",
+      "iou": 1,
+      "ref_pixels": 49152,
+      "got_pixels": 49152
+    },
+    {
+      "name": "A__s7kyhqIMnb7z9wzz",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__system-Dijotlyg",
+      "iou": 0.9997788686922294,
+      "ref_pixels": 45217,
+      "got_pixels": 45217
+    },
+    {
+      "name": "A__u3dAPoewyQazyICf",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__unknown-qETaL1jb",
+      "iou": 0.9342325137264264,
+      "ref_pixels": 33182,
+      "got_pixels": 31638
+    },
+    {
+      "name": "A__vEp1ZXy6A3HE_Dgk",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "A__vXe0Dr49sV6kcv_p",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "B__3d-center",
+      "iou": 1,
+      "ref_pixels": 10736,
+      "got_pixels": 10736
+    },
+    {
+      "name": "B__3d-pan",
+      "iou": 1,
+      "ref_pixels": 14136,
+      "got_pixels": 14136
+    },
+    {
+      "name": "B__3d-rotate",
+      "iou": 0.9973914858096828,
+      "ref_pixels": 9573,
+      "got_pixels": 9570
+    },
+    {
+      "name": "B__accelerometer-back",
+      "iou": 0.9997181334168493,
+      "ref_pixels": 31921,
+      "got_pixels": 31930
+    },
+    {
+      "name": "B__accelerometer-front",
+      "iou": 0.9998120889445662,
+      "ref_pixels": 31924,
+      "got_pixels": 31930
+    },
+    {
+      "name": "B__account-tree",
+      "iou": 1,
+      "ref_pixels": 16480,
+      "got_pixels": 16480
+    },
+    {
+      "name": "B__add-photo",
+      "iou": 0.9995994926907416,
+      "ref_pixels": 14975,
+      "got_pixels": 14981
+    },
+    {
+      "name": "B__ai-explorer-badge",
+      "iou": 0.9892952204605948,
+      "ref_pixels": 34563,
+      "got_pixels": 34195
+    },
+    {
+      "name": "B__align-content-center",
+      "iou": 1,
+      "ref_pixels": 12232,
+      "got_pixels": 12232
+    },
+    {
+      "name": "B__align-content-end",
+      "iou": 1,
+      "ref_pixels": 12440,
+      "got_pixels": 12440
+    },
+    {
+      "name": "B__align-content-space-around",
+      "iou": 1,
+      "ref_pixels": 16352,
+      "got_pixels": 16352
+    },
+    {
+      "name": "B__align-content-space-between",
+      "iou": 1,
+      "ref_pixels": 16352,
+      "got_pixels": 16352
+    },
+    {
+      "name": "B__align-content-space-evenly",
+      "iou": 1,
+      "ref_pixels": 16560,
+      "got_pixels": 16560
+    },
+    {
+      "name": "B__align-content-start",
+      "iou": 1,
+      "ref_pixels": 12440,
+      "got_pixels": 12440
+    },
+    {
+      "name": "B__align-content-stretch",
+      "iou": 1,
+      "ref_pixels": 23008,
+      "got_pixels": 23008
+    },
+    {
+      "name": "B__align-items-baseline",
+      "iou": 0.9990407673860912,
+      "ref_pixels": 10425,
+      "got_pixels": 10415
+    },
+    {
+      "name": "B__align-items-center",
+      "iou": 1,
+      "ref_pixels": 13796,
+      "got_pixels": 13796
+    },
+    {
+      "name": "B__align-items-end",
+      "iou": 1,
+      "ref_pixels": 13360,
+      "got_pixels": 13360
+    },
+    {
+      "name": "B__align-items-start",
+      "iou": 1,
+      "ref_pixels": 13360,
+      "got_pixels": 13360
+    },
+    {
+      "name": "B__align-items-stretch",
+      "iou": 1,
+      "ref_pixels": 18480,
+      "got_pixels": 18480
+    },
+    {
+      "name": "B__align-self-center",
+      "iou": 1,
+      "ref_pixels": 10520,
+      "got_pixels": 10520
+    },
+    {
+      "name": "B__align-self-end",
+      "iou": 1,
+      "ref_pixels": 9760,
+      "got_pixels": 9760
+    },
+    {
+      "name": "B__align-self-start",
+      "iou": 1,
+      "ref_pixels": 9760,
+      "got_pixels": 9760
+    },
+    {
+      "name": "B__align-self-stretch",
+      "iou": 1,
+      "ref_pixels": 13360,
+      "got_pixels": 13360
+    },
+    {
+      "name": "B__animation",
+      "iou": 0.9977658386084366,
+      "ref_pixels": 18779,
+      "got_pixels": 18777
+    },
+    {
+      "name": "B__arrow-back",
+      "iou": 1,
+      "ref_pixels": 7994,
+      "got_pixels": 7994
+    },
+    {
+      "name": "B__arrow-collapse",
+      "iou": 1,
+      "ref_pixels": 2756,
+      "got_pixels": 2756
+    },
+    {
+      "name": "B__arrow-down",
+      "iou": 1,
+      "ref_pixels": 6484,
+      "got_pixels": 6484
+    },
+    {
+      "name": "B__arrow-drop-down",
+      "iou": 1,
+      "ref_pixels": 2756,
+      "got_pixels": 2756
+    },
+    {
+      "name": "B__arrow-drop-down-dark",
+      "iou": 1,
+      "ref_pixels": 2756,
+      "got_pixels": 2756
+    },
+    {
+      "name": "B__arrow-drop-down-light",
+      "iou": 1,
+      "ref_pixels": 2756,
+      "got_pixels": 2756
+    },
+    {
+      "name": "B__arrow-forward",
+      "iou": 1,
+      "ref_pixels": 7994,
+      "got_pixels": 7994
+    },
+    {
+      "name": "B__arrow-right-circle",
+      "iou": 0.992871341421619,
+      "ref_pixels": 14567,
+      "got_pixels": 14507
+    },
+    {
+      "name": "B__arrow-up",
+      "iou": 1,
+      "ref_pixels": 6484,
+      "got_pixels": 6484
+    },
+    {
+      "name": "B__arrow-up-down",
+      "iou": 1,
+      "ref_pixels": 8492,
+      "got_pixels": 8492
+    },
+    {
+      "name": "B__arrow-up-down-circle",
+      "iou": 0.9952772699573431,
+      "ref_pixels": 19674,
+      "got_pixels": 19617
+    },
+    {
+      "name": "B__attach-file",
+      "iou": 0.9984804531012571,
+      "ref_pixels": 14468,
+      "got_pixels": 14466
+    },
+    {
+      "name": "B__baseline-high-availability",
+      "iou": 1,
+      "ref_pixels": 12558,
+      "got_pixels": 12558
+    },
+    {
+      "name": "B__baseline-limited-availability",
+      "iou": 1,
+      "ref_pixels": 12558,
+      "got_pixels": 12558
+    },
+    {
+      "name": "B__baseline-low-availability",
+      "iou": 1,
+      "ref_pixels": 9402,
+      "got_pixels": 9402
+    },
+    {
+      "name": "B__bell",
+      "iou": 0.9986515122327104,
+      "ref_pixels": 10375,
+      "got_pixels": 10375
+    },
+    {
+      "name": "B__bezier-curve-filled",
+      "iou": 0.9993728660023692,
+      "ref_pixels": 28698,
+      "got_pixels": 28688
+    },
+    {
+      "name": "B__bin",
+      "iou": 0.9998657718120806,
+      "ref_pixels": 14900,
+      "got_pixels": 14898
+    },
+    {
+      "name": "B__bottom-panel-close",
+      "iou": 0.9996533795493934,
+      "ref_pixels": 17310,
+      "got_pixels": 17304
+    },
+    {
+      "name": "B__bottom-panel-open",
+      "iou": 1,
+      "ref_pixels": 17326,
+      "got_pixels": 17326
+    },
+    {
+      "name": "B__brackets",
+      "iou": 0.9983340274885465,
+      "ref_pixels": 9604,
+      "got_pixels": 9588
+    },
+    {
+      "name": "B__breakpoint-circle",
+      "iou": 0.9929340325696936,
+      "ref_pixels": 18096,
+      "got_pixels": 18006
+    },
+    {
+      "name": "B__breakpoint-crossed",
+      "iou": 1,
+      "ref_pixels": 12775,
+      "got_pixels": 12775
+    },
+    {
+      "name": "B__breakpoint-crossed-filled",
+      "iou": 1,
+      "ref_pixels": 18630,
+      "got_pixels": 18630
+    },
+    {
+      "name": "B__brush",
+      "iou": 0.9981871600925174,
+      "ref_pixels": 15996,
+      "got_pixels": 15969
+    },
+    {
+      "name": "B__brush-2",
+      "iou": 0.9976459510357816,
+      "ref_pixels": 8484,
+      "got_pixels": 8488
+    },
+    {
+      "name": "B__brush-filled",
+      "iou": 0.9983932627846418,
+      "ref_pixels": 18048,
+      "got_pixels": 18021
+    },
+    {
+      "name": "B__bucket",
+      "iou": 0.9978512511263603,
+      "ref_pixels": 14409,
+      "got_pixels": 14414
+    },
+    {
+      "name": "B__bug",
+      "iou": 0.9985962319911341,
+      "ref_pixels": 13526,
+      "got_pixels": 13525
+    },
+    {
+      "name": "B__button-magic",
+      "iou": 0.9986000933271115,
+      "ref_pixels": 12856,
+      "got_pixels": 12842
+    },
+    {
+      "name": "B__calendar-today",
+      "iou": 1,
+      "ref_pixels": 16332,
+      "got_pixels": 16332
+    },
+    {
+      "name": "B__center-focus-weak",
+      "iou": 0.998199377966934,
+      "ref_pixels": 12216,
+      "got_pixels": 12198
+    },
+    {
+      "name": "B__check-circle",
+      "iou": 0.992684965863174,
+      "ref_pixels": 14335,
+      "got_pixels": 14268
+    },
+    {
+      "name": "B__check-double",
+      "iou": 0.9953418732324073,
+      "ref_pixels": 6011,
+      "got_pixels": 5983
+    },
+    {
+      "name": "B__checker",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "B__checkmark",
+      "iou": 0.9986021805982667,
+      "ref_pixels": 3577,
+      "got_pixels": 3572
+    },
+    {
+      "name": "B__chevron-double-right",
+      "iou": 1,
+      "ref_pixels": 6692,
+      "got_pixels": 6692
+    },
+    {
+      "name": "B__chevron-down",
+      "iou": 1,
+      "ref_pixels": 3348,
+      "got_pixels": 3348
+    },
+    {
+      "name": "B__chevron-left",
+      "iou": 1,
+      "ref_pixels": 3348,
+      "got_pixels": 3348
+    },
+    {
+      "name": "B__chevron-left-dot",
+      "iou": 0.9971326164874552,
+      "ref_pixels": 4179,
+      "got_pixels": 4179
+    },
+    {
+      "name": "B__chevron-right",
+      "iou": 1,
+      "ref_pixels": 3348,
+      "got_pixels": 3348
+    },
+    {
+      "name": "B__chevron-up",
+      "iou": 1,
+      "ref_pixels": 3348,
+      "got_pixels": 3348
+    },
+    {
+      "name": "B__class",
+      "iou": 0.9949822287267406,
+      "ref_pixels": 9550,
+      "got_pixels": 9534
+    },
+    {
+      "name": "B__clear",
+      "iou": 0.9984498308906427,
+      "ref_pixels": 14192,
+      "got_pixels": 14170
+    },
+    {
+      "name": "B__clear-list",
+      "iou": 0.9997898497425659,
+      "ref_pixels": 9517,
+      "got_pixels": 9515
+    },
+    {
+      "name": "B__cloud",
+      "iou": 0.9974339235309212,
+      "ref_pixels": 11676,
+      "got_pixels": 11676
+    },
+    {
+      "name": "B__code",
+      "iou": 1,
+      "ref_pixels": 6696,
+      "got_pixels": 6696
+    },
+    {
+      "name": "B__code-circle",
+      "iou": 0.9937058445728966,
+      "ref_pixels": 15552,
+      "got_pixels": 15490
+    },
+    {
+      "name": "B__code-whisperer-badge",
+      "iou": 0.9805442964678633,
+      "ref_pixels": 34538,
+      "got_pixels": 33870
+    },
+    {
+      "name": "B__colon",
+      "iou": 1,
+      "ref_pixels": 800,
+      "got_pixels": 800
+    },
+    {
+      "name": "B__color-picker",
+      "iou": 0.9973617176128093,
+      "ref_pixels": 10992,
+      "got_pixels": 10963
+    },
+    {
+      "name": "B__color-picker-filled",
+      "iou": 0.9978137297770004,
+      "ref_pixels": 11435,
+      "got_pixels": 11410
+    },
+    {
+      "name": "B__compress",
+      "iou": 0.999782324771441,
+      "ref_pixels": 13782,
+      "got_pixels": 13779
+    },
+    {
+      "name": "B__console-conditional-breakpoint",
+      "iou": 0.9998118744826548,
+      "ref_pixels": 53156,
+      "got_pixels": 53146
+    },
+    {
+      "name": "B__console-logpoint",
+      "iou": 0.9998118744826548,
+      "ref_pixels": 53156,
+      "got_pixels": 53146
+    },
+    {
+      "name": "B__container",
+      "iou": 0.9998952660242982,
+      "ref_pixels": 19094,
+      "got_pixels": 19096
+    },
+    {
+      "name": "B__cookie",
+      "iou": 0.9951800396937908,
+      "ref_pixels": 14076,
+      "got_pixels": 14072
+    },
+    {
+      "name": "B__cookie_off",
+      "iou": 0.997502284495888,
+      "ref_pixels": 16394,
+      "got_pixels": 16395
+    },
+    {
+      "name": "B__copy",
+      "iou": 0.9996285749659527,
+      "ref_pixels": 16148,
+      "got_pixels": 16154
+    },
+    {
+      "name": "B__corporate-fare",
+      "iou": 1,
+      "ref_pixels": 21080,
+      "got_pixels": 21080
+    },
+    {
+      "name": "B__credit-card",
+      "iou": 0.9998418055262602,
+      "ref_pixels": 18964,
+      "got_pixels": 18961
+    },
+    {
+      "name": "B__cross",
+      "iou": 1,
+      "ref_pixels": 6272,
+      "got_pixels": 6272
+    },
+    {
+      "name": "B__cross-circle",
+      "iou": 0.9940970967353331,
+      "ref_pixels": 16584,
+      "got_pixels": 16522
+    },
+    {
+      "name": "B__cross-circle-filled",
+      "iou": 0.9992487878167042,
+      "ref_pixels": 29268,
+      "got_pixels": 29282
+    },
+    {
+      "name": "B__database",
+      "iou": 0.997119317854468,
+      "ref_pixels": 17327,
+      "got_pixels": 17337
+    },
+    {
+      "name": "B__database-off",
+      "iou": 0.9989738604450206,
+      "ref_pixels": 18504,
+      "got_pixels": 18509
+    },
+    {
+      "name": "B__deployed",
+      "iou": 0.9979783565227732,
+      "ref_pixels": 16818,
+      "got_pixels": 16784
+    },
+    {
+      "name": "B__device-fold",
+      "iou": 0.999649982499125,
+      "ref_pixels": 17139,
+      "got_pixels": 17139
+    },
+    {
+      "name": "B__devices",
+      "iou": 0.9998607145344384,
+      "ref_pixels": 14357,
+      "got_pixels": 14359
+    },
+    {
+      "name": "B__devtools",
+      "iou": 0.9967321648346985,
+      "ref_pixels": 47126,
+      "got_pixels": 46972
+    },
+    {
+      "name": "B__devtools-thumbnail",
+      "iou": 1,
+      "ref_pixels": 40448,
+      "got_pixels": 40448
+    },
+    {
+      "name": "B__devtools-tips",
+      "iou": 1,
+      "ref_pixels": 40448,
+      "got_pixels": 40448
+    },
+    {
+      "name": "B__devtools-user-badge",
+      "iou": 0.9806085403100329,
+      "ref_pixels": 34703,
+      "got_pixels": 34036
+    },
+    {
+      "name": "B__difference",
+      "iou": 0.9996040388041972,
+      "ref_pixels": 20204,
+      "got_pixels": 20196
+    },
+    {
+      "name": "B__dock-bottom",
+      "iou": 1,
+      "ref_pixels": 15348,
+      "got_pixels": 15348
+    },
+    {
+      "name": "B__dock-left",
+      "iou": 1,
+      "ref_pixels": 15348,
+      "got_pixels": 15348
+    },
+    {
+      "name": "B__dock-right",
+      "iou": 1,
+      "ref_pixels": 15348,
+      "got_pixels": 15348
+    },
+    {
+      "name": "B__dock-window",
+      "iou": 0.9999004430285231,
+      "ref_pixels": 20087,
+      "got_pixels": 20089
+    },
+    {
+      "name": "B__document",
+      "iou": 1,
+      "ref_pixels": 13268,
+      "got_pixels": 13268
+    },
+    {
+      "name": "B__dog-paw",
+      "iou": 0.9975034550399001,
+      "ref_pixels": 22405,
+      "got_pixels": 22401
+    },
+    {
+      "name": "B__dom-detective-badge",
+      "iou": 0.989308874218613,
+      "ref_pixels": 34232,
+      "got_pixels": 33870
+    },
+    {
+      "name": "B__domain",
+      "iou": 0.9983105254265924,
+      "ref_pixels": 23676,
+      "got_pixels": 23636
+    },
+    {
+      "name": "B__dots-horizontal",
+      "iou": 0.9970445996775927,
+      "ref_pixels": 3718,
+      "got_pixels": 3715
+    },
+    {
+      "name": "B__dots-vertical",
+      "iou": 0.9973132724341752,
+      "ref_pixels": 3712,
+      "got_pixels": 3722
+    },
+    {
+      "name": "B__download",
+      "iou": 1,
+      "ref_pixels": 8212,
+      "got_pixels": 8212
+    },
+    {
+      "name": "B__edit",
+      "iou": 1,
+      "ref_pixels": 10104,
+      "got_pixels": 10104
+    },
+    {
+      "name": "B__empty",
+      "iou": 1,
+      "ref_pixels": 0,
+      "got_pixels": 0
+    },
+    {
+      "name": "B__errorWave",
+      "iou": 0.9907323461267251,
+      "ref_pixels": 9875,
+      "got_pixels": 9887
+    },
+    {
+      "name": "B__exclamation",
+      "iou": 1,
+      "ref_pixels": 1940,
+      "got_pixels": 1940
+    },
+    {
+      "name": "B__expand",
+      "iou": 1,
+      "ref_pixels": 11060,
+      "got_pixels": 11060
+    },
+    {
+      "name": "B__experiment",
+      "iou": 0.999414372960763,
+      "ref_pixels": 11946,
+      "got_pixels": 11953
+    },
+    {
+      "name": "B__experiment-check",
+      "iou": 0.9995767374925929,
+      "ref_pixels": 11813,
+      "got_pixels": 11808
+    },
+    {
+      "name": "B__extension",
+      "iou": 0.9986267016957249,
+      "ref_pixels": 16739,
+      "got_pixels": 16734
+    },
+    {
+      "name": "B__eye",
+      "iou": 0.9971198533743536,
+      "ref_pixels": 15272,
+      "got_pixels": 15238
+    },
+    {
+      "name": "B__eye-crossed",
+      "iou": 0.9951726912246422,
+      "ref_pixels": 17384,
+      "got_pixels": 17334
+    },
+    {
+      "name": "B__favicon",
+      "iou": 0.9982515299113276,
+      "ref_pixels": 24002,
+      "got_pixels": 23998
+    },
+    {
+      "name": "B__favicon-dark",
+      "iou": 0.9982515299113276,
+      "ref_pixels": 24002,
+      "got_pixels": 23998
+    },
+    {
+      "name": "B__file-document",
+      "iou": 1,
+      "ref_pixels": 18224,
+      "got_pixels": 18224
+    },
+    {
+      "name": "B__file-fetch-xhr",
+      "iou": 0.9995480906831362,
+      "ref_pixels": 13271,
+      "got_pixels": 13277
+    },
+    {
+      "name": "B__file-font",
+      "iou": 1,
+      "ref_pixels": 15744,
+      "got_pixels": 15744
+    },
+    {
+      "name": "B__file-generic",
+      "iou": 1,
+      "ref_pixels": 12504,
+      "got_pixels": 12504
+    },
+    {
+      "name": "B__file-image",
+      "iou": 0.9994891116929562,
+      "ref_pixels": 15655,
+      "got_pixels": 15655
+    },
+    {
+      "name": "B__file-json",
+      "iou": 0.9986086956521739,
+      "ref_pixels": 11492,
+      "got_pixels": 11492
+    },
+    {
+      "name": "B__file-manifest",
+      "iou": 0.9995790359924226,
+      "ref_pixels": 14247,
+      "got_pixels": 14253
+    },
+    {
+      "name": "B__file-media",
+      "iou": 0.9992408906882592,
+      "ref_pixels": 15808,
+      "got_pixels": 15796
+    },
+    {
+      "name": "B__file-script",
+      "iou": 1,
+      "ref_pixels": 15484,
+      "got_pixels": 15484
+    },
+    {
+      "name": "B__file-snippet",
+      "iou": 1,
+      "ref_pixels": 19224,
+      "got_pixels": 19224
+    },
+    {
+      "name": "B__file-stylesheet",
+      "iou": 0.9994156223621843,
+      "ref_pixels": 15394,
+      "got_pixels": 15399
+    },
+    {
+      "name": "B__file-wasm",
+      "iou": 0.9994035192365046,
+      "ref_pixels": 16759,
+      "got_pixels": 16761
+    },
+    {
+      "name": "B__file-websocket",
+      "iou": 0.9992644895557516,
+      "ref_pixels": 6798,
+      "got_pixels": 6793
+    },
+    {
+      "name": "B__filter",
+      "iou": 0.9982647496281606,
+      "ref_pixels": 8068,
+      "got_pixels": 8054
+    },
+    {
+      "name": "B__filter-clear",
+      "iou": 0.9996026226902444,
+      "ref_pixels": 10065,
+      "got_pixels": 10063
+    },
+    {
+      "name": "B__filter-filled",
+      "iou": 0.9986296006264683,
+      "ref_pixels": 10216,
+      "got_pixels": 10202
+    },
+    {
+      "name": "B__flex-direction",
+      "iou": 1,
+      "ref_pixels": 18872,
+      "got_pixels": 18872
+    },
+    {
+      "name": "B__flex-no-wrap",
+      "iou": 1,
+      "ref_pixels": 17528,
+      "got_pixels": 17528
+    },
+    {
+      "name": "B__flex-wrap",
+      "iou": 1,
+      "ref_pixels": 29176,
+      "got_pixels": 29176
+    },
+    {
+      "name": "B__flow",
+      "iou": 0.9978035770316912,
+      "ref_pixels": 12744,
+      "got_pixels": 12724
+    },
+    {
+      "name": "B__flowsheet",
+      "iou": 0.9992283950617284,
+      "ref_pixels": 16841,
+      "got_pixels": 16842
+    },
+    {
+      "name": "B__fold-more",
+      "iou": 1,
+      "ref_pixels": 4264,
+      "got_pixels": 4264
+    },
+    {
+      "name": "B__folder",
+      "iou": 0.9998546511627907,
+      "ref_pixels": 13758,
+      "got_pixels": 13760
+    },
+    {
+      "name": "B__folder-asterisk",
+      "iou": 0.9993020658849805,
+      "ref_pixels": 14326,
+      "got_pixels": 14320
+    },
+    {
+      "name": "B__folder-off",
+      "iou": 0.9994272258639343,
+      "ref_pixels": 15713,
+      "got_pixels": 15704
+    },
+    {
+      "name": "B__frame",
+      "iou": 1,
+      "ref_pixels": 15646,
+      "got_pixels": 15646
+    },
+    {
+      "name": "B__frame-crossed",
+      "iou": 0.9991785323110625,
+      "ref_pixels": 18259,
+      "got_pixels": 18246
+    },
+    {
+      "name": "B__frame-icon",
+      "iou": 1,
+      "ref_pixels": 24582,
+      "got_pixels": 24582
+    },
+    {
+      "name": "B__gear",
+      "iou": 0.9969009545060121,
+      "ref_pixels": 16100,
+      "got_pixels": 16118
+    },
+    {
+      "name": "B__gear-filled",
+      "iou": 0.9990064365631345,
+      "ref_pixels": 23135,
+      "got_pixels": 23140
+    },
+    {
+      "name": "B__gears",
+      "iou": 0.996807720861173,
+      "ref_pixels": 13458,
+      "got_pixels": 13439
+    },
+    {
+      "name": "B__global",
+      "iou": 0.9982703637641208,
+      "ref_pixels": 18497,
+      "got_pixels": 18473
+    },
+    {
+      "name": "B__google",
+      "iou": 0.9981460023174971,
+      "ref_pixels": 21558,
+      "got_pixels": 21552
+    },
+    {
+      "name": "B__goto-filled",
+      "iou": 0.9942906080502426,
+      "ref_pixels": 21016,
+      "got_pixels": 20900
+    },
+    {
+      "name": "B__grid-direction",
+      "iou": 1,
+      "ref_pixels": 21899,
+      "got_pixels": 21899
+    },
+    {
+      "name": "B__grid-on",
+      "iou": 1,
+      "ref_pixels": 22104,
+      "got_pixels": 22104
+    },
+    {
+      "name": "B__group",
+      "iou": 0.9981128119102537,
+      "ref_pixels": 14298,
+      "got_pixels": 14289
+    },
+    {
+      "name": "B__heap-snapshot",
+      "iou": 0.9992310846832069,
+      "ref_pixels": 19501,
+      "got_pixels": 19500
+    },
+    {
+      "name": "B__heap-snapshots",
+      "iou": 0.9994649104754064,
+      "ref_pixels": 24285,
+      "got_pixels": 24292
+    },
+    {
+      "name": "B__help",
+      "iou": 0.9925044381616148,
+      "ref_pixels": 15181,
+      "got_pixels": 15123
+    },
+    {
+      "name": "B__history",
+      "iou": 0.9971571781252337,
+      "ref_pixels": 13363,
+      "got_pixels": 13333
+    },
+    {
+      "name": "B__home",
+      "iou": 1,
+      "ref_pixels": 12986,
+      "got_pixels": 12986
+    },
+    {
+      "name": "B__hover",
+      "iou": 0.9940134696931904,
+      "ref_pixels": 12013,
+      "got_pixels": 11969
+    },
+    {
+      "name": "B__icon",
+      "iou": 0.9960899315738025,
+      "ref_pixels": 9184,
+      "got_pixels": 9194
+    },
+    {
+      "name": "B__iframe",
+      "iou": 1,
+      "ref_pixels": 18270,
+      "got_pixels": 18270
+    },
+    {
+      "name": "B__iframe-crossed",
+      "iou": 0.999228672803003,
+      "ref_pixels": 19446,
+      "got_pixels": 19433
+    },
+    {
+      "name": "B__import",
+      "iou": 1,
+      "ref_pixels": 8212,
+      "got_pixels": 8212
+    },
+    {
+      "name": "B__indeterminate-question-box",
+      "iou": 0.9963809691941037,
+      "ref_pixels": 11322,
+      "got_pixels": 11295
+    },
+    {
+      "name": "B__info",
+      "iou": 0.9927159209157128,
+      "ref_pixels": 13436,
+      "got_pixels": 13374
+    },
+    {
+      "name": "B__info-filled",
+      "iou": 0.9993741590261914,
+      "ref_pixels": 31942,
+      "got_pixels": 31952
+    },
+    {
+      "name": "B__issue-cross-filled",
+      "iou": 1,
+      "ref_pixels": 32138,
+      "got_pixels": 32138
+    },
+    {
+      "name": "B__issue-exclamation-filled",
+      "iou": 0.9999388827771666,
+      "ref_pixels": 32724,
+      "got_pixels": 32722
+    },
+    {
+      "name": "B__issue-questionmark-filled",
+      "iou": 0.9996678944508182,
+      "ref_pixels": 33117,
+      "got_pixels": 33116
+    },
+    {
+      "name": "B__issue-text-filled",
+      "iou": 1,
+      "ref_pixels": 28612,
+      "got_pixels": 28612
+    },
+    {
+      "name": "B__justify-content-center",
+      "iou": 1,
+      "ref_pixels": 12232,
+      "got_pixels": 12232
+    },
+    {
+      "name": "B__justify-content-end",
+      "iou": 1,
+      "ref_pixels": 12440,
+      "got_pixels": 12440
+    },
+    {
+      "name": "B__justify-content-space-around",
+      "iou": 1,
+      "ref_pixels": 16352,
+      "got_pixels": 16352
+    },
+    {
+      "name": "B__justify-content-space-between",
+      "iou": 1,
+      "ref_pixels": 16352,
+      "got_pixels": 16352
+    },
+    {
+      "name": "B__justify-content-space-evenly",
+      "iou": 1,
+      "ref_pixels": 16560,
+      "got_pixels": 16560
+    },
+    {
+      "name": "B__justify-content-start",
+      "iou": 1,
+      "ref_pixels": 12440,
+      "got_pixels": 12440
+    },
+    {
+      "name": "B__justify-content-stretch",
+      "iou": 1,
+      "ref_pixels": 23008,
+      "got_pixels": 23008
+    },
+    {
+      "name": "B__justify-items-center",
+      "iou": 1,
+      "ref_pixels": 19316,
+      "got_pixels": 19316
+    },
+    {
+      "name": "B__justify-items-end",
+      "iou": 1,
+      "ref_pixels": 17288,
+      "got_pixels": 17288
+    },
+    {
+      "name": "B__justify-items-start",
+      "iou": 1,
+      "ref_pixels": 17288,
+      "got_pixels": 17288
+    },
+    {
+      "name": "B__justify-items-stretch",
+      "iou": 1,
+      "ref_pixels": 19316,
+      "got_pixels": 19316
+    },
+    {
+      "name": "B__keyboard",
+      "iou": 0.9999413007748298,
+      "ref_pixels": 17036,
+      "got_pixels": 17035
+    },
+    {
+      "name": "B__keyboard-arrow-right",
+      "iou": 1,
+      "ref_pixels": 3348,
+      "got_pixels": 3348
+    },
+    {
+      "name": "B__keyboard-full",
+      "iou": 1,
+      "ref_pixels": 19962,
+      "got_pixels": 19962
+    },
+    {
+      "name": "B__keyboard-pen",
+      "iou": 0.9993791904643655,
+      "ref_pixels": 16107,
+      "got_pixels": 16099
+    },
+    {
+      "name": "B__label",
+      "iou": 0.9992727272727273,
+      "ref_pixels": 11000,
+      "got_pixels": 10992
+    },
+    {
+      "name": "B__label-auto",
+      "iou": 0.9975847571339118,
+      "ref_pixels": 11179,
+      "got_pixels": 11152
+    },
+    {
+      "name": "B__large-arrow-right-filled",
+      "iou": 0.9996583532627263,
+      "ref_pixels": 14634,
+      "got_pixels": 14631
+    },
+    {
+      "name": "B__layers",
+      "iou": 0.9983410749834107,
+      "ref_pixels": 12050,
+      "got_pixels": 12042
+    },
+    {
+      "name": "B__layers-filled",
+      "iou": 0.9993609852445684,
+      "ref_pixels": 17214,
+      "got_pixels": 17203
+    },
+    {
+      "name": "B__left-panel-close",
+      "iou": 0.9996533795493934,
+      "ref_pixels": 17310,
+      "got_pixels": 17304
+    },
+    {
+      "name": "B__left-panel-open",
+      "iou": 1,
+      "ref_pixels": 17326,
+      "got_pixels": 17326
+    },
+    {
+      "name": "B__lightbulb",
+      "iou": 0.9990672511892548,
+      "ref_pixels": 10716,
+      "got_pixels": 10716
+    },
+    {
+      "name": "B__lightbulb-spark",
+      "iou": 0.9889472010178118,
+      "ref_pixels": 12558,
+      "got_pixels": 12455
+    },
+    {
+      "name": "B__lighthouse_logo",
+      "iou": 0.9998169294491864,
+      "ref_pixels": 43694,
+      "got_pixels": 43696
+    },
+    {
+      "name": "B__list",
+      "iou": 0.9994126284875183,
+      "ref_pixels": 10209,
+      "got_pixels": 10215
+    },
+    {
+      "name": "B__location-on",
+      "iou": 0.99561218462577,
+      "ref_pixels": 11826,
+      "got_pixels": 11824
+    },
+    {
+      "name": "B__lock",
+      "iou": 0.9989906466590405,
+      "ref_pixels": 14855,
+      "got_pixels": 14852
+    },
+    {
+      "name": "B__lock-person",
+      "iou": 0.9982147998848258,
+      "ref_pixels": 17355,
+      "got_pixels": 17344
+    },
+    {
+      "name": "B__logo",
+      "iou": 0.998351095917957,
+      "ref_pixels": 24852,
+      "got_pixels": 24837
+    },
+    {
+      "name": "B__mark-email-unread",
+      "iou": 0.9978701432812702,
+      "ref_pixels": 15492,
+      "got_pixels": 15463
+    },
+    {
+      "name": "B__match-case",
+      "iou": 0.9921002738571729,
+      "ref_pixels": 9487,
+      "got_pixels": 9426
+    },
+    {
+      "name": "B__match-whole-word",
+      "iou": 0.9979299240972169,
+      "ref_pixels": 13036,
+      "got_pixels": 13023
+    },
+    {
+      "name": "B__memory",
+      "iou": 0.9999478269943132,
+      "ref_pixels": 19166,
+      "got_pixels": 19167
+    },
+    {
+      "name": "B__minus",
+      "iou": 1,
+      "ref_pixels": 2560,
+      "got_pixels": 2560
+    },
+    {
+      "name": "B__mop",
+      "iou": 0.9990894445611823,
+      "ref_pixels": 14271,
+      "got_pixels": 14270
+    },
+    {
+      "name": "B__mouse",
+      "iou": 0.9983627562642369,
+      "ref_pixels": 14042,
+      "got_pixels": 14031
+    },
+    {
+      "name": "B__network-settings",
+      "iou": 0.9964646464646465,
+      "ref_pixels": 11866,
+      "got_pixels": 11852
+    },
+    {
+      "name": "B__node-stack-icon",
+      "iou": 0.9984710778900875,
+      "ref_pixels": 11771,
+      "got_pixels": 11757
+    },
+    {
+      "name": "B__onboarding-back-04427ce3e26c",
+      "iou": 0.9981799797775531,
+      "ref_pixels": 9888,
+      "got_pixels": 9874
+    },
+    {
+      "name": "B__onboarding-code-130f4f9f819c",
+      "iou": 0.9992587101556709,
+      "ref_pixels": 5396,
+      "got_pixels": 5392
+    },
+    {
+      "name": "B__onboarding-compact-4d29ad212f3b",
+      "iou": 0.9997393797237425,
+      "ref_pixels": 3837,
+      "got_pixels": 3836
+    },
+    {
+      "name": "B__onboarding-detailed-0e44397e280d",
+      "iou": 0.998917123881028,
+      "ref_pixels": 13845,
+      "got_pixels": 13844
+    },
+    {
+      "name": "B__onboarding-office-8ca45c77307a",
+      "iou": 0.9992989835261129,
+      "ref_pixels": 11407,
+      "got_pixels": 11409
+    },
+    {
+      "name": "B__onboarding-standard-13b8aa0232ab",
+      "iou": 0.9981220657276996,
+      "ref_pixels": 8504,
+      "got_pixels": 8520
+    },
+    {
+      "name": "B__open-externally",
+      "iou": 1,
+      "ref_pixels": 14438,
+      "got_pixels": 14438
+    },
+    {
+      "name": "B__override",
+      "iou": 0.9998706673564408,
+      "ref_pixels": 15464,
+      "got_pixels": 15462
+    },
+    {
+      "name": "B__palette",
+      "iou": 0.9956025747243643,
+      "ref_pixels": 15665,
+      "got_pixels": 15648
+    },
+    {
+      "name": "B__pause",
+      "iou": 1,
+      "ref_pixels": 14320,
+      "got_pixels": 14320
+    },
+    {
+      "name": "B__pause-circle",
+      "iou": 0.993643784290111,
+      "ref_pixels": 14931,
+      "got_pixels": 14866
+    },
+    {
+      "name": "B__pen-spark",
+      "iou": 0.9985746436609152,
+      "ref_pixels": 13328,
+      "got_pixels": 13313
+    },
+    {
+      "name": "B__performance",
+      "iou": 0.9977292302873698,
+      "ref_pixels": 12759,
+      "got_pixels": 12754
+    },
+    {
+      "name": "B__performance-panel-delete-annotation",
+      "iou": 1,
+      "ref_pixels": 36352,
+      "got_pixels": 36352
+    },
+    {
+      "name": "B__performance-panel-diagram",
+      "iou": 0.9862217266645429,
+      "ref_pixels": 12555,
+      "got_pixels": 12384
+    },
+    {
+      "name": "B__performance-panel-entry-label",
+      "iou": 0.9834326856081134,
+      "ref_pixels": 12709,
+      "got_pixels": 12911
+    },
+    {
+      "name": "B__performance-panel-time-range",
+      "iou": 0.9715549005158438,
+      "ref_pixels": 27140,
+      "got_pixels": 26368
+    },
+    {
+      "name": "B__person",
+      "iou": 0.9988085106382979,
+      "ref_pixels": 11746,
+      "got_pixels": 11740
+    },
+    {
+      "name": "B__photo-camera",
+      "iou": 0.9991459804144842,
+      "ref_pixels": 17560,
+      "got_pixels": 17553
+    },
+    {
+      "name": "B__play",
+      "iou": 0.9998359041680341,
+      "ref_pixels": 6094,
+      "got_pixels": 6093
+    },
+    {
+      "name": "B__plus",
+      "iou": 1,
+      "ref_pixels": 5760,
+      "got_pixels": 5760
+    },
+    {
+      "name": "B__policy",
+      "iou": 0.9959598774031764,
+      "ref_pixels": 14334,
+      "got_pixels": 14320
+    },
+    {
+      "name": "B__popup",
+      "iou": 0.9997682932480653,
+      "ref_pixels": 21574,
+      "got_pixels": 21579
+    },
+    {
+      "name": "B__preview",
+      "iou": 1,
+      "ref_pixels": 30720,
+      "got_pixels": 30720
+    },
+    {
+      "name": "B__preview.zh",
+      "iou": 1,
+      "ref_pixels": 30720,
+      "got_pixels": 30720
+    },
+    {
+      "name": "B__preview_feature_video_thumbnail",
+      "iou": 0.9996415599311795,
+      "ref_pixels": 41833,
+      "got_pixels": 41848
+    },
+    {
+      "name": "B__profile",
+      "iou": 0.9954638490900038,
+      "ref_pixels": 18058,
+      "got_pixels": 18014
+    },
+    {
+      "name": "B__psychiatry",
+      "iou": 0.9974874371859297,
+      "ref_pixels": 11136,
+      "got_pixels": 11124
+    },
+    {
+      "name": "B__puzzle",
+      "iou": 0.997712688226698,
+      "ref_pixels": 15714,
+      "got_pixels": 15728
+    },
+    {
+      "name": "B__record-start",
+      "iou": 0.9966204106713094,
+      "ref_pixels": 19508,
+      "got_pixels": 19484
+    },
+    {
+      "name": "B__record-stop",
+      "iou": 0.9983682983682983,
+      "ref_pixels": 17160,
+      "got_pixels": 17132
+    },
+    {
+      "name": "B__redo",
+      "iou": 0.9996262613678834,
+      "ref_pixels": 8025,
+      "got_pixels": 8026
+    },
+    {
+      "name": "B__refresh",
+      "iou": 0.9985141158989599,
+      "ref_pixels": 11436,
+      "got_pixels": 11429
+    },
+    {
+      "name": "B__regular-expression",
+      "iou": 0.996198441360958,
+      "ref_pixels": 10510,
+      "got_pixels": 10494
+    },
+    {
+      "name": "B__replace",
+      "iou": 0.9971967654986523,
+      "ref_pixels": 9272,
+      "got_pixels": 9252
+    },
+    {
+      "name": "B__replay",
+      "iou": 0.995590088198236,
+      "ref_pixels": 9508,
+      "got_pixels": 9498
+    },
+    {
+      "name": "B__report",
+      "iou": 1,
+      "ref_pixels": 14416,
+      "got_pixels": 14416
+    },
+    {
+      "name": "B__resizeDiagonal",
+      "iou": 0.9972940794458275,
+      "ref_pixels": 18474,
+      "got_pixels": 18432
+    },
+    {
+      "name": "B__resizeHorizontal",
+      "iou": 0.9990564257407057,
+      "ref_pixels": 10594,
+      "got_pixels": 10592
+    },
+    {
+      "name": "B__resizeVertical",
+      "iou": 0.9990564257407057,
+      "ref_pixels": 10594,
+      "got_pixels": 10592
+    },
+    {
+      "name": "B__resume",
+      "iou": 1,
+      "ref_pixels": 8030,
+      "got_pixels": 8030
+    },
+    {
+      "name": "B__revert",
+      "iou": 0.9989943776568999,
+      "ref_pixels": 21864,
+      "got_pixels": 21868
+    },
+    {
+      "name": "B__review",
+      "iou": 0.9976277489260755,
+      "ref_pixels": 15587,
+      "got_pixels": 15570
+    },
+    {
+      "name": "B__right-panel-close",
+      "iou": 0.9996533795493934,
+      "ref_pixels": 17310,
+      "got_pixels": 17304
+    },
+    {
+      "name": "B__right-panel-open",
+      "iou": 1,
+      "ref_pixels": 17326,
+      "got_pixels": 17326
+    },
+    {
+      "name": "B__scissors",
+      "iou": 0.9993727785908426,
+      "ref_pixels": 19128,
+      "got_pixels": 19124
+    },
+    {
+      "name": "B__screen-rotation",
+      "iou": 0.9950433705080545,
+      "ref_pixels": 16124,
+      "got_pixels": 16076
+    },
+    {
+      "name": "B__search",
+      "iou": 0.9970558260672631,
+      "ref_pixels": 8825,
+      "got_pixels": 8811
+    },
+    {
+      "name": "B__select-element",
+      "iou": 1,
+      "ref_pixels": 10004,
+      "got_pixels": 10004
+    },
+    {
+      "name": "B__send",
+      "iou": 0.9983012457531144,
+      "ref_pixels": 10578,
+      "got_pixels": 10596
+    },
+    {
+      "name": "B__shadow",
+      "iou": 1,
+      "ref_pixels": 22819,
+      "got_pixels": 22819
+    },
+    {
+      "name": "B__shield",
+      "iou": 0.9967966318872414,
+      "ref_pixels": 10910,
+      "got_pixels": 10907
+    },
+    {
+      "name": "B__small-status-dot",
+      "iou": 0.9966460858297126,
+      "ref_pixels": 13091,
+      "got_pixels": 13103
+    },
+    {
+      "name": "B__smart-assistant",
+      "iou": 0.9992841291431026,
+      "ref_pixels": 13967,
+      "got_pixels": 13961
+    },
+    {
+      "name": "B__snippet",
+      "iou": 0.999200852424081,
+      "ref_pixels": 15016,
+      "got_pixels": 15004
+    },
+    {
+      "name": "B__spark",
+      "iou": 0.9982628449255028,
+      "ref_pixels": 14963,
+      "got_pixels": 14945
+    },
+    {
+      "name": "B__spark-info",
+      "iou": 0.9942967187615732,
+      "ref_pixels": 13480,
+      "got_pixels": 13445
+    },
+    {
+      "name": "B__speculative-loads",
+      "iou": 1,
+      "ref_pixels": 9410,
+      "got_pixels": 9410
+    },
+    {
+      "name": "B__speedster-badge",
+      "iou": 0.9805442964678633,
+      "ref_pixels": 34538,
+      "got_pixels": 33870
+    },
+    {
+      "name": "B__star",
+      "iou": 0.9978249521489473,
+      "ref_pixels": 11491,
+      "got_pixels": 11472
+    },
+    {
+      "name": "B__step",
+      "iou": 0.998969470565503,
+      "ref_pixels": 7760,
+      "got_pixels": 7758
+    },
+    {
+      "name": "B__step-into",
+      "iou": 0.9992271029241273,
+      "ref_pixels": 7763,
+      "got_pixels": 7757
+    },
+    {
+      "name": "B__step-out",
+      "iou": 0.999224305106658,
+      "ref_pixels": 7735,
+      "got_pixels": 7729
+    },
+    {
+      "name": "B__step-over",
+      "iou": 0.9983994512404253,
+      "ref_pixels": 8743,
+      "got_pixels": 8737
+    },
+    {
+      "name": "B__stop",
+      "iou": 1,
+      "ref_pixels": 7168,
+      "got_pixels": 7168
+    },
+    {
+      "name": "B__symbol",
+      "iou": 0.9941880943994365,
+      "ref_pixels": 17011,
+      "got_pixels": 16958
+    },
+    {
+      "name": "B__sync",
+      "iou": 0.9956331877729258,
+      "ref_pixels": 9367,
+      "got_pixels": 9370
+    },
+    {
+      "name": "B__tab-move",
+      "iou": 0.9998906566070745,
+      "ref_pixels": 18289,
+      "got_pixels": 18291
+    },
+    {
+      "name": "B__table",
+      "iou": 1,
+      "ref_pixels": 19344,
+      "got_pixels": 19344
+    },
+    {
+      "name": "B__terminal",
+      "iou": 1,
+      "ref_pixels": 18593,
+      "got_pixels": 18593
+    },
+    {
+      "name": "B__text-analysis",
+      "iou": 0.9981344940925646,
+      "ref_pixels": 11255,
+      "got_pixels": 11238
+    },
+    {
+      "name": "B__thumb-down",
+      "iou": 0.9989006290844683,
+      "ref_pixels": 16369,
+      "got_pixels": 16359
+    },
+    {
+      "name": "B__thumb-down-filled",
+      "iou": 0.9996963767627016,
+      "ref_pixels": 29636,
+      "got_pixels": 29639
+    },
+    {
+      "name": "B__thumb-up",
+      "iou": 0.999205961397508,
+      "ref_pixels": 16370,
+      "got_pixels": 16361
+    },
+    {
+      "name": "B__thumb-up-filled",
+      "iou": 0.9996963562753036,
+      "ref_pixels": 29637,
+      "got_pixels": 29634
+    },
+    {
+      "name": "B__tonality",
+      "iou": 0.9977192815736957,
+      "ref_pixels": 21024,
+      "got_pixels": 21020
+    },
+    {
+      "name": "B__top-panel-close",
+      "iou": 0.9996533795493934,
+      "ref_pixels": 17310,
+      "got_pixels": 17304
+    },
+    {
+      "name": "B__top-panel-open",
+      "iou": 1,
+      "ref_pixels": 17326,
+      "got_pixels": 17326
+    },
+    {
+      "name": "B__touch-app",
+      "iou": 0.9968297101449275,
+      "ref_pixels": 15445,
+      "got_pixels": 15418
+    },
+    {
+      "name": "B__triangle-bottom-right",
+      "iou": 1,
+      "ref_pixels": 2080,
+      "got_pixels": 2080
+    },
+    {
+      "name": "B__triangle-down",
+      "iou": 0.997172859450727,
+      "ref_pixels": 7428,
+      "got_pixels": 7407
+    },
+    {
+      "name": "B__triangle-left",
+      "iou": 0.9987702902115101,
+      "ref_pixels": 8132,
+      "got_pixels": 8122
+    },
+    {
+      "name": "B__triangle-right",
+      "iou": 0.9981240787886909,
+      "ref_pixels": 7453,
+      "got_pixels": 7459
+    },
+    {
+      "name": "B__triangle-up",
+      "iou": 1,
+      "ref_pixels": 7370,
+      "got_pixels": 7370
+    },
+    {
+      "name": "B__trophy",
+      "iou": 0.9980558930741191,
+      "ref_pixels": 12331,
+      "got_pixels": 12335
+    },
+    {
+      "name": "B__tune",
+      "iou": 1,
+      "ref_pixels": 12500,
+      "got_pixels": 12500
+    },
+    {
+      "name": "B__undo",
+      "iou": 0.9995015576323988,
+      "ref_pixels": 8022,
+      "got_pixels": 8024
+    },
+    {
+      "name": "B__warning",
+      "iou": 0.9998474796003965,
+      "ref_pixels": 13111,
+      "got_pixels": 13113
+    },
+    {
+      "name": "B__warning-filled",
+      "iou": 0.9997548178296475,
+      "ref_pixels": 20391,
+      "got_pixels": 20390
+    },
+    {
+      "name": "B__watch",
+      "iou": 0.9957434931267881,
+      "ref_pixels": 14314,
+      "got_pixels": 14287
+    },
+    {
+      "name": "B__whatsnew",
+      "iou": 1,
+      "ref_pixels": 40448,
+      "got_pixels": 40448
+    },
+    {
+      "name": "B__width",
+      "iou": 1,
+      "ref_pixels": 6000,
+      "got_pixels": 6000
+    },
+    {
+      "name": "B__zoom-in",
+      "iou": 0.9976830398517146,
+      "ref_pixels": 10784,
+      "got_pixels": 10771
+    },
+    {
+      "name": "C__04a8c94a63a85f5c",
+      "iou": 0.9976963785410398,
+      "ref_pixels": 48075,
+      "got_pixels": 48184
+    },
+    {
+      "name": "C__0533cf372c6a0394",
+      "iou": 0.9950847874170557,
+      "ref_pixels": 52654,
+      "got_pixels": 52880
+    },
+    {
+      "name": "C__096f2bb3aa466dcb",
+      "iou": 0.9989805825242718,
+      "ref_pixels": 20598,
+      "got_pixels": 20581
+    },
+    {
+      "name": "C__099fe453ccedf43a",
+      "iou": 0.9996121024049651,
+      "ref_pixels": 20618,
+      "got_pixels": 20622
+    },
+    {
+      "name": "C__0acb4af07b3ce9c0",
+      "iou": 0.9968662616912545,
+      "ref_pixels": 62049,
+      "got_pixels": 62208
+    },
+    {
+      "name": "C__0ca284c24753a036",
+      "iou": 0.9991913746630727,
+      "ref_pixels": 14832,
+      "got_pixels": 14836
+    },
+    {
+      "name": "C__0f329d2d6edced0b",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__10951fa9b8276892",
+      "iou": 0.9955593931170593,
+      "ref_pixels": 24296,
+      "got_pixels": 24238
+    },
+    {
+      "name": "C__10ccbc099e7bc3d5",
+      "iou": 0.9853562539792788,
+      "ref_pixels": 51183,
+      "got_pixels": 51720
+    },
+    {
+      "name": "C__13238bdf022359ca",
+      "iou": 0.9968662616912545,
+      "ref_pixels": 62049,
+      "got_pixels": 62208
+    },
+    {
+      "name": "C__162c29d0296f8c48",
+      "iou": 0.9997587519433871,
+      "ref_pixels": 37297,
+      "got_pixels": 37306
+    },
+    {
+      "name": "C__16b300e485b75cf2",
+      "iou": 0.998745074417087,
+      "ref_pixels": 39804,
+      "got_pixels": 39832
+    },
+    {
+      "name": "C__17922247f3110026",
+      "iou": 0.998932384341637,
+      "ref_pixels": 11237,
+      "got_pixels": 11231
+    },
+    {
+      "name": "C__184c27e3d7b0e63f",
+      "iou": 0.9666568886281411,
+      "ref_pixels": 30681,
+      "got_pixels": 29658
+    },
+    {
+      "name": "C__188871c9a02f77f7",
+      "iou": 0.9972673613641332,
+      "ref_pixels": 54742,
+      "got_pixels": 54892
+    },
+    {
+      "name": "C__1a5ada767aa3316c",
+      "iou": 1,
+      "ref_pixels": 10972,
+      "got_pixels": 10972
+    },
+    {
+      "name": "C__1a7ef843a18c8a91",
+      "iou": 0.9976503350448177,
+      "ref_pixels": 34396,
+      "got_pixels": 34469
+    },
+    {
+      "name": "C__1af45f2b0634fd0a",
+      "iou": 0.9968656572475648,
+      "ref_pixels": 62049,
+      "got_pixels": 62184
+    },
+    {
+      "name": "C__1bc72d7cf65cc99d",
+      "iou": 0.9963338246131171,
+      "ref_pixels": 54113,
+      "got_pixels": 54248
+    },
+    {
+      "name": "C__1f9fab4e48601ca5",
+      "iou": 0.9985571286860853,
+      "ref_pixels": 22171,
+      "got_pixels": 22153
+    },
+    {
+      "name": "C__2006b55b1970166b",
+      "iou": 0.9968662616912545,
+      "ref_pixels": 62049,
+      "got_pixels": 62208
+    },
+    {
+      "name": "C__2319627d86b1ed49",
+      "iou": 0.999513665985799,
+      "ref_pixels": 41104,
+      "got_pixels": 41124
+    },
+    {
+      "name": "C__232beb0344e432e6",
+      "iou": 1,
+      "ref_pixels": 41092,
+      "got_pixels": 41092
+    },
+    {
+      "name": "C__23398a45aa873784",
+      "iou": 0.9989217965564877,
+      "ref_pixels": 29668,
+      "got_pixels": 29658
+    },
+    {
+      "name": "C__271da15c7a7596e5",
+      "iou": 0.9968347311931617,
+      "ref_pixels": 62049,
+      "got_pixels": 62230
+    },
+    {
+      "name": "C__28735cd5c62d756f",
+      "iou": 0.9974578733294596,
+      "ref_pixels": 54948,
+      "got_pixels": 55056
+    },
+    {
+      "name": "C__2b7935b4e6eaaa78",
+      "iou": 0.9992384159050826,
+      "ref_pixels": 24944,
+      "got_pixels": 24933
+    },
+    {
+      "name": "C__3120cad9cdfcdcc0",
+      "iou": 0.9985524411106724,
+      "ref_pixels": 15191,
+      "got_pixels": 15183
+    },
+    {
+      "name": "C__32035e4952bbba63",
+      "iou": 0.9975347912524851,
+      "ref_pixels": 62723,
+      "got_pixels": 62872
+    },
+    {
+      "name": "C__33fdbde9f5f8ea57",
+      "iou": 0.9977457645028354,
+      "ref_pixels": 28365,
+      "got_pixels": 28353
+    },
+    {
+      "name": "C__35d48a8fb545ed27",
+      "iou": 0.9974612805364841,
+      "ref_pixels": 62481,
+      "got_pixels": 62620
+    },
+    {
+      "name": "C__35d5f7437fc90779",
+      "iou": 0.9970931295476982,
+      "ref_pixels": 54545,
+      "got_pixels": 54692
+    },
+    {
+      "name": "C__3c44489656892886",
+      "iou": 0.9972738359997131,
+      "ref_pixels": 13924,
+      "got_pixels": 13916
+    },
+    {
+      "name": "C__3eed0afc41c3c17e",
+      "iou": 0.9974612805364841,
+      "ref_pixels": 62481,
+      "got_pixels": 62620
+    },
+    {
+      "name": "C__48d648a31e857d03",
+      "iou": 0.9995006865559856,
+      "ref_pixels": 16022,
+      "got_pixels": 16014
+    },
+    {
+      "name": "C__4b36895ef3df84ad",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__4c9a3e51b3c1d9da",
+      "iou": 0.9978189749182116,
+      "ref_pixels": 24750,
+      "got_pixels": 24714
+    },
+    {
+      "name": "C__50e6b1675261daf4",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__51b65a57c587fd21",
+      "iou": 1,
+      "ref_pixels": 27748,
+      "got_pixels": 27748
+    },
+    {
+      "name": "C__556d7c88e8528fb1",
+      "iou": 1,
+      "ref_pixels": 19102,
+      "got_pixels": 19102
+    },
+    {
+      "name": "C__59462b4c554e9fd2",
+      "iou": 0.9997925813254054,
+      "ref_pixels": 57846,
+      "got_pixels": 57850
+    },
+    {
+      "name": "C__59c343e3f6236be2",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__5c18fbedb5d9d355",
+      "iou": 0.9952693453579193,
+      "ref_pixels": 49451,
+      "got_pixels": 49666
+    },
+    {
+      "name": "C__5d15cc7b3f5e04d5",
+      "iou": 0.9974612805364841,
+      "ref_pixels": 62481,
+      "got_pixels": 62620
+    },
+    {
+      "name": "C__624e14f4609f4592",
+      "iou": 0.9993808305126723,
+      "ref_pixels": 24222,
+      "got_pixels": 24215
+    },
+    {
+      "name": "C__652128cf55a28bb9",
+      "iou": 0.6893599925832071,
+      "ref_pixels": 32354,
+      "got_pixels": 22312
+    },
+    {
+      "name": "C__661e8baff2bd66c9",
+      "iou": 0.9982891762933199,
+      "ref_pixels": 63611,
+      "got_pixels": 63704
+    },
+    {
+      "name": "C__666d5c5757b89dc2",
+      "iou": 0.9958185239389504,
+      "ref_pixels": 14324,
+      "got_pixels": 14314
+    },
+    {
+      "name": "C__670b3d8d749d0815",
+      "iou": 1,
+      "ref_pixels": 28374,
+      "got_pixels": 28374
+    },
+    {
+      "name": "C__67aa37f247207030",
+      "iou": 0.995835261453031,
+      "ref_pixels": 15091,
+      "got_pixels": 15100
+    },
+    {
+      "name": "C__683b40cc11d5ba4d",
+      "iou": 0.9974578733294596,
+      "ref_pixels": 54948,
+      "got_pixels": 55056
+    },
+    {
+      "name": "C__68fe0a30eb1d41cb",
+      "iou": 1,
+      "ref_pixels": 53248,
+      "got_pixels": 53248
+    },
+    {
+      "name": "C__68ffc081456b2335",
+      "iou": 0.9974473273135978,
+      "ref_pixels": 26210,
+      "got_pixels": 26217
+    },
+    {
+      "name": "C__6a0b783c5b8f5152",
+      "iou": 0.9997383516151757,
+      "ref_pixels": 49677,
+      "got_pixels": 49680
+    },
+    {
+      "name": "C__6a72a31b7d256fc8",
+      "iou": 0.9994574064026045,
+      "ref_pixels": 12901,
+      "got_pixels": 12894
+    },
+    {
+      "name": "C__6ab88ea05959193c",
+      "iou": 0.9796741277156024,
+      "ref_pixels": 36354,
+      "got_pixels": 35817
+    },
+    {
+      "name": "C__70ead7110e97e8ba",
+      "iou": 0.9974578733294596,
+      "ref_pixels": 54948,
+      "got_pixels": 55056
+    },
+    {
+      "name": "C__76c9d1756bd054e7",
+      "iou": 0.9996260538482459,
+      "ref_pixels": 29411,
+      "got_pixels": 29410
+    },
+    {
+      "name": "C__77aedc54b49babc2",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__77ee1d08f2f197ad",
+      "iou": 0.9974371917834816,
+      "ref_pixels": 51380,
+      "got_pixels": 51500
+    },
+    {
+      "name": "C__7adeb84929a0116e",
+      "iou": 0.9992796427027806,
+      "ref_pixels": 13882,
+      "got_pixels": 13872
+    },
+    {
+      "name": "C__7b0ebef8535a6fa5",
+      "iou": 0.9889500280741157,
+      "ref_pixels": 44525,
+      "got_pixels": 44033
+    },
+    {
+      "name": "C__7c9016486661d030",
+      "iou": 0.997056780373661,
+      "ref_pixels": 54545,
+      "got_pixels": 54698
+    },
+    {
+      "name": "C__7ea958130f30d2e7",
+      "iou": 0.9977818653971002,
+      "ref_pixels": 55337,
+      "got_pixels": 55444
+    },
+    {
+      "name": "C__80c868b16cbb4874",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__84ac352124431374",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__84ef081b2bee2d18",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__87d5aefaa0901edb",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__89793ad7e769393e",
+      "iou": 0.9961661446097625,
+      "ref_pixels": 61089,
+      "got_pixels": 61268
+    },
+    {
+      "name": "C__89b0d2606946fe38",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__89cbd24f17114c1b",
+      "iou": 0.9978260869565218,
+      "ref_pixels": 15175,
+      "got_pixels": 15152
+    },
+    {
+      "name": "C__90bedd448dc28222",
+      "iou": 0.9996184371184371,
+      "ref_pixels": 26200,
+      "got_pixels": 26206
+    },
+    {
+      "name": "C__90f02cb10f6abc58",
+      "iou": 0.9974612805364841,
+      "ref_pixels": 62481,
+      "got_pixels": 62620
+    },
+    {
+      "name": "C__915fc8b317d2434c",
+      "iou": 0.9994939969639818,
+      "ref_pixels": 21735,
+      "got_pixels": 21732
+    },
+    {
+      "name": "C__9268901982a8f02b",
+      "iou": 0.999518441501587,
+      "ref_pixels": 45671,
+      "got_pixels": 45677
+    },
+    {
+      "name": "C__944ddd9a0eb9f006",
+      "iou": 0.9988943393288172,
+      "ref_pixels": 64157,
+      "got_pixels": 64202
+    },
+    {
+      "name": "C__959ce87d6cfbda7f",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__976b6dd09c48b9b5",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__988d2e57b6b87043",
+      "iou": 0.9971928182934675,
+      "ref_pixels": 17084,
+      "got_pixels": 17066
+    },
+    {
+      "name": "C__9cafd0f6bcf86fab",
+      "iou": 0.9841383912530157,
+      "ref_pixels": 19382,
+      "got_pixels": 19271
+    },
+    {
+      "name": "C__a100c6af45032ded",
+      "iou": 0.9994965745179154,
+      "ref_pixels": 45671,
+      "got_pixels": 45680
+    },
+    {
+      "name": "C__a3101f3047a119aa",
+      "iou": 0.9968694259400823,
+      "ref_pixels": 27438,
+      "got_pixels": 27418
+    },
+    {
+      "name": "C__a5e86cca880e993c",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__a9021857c1316401",
+      "iou": 0.997643407288194,
+      "ref_pixels": 17370,
+      "got_pixels": 17385
+    },
+    {
+      "name": "C__ab14b1bf5601fc86",
+      "iou": 0.9978407900168291,
+      "ref_pixels": 62850,
+      "got_pixels": 62986
+    },
+    {
+      "name": "C__ab1662c9b9ed5da9",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__b00d52e6a2887cba",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__b54786387431d906",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__b6f4b1b243706f1f",
+      "iou": 0.9980956733698964,
+      "ref_pixels": 13125,
+      "got_pixels": 13106
+    },
+    {
+      "name": "C__b756a0f718de7416",
+      "iou": 0.9974578733294596,
+      "ref_pixels": 54948,
+      "got_pixels": 55056
+    },
+    {
+      "name": "C__b76d0dff6b5c9add",
+      "iou": 0.9968662616912545,
+      "ref_pixels": 62049,
+      "got_pixels": 62208
+    },
+    {
+      "name": "C__ba14598b40708b77",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "C__be023b1386b37888",
+      "iou": 0.9968662616912545,
+      "ref_pixels": 62049,
+      "got_pixels": 62208
+    },
+    {
+      "name": "C__bed1be0a9efdfe67",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__bf975c7524dd5418",
+      "iou": 0.9073081977155565,
+      "ref_pixels": 9893,
+      "got_pixels": 8976
+    },
+    {
+      "name": "C__c082886678e738e2",
+      "iou": 0.9974612805364841,
+      "ref_pixels": 62481,
+      "got_pixels": 62620
+    },
+    {
+      "name": "C__c3cba30ba1154685",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__c4ef544dbb69c638",
+      "iou": 0.9963338246131171,
+      "ref_pixels": 54113,
+      "got_pixels": 54248
+    },
+    {
+      "name": "C__c5dd669cb2de1e1c",
+      "iou": 0.9976261530113945,
+      "ref_pixels": 58852,
+      "got_pixels": 58960
+    },
+    {
+      "name": "C__c886f21bd4ff2903",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__c9637e6c6e2a1cb7",
+      "iou": 0.9974612805364841,
+      "ref_pixels": 62481,
+      "got_pixels": 62620
+    },
+    {
+      "name": "C__cac467df146f9e23",
+      "iou": 0.9988943393288172,
+      "ref_pixels": 64157,
+      "got_pixels": 64202
+    },
+    {
+      "name": "C__cc6a0440158dad34",
+      "iou": 0.9977904490377761,
+      "ref_pixels": 14019,
+      "got_pixels": 14010
+    },
+    {
+      "name": "C__ce1f2ac07efcfff8",
+      "iou": 0.997056780373661,
+      "ref_pixels": 54545,
+      "got_pixels": 54698
+    },
+    {
+      "name": "C__d115a2564637dcb1",
+      "iou": 0.9992823824901328,
+      "ref_pixels": 30657,
+      "got_pixels": 30635
+    },
+    {
+      "name": "C__d255b3fd39ff7ac8",
+      "iou": 0.9992806790389872,
+      "ref_pixels": 20842,
+      "got_pixels": 20849
+    },
+    {
+      "name": "C__d283926799d64fa0",
+      "iou": 0.9999434868606951,
+      "ref_pixels": 35389,
+      "got_pixels": 35389
+    },
+    {
+      "name": "C__d2f5cbb028a51754",
+      "iou": 0.9992796427027806,
+      "ref_pixels": 13882,
+      "got_pixels": 13872
+    },
+    {
+      "name": "C__d5db71c289bf01ff",
+      "iou": 0.9985476425125784,
+      "ref_pixels": 19267,
+      "got_pixels": 19263
+    },
+    {
+      "name": "C__d69bd834ca7b08f2",
+      "iou": 0.9961156455895368,
+      "ref_pixels": 60785,
+      "got_pixels": 61006
+    },
+    {
+      "name": "C__da26b5877f307593",
+      "iou": 0.9996175542594894,
+      "ref_pixels": 10459,
+      "got_pixels": 10455
+    },
+    {
+      "name": "C__de14dda44ec511cd",
+      "iou": 0.9974217444985112,
+      "ref_pixels": 54948,
+      "got_pixels": 55062
+    },
+    {
+      "name": "C__deba5f98a5c1796e",
+      "iou": 0.998089856341279,
+      "ref_pixels": 25115,
+      "got_pixels": 25095
+    },
+    {
+      "name": "C__e1d5eff1f89ed212",
+      "iou": 0.9666568886281411,
+      "ref_pixels": 30681,
+      "got_pixels": 29658
+    },
+    {
+      "name": "C__e23d97ffa159d91c",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__e5e330a7a8f080b0",
+      "iou": 0.9992300250735425,
+      "ref_pixels": 50623,
+      "got_pixels": 50640
+    },
+    {
+      "name": "C__e703a72d5d2b18f4",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__eb096c1ed9e3aa08",
+      "iou": 0.9616421474235539,
+      "ref_pixels": 51925,
+      "got_pixels": 49947
+    },
+    {
+      "name": "C__f25aa8751682a3cf",
+      "iou": 1,
+      "ref_pixels": 65536,
+      "got_pixels": 65536
+    },
+    {
+      "name": "C__f2d9529840a8164e",
+      "iou": 0.9974578733294596,
+      "ref_pixels": 54948,
+      "got_pixels": 55056
+    },
+    {
+      "name": "C__f4903dccc1888c42",
+      "iou": 0.9976102472597502,
+      "ref_pixels": 62630,
+      "got_pixels": 62756
+    },
+    {
+      "name": "C__f865f2c5478c7cf4",
+      "iou": 0.9969553788307324,
+      "ref_pixels": 59984,
+      "got_pixels": 60045
+    },
+    {
+      "name": "C__f95a4b02c31750b3",
+      "iou": 0.9778861788617886,
+      "ref_pixels": 15210,
+      "got_pixels": 15200
+    },
+    {
+      "name": "C__fd78c148795ae0d0",
+      "iou": 0.9961349784450722,
+      "ref_pixels": 13450,
+      "got_pixels": 13406
+    },
+    {
+      "name": "C__fddf765212370698",
+      "iou": 0.9977780599288979,
+      "ref_pixels": 62884,
+      "got_pixels": 62992
+    },
+    {
+      "name": "C__fe9a2bd2b1cfcdec",
+      "iou": 0.9970182046453233,
+      "ref_pixels": 12725,
+      "got_pixels": 12725
+    },
+    {
+      "name": "C__ffe2efcdbb1a98ad",
+      "iou": 0.9987383108208402,
+      "ref_pixels": 26942,
+      "got_pixels": 26920
+    },
+    {
+      "name": "D__altText_add",
+      "iou": 0.9998272436727995,
+      "ref_pixels": 11577,
+      "got_pixels": 11575
+    },
+    {
+      "name": "D__altText_disclaimer",
+      "iou": 0.9956172931213787,
+      "ref_pixels": 13439,
+      "got_pixels": 13426
+    },
+    {
+      "name": "D__altText_done",
+      "iou": 0.9978001257071024,
+      "ref_pixels": 41277,
+      "got_pixels": 41364
+    },
+    {
+      "name": "D__altText_spinner",
+      "iou": 0.9990072123105673,
+      "ref_pixels": 34241,
+      "got_pixels": 34219
+    },
+    {
+      "name": "D__altText_warning",
+      "iou": 0.9986263736263736,
+      "ref_pixels": 14548,
+      "got_pixels": 14552
+    },
+    {
+      "name": "D__annotation-check",
+      "iou": 0.9983475276471336,
+      "ref_pixels": 15730,
+      "got_pixels": 15712
+    },
+    {
+      "name": "D__annotation-comment",
+      "iou": 1,
+      "ref_pixels": 50176,
+      "got_pixels": 50176
+    },
+    {
+      "name": "D__annotation-help",
+      "iou": 1,
+      "ref_pixels": 56144,
+      "got_pixels": 56144
+    },
+    {
+      "name": "D__annotation-insert",
+      "iou": 0.9996648169528137,
+      "ref_pixels": 26846,
+      "got_pixels": 26847
+    },
+    {
+      "name": "D__annotation-key",
+      "iou": 0.9989639908328886,
+      "ref_pixels": 31834,
+      "got_pixels": 31839
+    },
+    {
+      "name": "D__annotation-newparagraph",
+      "iou": 0.9918178392636056,
+      "ref_pixels": 18431,
+      "got_pixels": 18571
+    },
+    {
+      "name": "D__annotation-noicon",
+      "iou": 1,
+      "ref_pixels": 0,
+      "got_pixels": 0
+    },
+    {
+      "name": "D__annotation-note",
+      "iou": 1,
+      "ref_pixels": 49920,
+      "got_pixels": 49920
+    },
+    {
+      "name": "D__annotation-paperclip",
+      "iou": 0.9987552900174259,
+      "ref_pixels": 12047,
+      "got_pixels": 12040
+    },
+    {
+      "name": "D__annotation-paragraph",
+      "iou": 1,
+      "ref_pixels": 50176,
+      "got_pixels": 50176
+    },
+    {
+      "name": "D__annotation-pushpin",
+      "iou": 0.9991259190703892,
+      "ref_pixels": 19443,
+      "got_pixels": 19438
+    },
+    {
+      "name": "D__comment-actionsButton",
+      "iou": 0.9949186991869918,
+      "ref_pixels": 1968,
+      "got_pixels": 1958
+    },
+    {
+      "name": "D__comment-closeButton",
+      "iou": 0.9993368700265252,
+      "ref_pixels": 4522,
+      "got_pixels": 4523
+    },
+    {
+      "name": "D__comment-editButton",
+      "iou": 0.9989783680540132,
+      "ref_pixels": 22499,
+      "got_pixels": 22504
+    },
+    {
+      "name": "D__comment-popup-editButton",
+      "iou": 0.9989385697227013,
+      "ref_pixels": 15066,
+      "got_pixels": 15066
+    },
+    {
+      "name": "D__cursor-editorFreeHighlight",
+      "iou": 0.9998853539696188,
+      "ref_pixels": 34887,
+      "got_pixels": 34889
+    },
+    {
+      "name": "D__cursor-editorFreeText",
+      "iou": 0.9996679119966791,
+      "ref_pixels": 24082,
+      "got_pixels": 24090
+    },
+    {
+      "name": "D__cursor-editorInk",
+      "iou": 0.9996375761090172,
+      "ref_pixels": 27587,
+      "got_pixels": 27587
+    },
+    {
+      "name": "D__cursor-editorTextHighlight",
+      "iou": 0.9996763404898047,
+      "ref_pixels": 18536,
+      "got_pixels": 18534
+    },
+    {
+      "name": "D__editor-toolbar-delete",
+      "iou": 0.9992197405637374,
+      "ref_pixels": 20494,
+      "got_pixels": 20502
+    },
+    {
+      "name": "D__editor-toolbar-edit",
+      "iou": 0.9839717667818543,
+      "ref_pixels": 13595,
+      "got_pixels": 13389
+    },
+    {
+      "name": "D__gaomon-1060pro",
+      "iou": 0.8946969696969697,
+      "ref_pixels": 1181,
+      "got_pixels": 1320
+    },
+    {
+      "name": "D__gaomon-1061pro",
+      "iou": 0.924924924924925,
+      "ref_pixels": 1232,
+      "got_pixels": 1332
+    },
+    {
+      "name": "D__gaomon-a1201",
+      "iou": 0.9108996539792388,
+      "ref_pixels": 1053,
+      "got_pixels": 1156
+    },
+    {
+      "name": "D__gaomon-a5h",
+      "iou": 0.8806646525679759,
+      "ref_pixels": 1166,
+      "got_pixels": 1324
+    },
+    {
+      "name": "D__gaomon-a5h_mt",
+      "iou": 0.8863987635239567,
+      "ref_pixels": 1147,
+      "got_pixels": 1294
+    },
+    {
+      "name": "D__gaomon-a601",
+      "iou": 0.8942133815551537,
+      "ref_pixels": 1043,
+      "got_pixels": 1052
+    },
+    {
+      "name": "D__gaomon-a801",
+      "iou": 0.9489711934156378,
+      "ref_pixels": 1153,
+      "got_pixels": 1215
+    },
+    {
+      "name": "D__gaomon-d16-pro",
+      "iou": 0.8951686417502279,
+      "ref_pixels": 982,
+      "got_pixels": 1097
+    },
+    {
+      "name": "D__gaomon-g12",
+      "iou": 0.8915223336371924,
+      "ref_pixels": 978,
+      "got_pixels": 1097
+    },
+    {
+      "name": "D__gaomon-g12gd",
+      "iou": 0.8884826325411335,
+      "ref_pixels": 972,
+      "got_pixels": 1094
+    },
+    {
+      "name": "D__gaomon-g13",
+      "iou": 0.9154716981132075,
+      "ref_pixels": 1213,
+      "got_pixels": 1325
+    },
+    {
+      "name": "D__gaomon-g13gd",
+      "iou": 0.9161764705882353,
+      "ref_pixels": 1246,
+      "got_pixels": 1360
+    },
+    {
+      "name": "D__gaomon-g16",
+      "iou": 0.9010339734121122,
+      "ref_pixels": 1220,
+      "got_pixels": 1354
+    },
+    {
+      "name": "D__gaomon-g16gd",
+      "iou": 0.8855421686746988,
+      "ref_pixels": 1029,
+      "got_pixels": 1162
+    },
+    {
+      "name": "D__gaomon-g22",
+      "iou": 0.8989205103042198,
+      "ref_pixels": 920,
+      "got_pixels": 1015
+    },
+    {
+      "name": "D__gaomon-gm116hd",
+      "iou": 0.8796610169491526,
+      "ref_pixels": 1086,
+      "got_pixels": 1132
+    },
+    {
+      "name": "D__gaomon-gm116hdtp",
+      "iou": 0.9201388888888888,
+      "ref_pixels": 1060,
+      "got_pixels": 1152
+    },
+    {
+      "name": "D__gaomon-gm156hd",
+      "iou": 0.9086161879895561,
+      "ref_pixels": 1044,
+      "got_pixels": 1149
+    },
+    {
+      "name": "D__gaomon-gm156hdtp",
+      "iou": 0.9220679012345679,
+      "ref_pixels": 1195,
+      "got_pixels": 1296
+    },
+    {
+      "name": "D__gaomon-gt-1106",
+      "iou": 0.9050966608084359,
+      "ref_pixels": 1030,
+      "got_pixels": 1138
+    },
+    {
+      "name": "D__gaomon-gt116h",
+      "iou": 0.8768971332209107,
+      "ref_pixels": 1089,
+      "got_pixels": 1137
+    },
+    {
+      "name": "D__gaomon-m0610-pro",
+      "iou": 0.9104882459312839,
+      "ref_pixels": 1007,
+      "got_pixels": 1106
+    },
+    {
+      "name": "D__gaomon-m10",
+      "iou": 0.8728373702422145,
+      "ref_pixels": 1019,
+      "got_pixels": 1146
+    },
+    {
+      "name": "D__gaomon-m106k",
+      "iou": 0.8787185354691075,
+      "ref_pixels": 1177,
+      "got_pixels": 1286
+    },
+    {
+      "name": "D__gaomon-m106k-pro",
+      "iou": 0.9062730627306274,
+      "ref_pixels": 1228,
+      "got_pixels": 1355
+    },
+    {
+      "name": "D__gaomon-m10k-2018",
+      "iou": 0.9072085889570553,
+      "ref_pixels": 1188,
+      "got_pixels": 1299
+    },
+    {
+      "name": "D__gaomon-m10k-pro",
+      "iou": 0.9061256961018298,
+      "ref_pixels": 1139,
+      "got_pixels": 1257
+    },
+    {
+      "name": "D__gaomon-m1220",
+      "iou": 0.9276504297994269,
+      "ref_pixels": 1295,
+      "got_pixels": 1396
+    },
+    {
+      "name": "D__gaomon-m1230",
+      "iou": 0.8991825613079019,
+      "ref_pixels": 1320,
+      "got_pixels": 1468
+    },
+    {
+      "name": "D__gaomon-m6",
+      "iou": 0.8889733840304183,
+      "ref_pixels": 1169,
+      "got_pixels": 1315
+    },
+    {
+      "name": "D__gaomon-m62022",
+      "iou": 0.8949386503067485,
+      "ref_pixels": 1167,
+      "got_pixels": 1304
+    },
+    {
+      "name": "D__gaomon-m7",
+      "iou": 0.9013990672884743,
+      "ref_pixels": 1354,
+      "got_pixels": 1500
+    },
+    {
+      "name": "D__gaomon-m8",
+      "iou": 0.905,
+      "ref_pixels": 1095,
+      "got_pixels": 1191
+    },
+    {
+      "name": "D__gaomon-pd1161",
+      "iou": 0.905726872246696,
+      "ref_pixels": 1047,
+      "got_pixels": 1116
+    },
+    {
+      "name": "D__gaomon-pd1161gd",
+      "iou": 0.9204647006255585,
+      "ref_pixels": 1030,
+      "got_pixels": 1119
+    },
+    {
+      "name": "D__gaomon-pd1560",
+      "iou": 0.9086161879895561,
+      "ref_pixels": 1044,
+      "got_pixels": 1149
+    },
+    {
+      "name": "D__gaomon-pd1561",
+      "iou": 0.89198606271777,
+      "ref_pixels": 1024,
+      "got_pixels": 1148
+    },
+    {
+      "name": "D__gaomon-pd1561gd",
+      "iou": 0.894283476898982,
+      "ref_pixels": 1154,
+      "got_pixels": 1265
+    },
+    {
+      "name": "D__gaomon-pd156pro",
+      "iou": 0.9021657953696789,
+      "ref_pixels": 1208,
+      "got_pixels": 1339
+    },
+    {
+      "name": "D__gaomon-pd156progd",
+      "iou": 0.8871662360034454,
+      "ref_pixels": 1030,
+      "got_pixels": 1161
+    },
+    {
+      "name": "D__gaomon-pd1610",
+      "iou": 0.9197776012708498,
+      "ref_pixels": 1158,
+      "got_pixels": 1259
+    },
+    {
+      "name": "D__gaomon-pd1611",
+      "iou": 0.918174665617624,
+      "ref_pixels": 1167,
+      "got_pixels": 1271
+    },
+    {
+      "name": "D__gaomon-pd2200",
+      "iou": 0.8984375,
+      "ref_pixels": 924,
+      "got_pixels": 1020
+    },
+    {
+      "name": "D__gaomon-s620",
+      "iou": 0.7854356306892067,
+      "ref_pixels": 618,
+      "got_pixels": 755
+    },
+    {
+      "name": "D__gaomon-s630",
+      "iou": 0.9306243805748265,
+      "ref_pixels": 939,
+      "got_pixels": 1009
+    },
+    {
+      "name": "D__gaomon-s830",
+      "iou": 0.9358490566037736,
+      "ref_pixels": 992,
+      "got_pixels": 1060
+    },
+    {
+      "name": "D__gaomon-sn540-m5",
+      "iou": 0.9852941176470589,
+      "ref_pixels": 737,
+      "got_pixels": 748
+    },
+    {
+      "name": "D__gaomon-sp1603",
+      "iou": 0.8871595330739299,
+      "ref_pixels": 1368,
+      "got_pixels": 1542
+    },
+    {
+      "name": "D__gaomon-t01",
+      "iou": 0.9243636363636364,
+      "ref_pixels": 1284,
+      "got_pixels": 1362
+    },
+    {
+      "name": "D__gaomon-t02",
+      "iou": 0.9611178614823815,
+      "ref_pixels": 791,
+      "got_pixels": 823
+    },
+    {
+      "name": "D__gaomon-wh850",
+      "iou": 0.9206680584551148,
+      "ref_pixels": 882,
+      "got_pixels": 958
+    },
+    {
+      "name": "D__gaomon-wh851",
+      "iou": 0.9400977995110025,
+      "ref_pixels": 1538,
+      "got_pixels": 1636
+    },
+    {
+      "name": "D__huion-gc610-710",
+      "iou": 0.9389233954451346,
+      "ref_pixels": 907,
+      "got_pixels": 966
+    },
+    {
+      "name": "D__huion-h1060p",
+      "iou": 0.6779279279279279,
+      "ref_pixels": 617,
+      "got_pixels": 873
+    },
+    {
+      "name": "D__huion-h420",
+      "iou": 0.6741573033707865,
+      "ref_pixels": 183,
+      "got_pixels": 264
+    },
+    {
+      "name": "D__huion-h610-pro",
+      "iou": 0.6415620641562064,
+      "ref_pixels": 475,
+      "got_pixels": 702
+    },
+    {
+      "name": "D__huion-h640p",
+      "iou": 0.5007320644216691,
+      "ref_pixels": 385,
+      "got_pixels": 640
+    },
+    {
+      "name": "D__huion-h950p",
+      "iou": 0.5216907675194661,
+      "ref_pixels": 537,
+      "got_pixels": 831
+    },
+    {
+      "name": "D__huion-h950p-igg",
+      "iou": 0.9179039301310044,
+      "ref_pixels": 1051,
+      "got_pixels": 1145
+    },
+    {
+      "name": "D__huion-hc16",
+      "iou": 0.8733133433283359,
+      "ref_pixels": 1185,
+      "got_pixels": 1314
+    },
+    {
+      "name": "D__huion-hs610",
+      "iou": 0.8014460511679644,
+      "ref_pixels": 1471,
+      "got_pixels": 1768
+    },
+    {
+      "name": "D__huion-hs611",
+      "iou": 0.5119047619047619,
+      "ref_pixels": 855,
+      "got_pixels": 1304
+    },
+    {
+      "name": "D__huion-hs64",
+      "iou": 0.9361867704280156,
+      "ref_pixels": 1203,
+      "got_pixels": 1285
+    },
+    {
+      "name": "D__huion-hs95",
+      "iou": 0.9170638703527169,
+      "ref_pixels": 962,
+      "got_pixels": 1049
+    },
+    {
+      "name": "D__huion-hst640",
+      "iou": 0.9354838709677419,
+      "ref_pixels": 1189,
+      "got_pixels": 1271
+    },
+    {
+      "name": "D__huion-inspiroy-2-l---h1061p",
+      "iou": 0.879572312886888,
+      "ref_pixels": 1573,
+      "got_pixels": 1767
+    },
+    {
+      "name": "D__huion-inspiroy-2-m---h951p",
+      "iou": 0.879572312886888,
+      "ref_pixels": 1573,
+      "got_pixels": 1767
+    },
+    {
+      "name": "D__huion-inspiroy-2-s---h641p",
+      "iou": 0.8934426229508197,
+      "ref_pixels": 1091,
+      "got_pixels": 1219
+    },
+    {
+      "name": "D__huion-inspiroy-dial-2",
+      "iou": 0.9254237288135593,
+      "ref_pixels": 1092,
+      "got_pixels": 1180
+    },
+    {
+      "name": "D__huion-inspiroy-dial-q620m",
+      "iou": 0.9098422238918107,
+      "ref_pixels": 1211,
+      "got_pixels": 1331
+    },
+    {
+      "name": "D__huion-inspiroy-g10t",
+      "iou": 0.9344978165938864,
+      "ref_pixels": 856,
+      "got_pixels": 916
+    },
+    {
+      "name": "D__huion-inspiroy-giano",
+      "iou": 0.937,
+      "ref_pixels": 937,
+      "got_pixels": 1000
+    },
+    {
+      "name": "D__huion-inspiroy-h1161",
+      "iou": 0.9217451523545707,
+      "ref_pixels": 1331,
+      "got_pixels": 1444
+    },
+    {
+      "name": "D__huion-inspiroy-h430p",
+      "iou": 0.921161825726141,
+      "ref_pixels": 888,
+      "got_pixels": 964
+    },
+    {
+      "name": "D__huion-inspiroy-h580x",
+      "iou": 0.9085805934242182,
+      "ref_pixels": 1154,
+      "got_pixels": 1226
+    },
+    {
+      "name": "D__huion-inspiroy-h610x",
+      "iou": 0.9414715719063546,
+      "ref_pixels": 1126,
+      "got_pixels": 1196
+    },
+    {
+      "name": "D__huion-inspiroy-ink-h320m",
+      "iou": 0.8302292263610315,
+      "ref_pixels": 1278,
+      "got_pixels": 1277
+    },
+    {
+      "name": "D__huion-inspiroy-keydial-kd200",
+      "iou": 0.823982398239824,
+      "ref_pixels": 841,
+      "got_pixels": 817
+    },
+    {
+      "name": "D__huion-inspiroy-q11k",
+      "iou": 0.8955365622032289,
+      "ref_pixels": 954,
+      "got_pixels": 1042
+    },
+    {
+      "name": "D__huion-inspiroy-q11k-v2",
+      "iou": 0.8896103896103896,
+      "ref_pixels": 970,
+      "got_pixels": 1067
+    },
+    {
+      "name": "D__huion-inspiroy-q620m",
+      "iou": 0.9252918287937744,
+      "ref_pixels": 1189,
+      "got_pixels": 1285
+    },
+    {
+      "name": "D__huion-inspiroy-wh1409-v2",
+      "iou": 0.9310064935064936,
+      "ref_pixels": 1147,
+      "got_pixels": 1232
+    },
+    {
+      "name": "D__huion-kamvas-12-gs1161",
+      "iou": 0.9010695187165776,
+      "ref_pixels": 1011,
+      "got_pixels": 1122
+    },
+    {
+      "name": "D__huion-kamvas-13",
+      "iou": 0.629746835443038,
+      "ref_pixels": 412,
+      "got_pixels": 618
+    },
+    {
+      "name": "D__huion-kamvas-16-gs1562",
+      "iou": 0.9124555160142349,
+      "ref_pixels": 1282,
+      "got_pixels": 1405
+    },
+    {
+      "name": "D__huion-kamvas-162019",
+      "iou": 0.8279569892473119,
+      "ref_pixels": 1156,
+      "got_pixels": 1394
+    },
+    {
+      "name": "D__huion-kamvas-gt-156-2021",
+      "iou": 0.9249448123620309,
+      "ref_pixels": 1257,
+      "got_pixels": 1359
+    },
+    {
+      "name": "D__huion-kamvas-gt-156hd-v2",
+      "iou": 0.853781512605042,
+      "ref_pixels": 1016,
+      "got_pixels": 1190
+    },
+    {
+      "name": "D__huion-kamvas-gt-221-pro",
+      "iou": 0.9716267339218159,
+      "ref_pixels": 1541,
+      "got_pixels": 1586
+    },
+    {
+      "name": "D__huion-kamvas-pro-12-gt-116",
+      "iou": 0.9231664726426076,
+      "ref_pixels": 793,
+      "got_pixels": 859
+    },
+    {
+      "name": "D__huion-kamvas-pro-13",
+      "iou": 0.648910411622276,
+      "ref_pixels": 279,
+      "got_pixels": 402
+    },
+    {
+      "name": "D__huion-kamvas-pro-13-gt1302",
+      "iou": 0.927765237020316,
+      "ref_pixels": 1233,
+      "got_pixels": 1329
+    },
+    {
+      "name": "D__huion-kamvas-pro-16-gt-156",
+      "iou": 0.8601851851851852,
+      "ref_pixels": 945,
+      "got_pixels": 1064
+    },
+    {
+      "name": "D__huion-kamvas-pro-16-gt1602",
+      "iou": 0.8988970588235294,
+      "ref_pixels": 979,
+      "got_pixels": 1087
+    },
+    {
+      "name": "D__huion-kamvas-pro-20-gt-192",
+      "iou": 0.864406779661017,
+      "ref_pixels": 1228,
+      "got_pixels": 1412
+    },
+    {
+      "name": "D__huion-kamvas-pro-20-gt1901",
+      "iou": 0.9289454001495886,
+      "ref_pixels": 1250,
+      "got_pixels": 1329
+    },
+    {
+      "name": "D__huion-kamvas-pro-22-gt-221",
+      "iou": 0.8519337016574585,
+      "ref_pixels": 1567,
+      "got_pixels": 1785
+    },
+    {
+      "name": "D__huion-kamvas-pro-24",
+      "iou": 0.7371244635193133,
+      "ref_pixels": 1376,
+      "got_pixels": 1862
+    },
+    {
+      "name": "D__huion-kamvas-pro-studio-22",
+      "iou": 0.8519337016574585,
+      "ref_pixels": 1567,
+      "got_pixels": 1785
+    },
+    {
+      "name": "D__huion-keydial-k20",
+      "iou": 0.8804170739654611,
+      "ref_pixels": 5466,
+      "got_pixels": 6076
+    },
+    {
+      "name": "D__huion-mini-keydial-kd100",
+      "iou": 0.8389780154486037,
+      "ref_pixels": 2835,
+      "got_pixels": 3355
+    },
+    {
+      "name": "D__huion-new-1060-plus",
+      "iou": 0.6779279279279279,
+      "ref_pixels": 617,
+      "got_pixels": 873
+    },
+    {
+      "name": "D__huion-rds-160",
+      "iou": 0.9124555160142349,
+      "ref_pixels": 1282,
+      "got_pixels": 1405
+    },
+    {
+      "name": "D__huion-rte-100",
+      "iou": 0.9267285861713106,
+      "ref_pixels": 898,
+      "got_pixels": 969
+    },
+    {
+      "name": "D__huion-rtm-500",
+      "iou": 0.907112970711297,
+      "ref_pixels": 1084,
+      "got_pixels": 1195
+    },
+    {
+      "name": "D__huion-rtp-700",
+      "iou": 0.9081237911025145,
+      "ref_pixels": 939,
+      "got_pixels": 1034
+    },
+    {
+      "name": "D__huion-rts-300",
+      "iou": 0.9069423929098966,
+      "ref_pixels": 1228,
+      "got_pixels": 1354
+    },
+    {
+      "name": "D__huion-wh1409",
+      "iou": 0.6240208877284595,
+      "ref_pixels": 494,
+      "got_pixels": 750
+    },
+    {
+      "name": "D__logo",
+      "iou": 0.6253702606635071,
+      "ref_pixels": 11875,
+      "got_pixels": 10074
+    },
+    {
+      "name": "D__messageBar_closingButton",
+      "iou": 1,
+      "ref_pixels": 5736,
+      "got_pixels": 5736
+    },
+    {
+      "name": "D__messageBar_info",
+      "iou": 0.9987847938735268,
+      "ref_pixels": 43607,
+      "got_pixels": 43568
+    },
+    {
+      "name": "D__messageBar_warning",
+      "iou": 0.997176922845902,
+      "ref_pixels": 33274,
+      "got_pixels": 33226
+    },
+    {
+      "name": "D__toolbarButton-editorHighlight",
+      "iou": 0.9981164879745001,
+      "ref_pixels": 20701,
+      "got_pixels": 20672
+    },
+    {
+      "name": "D__toolbarButton-menuArrow",
+      "iou": 1,
+      "ref_pixels": 3004,
+      "got_pixels": 3004
+    },
+    {
+      "name": "D__wacom-bamboo-0fg-s-p",
+      "iou": 0.8009295120061968,
+      "ref_pixels": 1046,
+      "got_pixels": 1279
+    },
+    {
+      "name": "D__wacom-bamboo-0fg-s-p-alt",
+      "iou": 0.6709440879926672,
+      "ref_pixels": 739,
+      "got_pixels": 1084
+    },
+    {
+      "name": "D__wacom-bamboo-16fg-m-pt",
+      "iou": 0.8255698711595639,
+      "ref_pixels": 842,
+      "got_pixels": 1000
+    },
+    {
+      "name": "D__wacom-bamboo-16fg-s-pt",
+      "iou": 0.8255698711595639,
+      "ref_pixels": 842,
+      "got_pixels": 1000
+    },
+    {
+      "name": "D__wacom-bamboo-16fg-s-t",
+      "iou": 0.8255698711595639,
+      "ref_pixels": 842,
+      "got_pixels": 1000
+    },
+    {
+      "name": "D__wacom-bamboo-2fg-fun-m-pt",
+      "iou": 0.8172043010752689,
+      "ref_pixels": 616,
+      "got_pixels": 736
+    },
+    {
+      "name": "D__wacom-bamboo-2fg-fun-s-pt",
+      "iou": 0.7986111111111112,
+      "ref_pixels": 699,
+      "got_pixels": 855
+    },
+    {
+      "name": "D__wacom-bamboo-2fg-s-pt",
+      "iou": 0.8255698711595639,
+      "ref_pixels": 842,
+      "got_pixels": 1000
+    },
+    {
+      "name": "D__wacom-bamboo-2fg-s-t",
+      "iou": 0.8180428134556575,
+      "ref_pixels": 1130,
+      "got_pixels": 1248
+    },
+    {
+      "name": "D__wacom-bamboo-4fg-fun-m-pt",
+      "iou": 0.8172043010752689,
+      "ref_pixels": 616,
+      "got_pixels": 736
+    },
+    {
+      "name": "D__wacom-bamboo-4fg-fun-s-pt",
+      "iou": 0.7986111111111112,
+      "ref_pixels": 699,
+      "got_pixels": 855
+    },
+    {
+      "name": "D__wacom-bamboo-4fg-s-pt",
+      "iou": 0.8255698711595639,
+      "ref_pixels": 842,
+      "got_pixels": 1000
+    },
+    {
+      "name": "D__wacom-bamboo-4fg-s-t",
+      "iou": 0.8180428134556575,
+      "ref_pixels": 1130,
+      "got_pixels": 1248
+    },
+    {
+      "name": "D__wacom-bamboo-4fg-se-m-pt",
+      "iou": 0.8172043010752689,
+      "ref_pixels": 616,
+      "got_pixels": 736
+    },
+    {
+      "name": "D__wacom-bamboo-4fg-se-s-pt",
+      "iou": 0.7986111111111112,
+      "ref_pixels": 699,
+      "got_pixels": 855
+    },
+    {
+      "name": "D__wacom-bamboo-pad",
+      "iou": 0.8394557823129252,
+      "ref_pixels": 637,
+      "got_pixels": 715
+    },
+    {
+      "name": "D__wacom-cintiq-12wx",
+      "iou": 0.7137096774193549,
+      "ref_pixels": 1241,
+      "got_pixels": 1734
+    },
+    {
+      "name": "D__wacom-cintiq-13hd",
+      "iou": 0.7259953161592506,
+      "ref_pixels": 627,
+      "got_pixels": 847
+    },
+    {
+      "name": "D__wacom-cintiq-20wsx",
+      "iou": 0.7522421524663677,
+      "ref_pixels": 1342,
+      "got_pixels": 1784
+    },
+    {
+      "name": "D__wacom-cintiq-21ux",
+      "iou": 0.6707193515704154,
+      "ref_pixels": 662,
+      "got_pixels": 987
+    },
+    {
+      "name": "D__wacom-cintiq-21ux2",
+      "iou": 0.7668097281831188,
+      "ref_pixels": 1609,
+      "got_pixels": 2096
+    },
+    {
+      "name": "D__wacom-cintiq-22hd",
+      "iou": 0.749003984063745,
+      "ref_pixels": 1316,
+      "got_pixels": 1757
+    },
+    {
+      "name": "D__wacom-cintiq-24hd",
+      "iou": 0.7827692307692308,
+      "ref_pixels": 1288,
+      "got_pixels": 1609
+    },
+    {
+      "name": "D__wacom-cintiq-companion",
+      "iou": 0.7259953161592506,
+      "ref_pixels": 627,
+      "got_pixels": 847
+    },
+    {
+      "name": "D__wacom-cintiq-companion-2",
+      "iou": 0.7190243902439024,
+      "ref_pixels": 748,
+      "got_pixels": 1014
+    },
+    {
+      "name": "D__wacom-cintiq-companion-hybrid",
+      "iou": 0.7259953161592506,
+      "ref_pixels": 627,
+      "got_pixels": 847
+    },
+    {
+      "name": "D__wacom-cintiq-pro-16-2",
+      "iou": 0.6298932384341637,
+      "ref_pixels": 354,
+      "got_pixels": 562
+    },
+    {
+      "name": "D__wacom-cintiq-pro-17",
+      "iou": 0.6298932384341637,
+      "ref_pixels": 354,
+      "got_pixels": 562
+    },
+    {
+      "name": "D__wacom-cintiq-pro-22",
+      "iou": 0.6298932384341637,
+      "ref_pixels": 354,
+      "got_pixels": 562
+    },
+    {
+      "name": "D__wacom-cintiq-pro-27",
+      "iou": 0.6298932384341637,
+      "ref_pixels": 354,
+      "got_pixels": 562
+    },
+    {
+      "name": "D__wacom-dth-2242",
+      "iou": 0.6440129449838188,
+      "ref_pixels": 199,
+      "got_pixels": 309
+    },
+    {
+      "name": "D__wacom-dth-2452",
+      "iou": 0.2506393861892583,
+      "ref_pixels": 257,
+      "got_pixels": 721
+    },
+    {
+      "name": "D__wacom-dti-520",
+      "iou": 0.8192148760330579,
+      "ref_pixels": 1651,
+      "got_pixels": 1871
+    },
+    {
+      "name": "D__wacom-dtk-1651",
+      "iou": 0.26683291770573564,
+      "ref_pixels": 275,
+      "got_pixels": 741
+    },
+    {
+      "name": "D__wacom-dtk-2451",
+      "iou": 0.2506393861892583,
+      "ref_pixels": 257,
+      "got_pixels": 721
+    },
+    {
+      "name": "D__wacom-dtu-1031",
+      "iou": 0.7345575959933222,
+      "ref_pixels": 450,
+      "got_pixels": 589
+    },
+    {
+      "name": "D__wacom-dtu-1141",
+      "iou": 0.7580071174377224,
+      "ref_pixels": 428,
+      "got_pixels": 560
+    },
+    {
+      "name": "D__wacom-dtu-1141b",
+      "iou": 0.7580071174377224,
+      "ref_pixels": 428,
+      "got_pixels": 560
+    },
+    {
+      "name": "D__wacom-ek-remote",
+      "iou": 0.7593770563720114,
+      "ref_pixels": 3589,
+      "got_pixels": 4432
+    },
+    {
+      "name": "D__wacom-graphire-wireless-8x6",
+      "iou": 0.8741830065359477,
+      "ref_pixels": 540,
+      "got_pixels": 607
+    },
+    {
+      "name": "D__wacom-graphire4-4x5",
+      "iou": 0.8492597577388964,
+      "ref_pixels": 647,
+      "got_pixels": 727
+    },
+    {
+      "name": "D__wacom-graphire4-6x8",
+      "iou": 0.8492597577388964,
+      "ref_pixels": 647,
+      "got_pixels": 727
+    },
+    {
+      "name": "D__wacom-intuos-m-p",
+      "iou": 0.777490297542044,
+      "ref_pixels": 627,
+      "got_pixels": 747
+    },
+    {
+      "name": "D__wacom-intuos-m-p2",
+      "iou": 0.7194719471947195,
+      "ref_pixels": 463,
+      "got_pixels": 579
+    },
+    {
+      "name": "D__wacom-intuos-m-p3",
+      "iou": 0.7916152897657214,
+      "ref_pixels": 657,
+      "got_pixels": 796
+    },
+    {
+      "name": "D__wacom-intuos-m-pt",
+      "iou": 0.777490297542044,
+      "ref_pixels": 627,
+      "got_pixels": 747
+    },
+    {
+      "name": "D__wacom-intuos-m-pt2",
+      "iou": 0.7194719471947195,
+      "ref_pixels": 463,
+      "got_pixels": 579
+    },
+    {
+      "name": "D__wacom-intuos-pro-2-l",
+      "iou": 0.6014171833480957,
+      "ref_pixels": 695,
+      "got_pixels": 1113
+    },
+    {
+      "name": "D__wacom-intuos-pro-2-m",
+      "iou": 0.6014171833480957,
+      "ref_pixels": 695,
+      "got_pixels": 1113
+    },
+    {
+      "name": "D__wacom-intuos-pro-2-s",
+      "iou": 0.38146167557932265,
+      "ref_pixels": 582,
+      "got_pixels": 968
+    },
+    {
+      "name": "D__wacom-intuos-pro-l",
+      "iou": 0.5927601809954751,
+      "ref_pixels": 538,
+      "got_pixels": 870
+    },
+    {
+      "name": "D__wacom-intuos-pro-m",
+      "iou": 0.6082910321489001,
+      "ref_pixels": 747,
+      "got_pixels": 1154
+    },
+    {
+      "name": "D__wacom-intuos-pro-s",
+      "iou": 0.5607843137254902,
+      "ref_pixels": 753,
+      "got_pixels": 1237
+    },
+    {
+      "name": "D__wacom-intuos-s-p",
+      "iou": 0.7964676198486123,
+      "ref_pixels": 1008,
+      "got_pixels": 1128
+    },
+    {
+      "name": "D__wacom-intuos-s-p2",
+      "iou": 0.7311111111111112,
+      "ref_pixels": 715,
+      "got_pixels": 843
+    },
+    {
+      "name": "D__wacom-intuos-s-p3",
+      "iou": 0.7916152897657214,
+      "ref_pixels": 657,
+      "got_pixels": 796
+    },
+    {
+      "name": "D__wacom-intuos-s-pt",
+      "iou": 0.7964676198486123,
+      "ref_pixels": 1008,
+      "got_pixels": 1128
+    },
+    {
+      "name": "D__wacom-intuos-s-pt2",
+      "iou": 0.7311111111111112,
+      "ref_pixels": 715,
+      "got_pixels": 843
+    },
+    {
+      "name": "D__wacom-intuos3-12x12",
+      "iou": 0.6346153846153846,
+      "ref_pixels": 858,
+      "got_pixels": 1352
+    },
+    {
+      "name": "D__wacom-intuos3-12x19",
+      "iou": 0.669109947643979,
+      "ref_pixels": 639,
+      "got_pixels": 955
+    },
+    {
+      "name": "D__wacom-intuos3-4x5",
+      "iou": 0.6783416726233024,
+      "ref_pixels": 992,
+      "got_pixels": 1356
+    },
+    {
+      "name": "D__wacom-intuos3-4x6",
+      "iou": 0.6772968868640851,
+      "ref_pixels": 935,
+      "got_pixels": 1274
+    },
+    {
+      "name": "D__wacom-intuos3-6x11",
+      "iou": 0.6473149492017417,
+      "ref_pixels": 894,
+      "got_pixels": 1376
+    },
+    {
+      "name": "D__wacom-intuos3-6x8",
+      "iou": 0.662847790507365,
+      "ref_pixels": 1234,
+      "got_pixels": 1814
+    },
+    {
+      "name": "D__wacom-intuos3-9x12",
+      "iou": 0.6356821589205397,
+      "ref_pixels": 848,
+      "got_pixels": 1334
+    },
+    {
+      "name": "D__wacom-intuos4-12x19",
+      "iou": 0.6196969696969697,
+      "ref_pixels": 411,
+      "got_pixels": 658
+    },
+    {
+      "name": "D__wacom-intuos4-4x6",
+      "iou": 0.6334600760456274,
+      "ref_pixels": 858,
+      "got_pixels": 1290
+    },
+    {
+      "name": "D__wacom-intuos4-6x9",
+      "iou": 0.6684824902723735,
+      "ref_pixels": 871,
+      "got_pixels": 1273
+    },
+    {
+      "name": "D__wacom-intuos4-6x9-wl",
+      "iou": 0.6534954407294833,
+      "ref_pixels": 874,
+      "got_pixels": 1302
+    },
+    {
+      "name": "D__wacom-intuos4-8x13",
+      "iou": 0.6287234042553191,
+      "ref_pixels": 600,
+      "got_pixels": 931
+    },
+    {
+      "name": "D__wacom-intuos5-l",
+      "iou": 0.5927601809954751,
+      "ref_pixels": 538,
+      "got_pixels": 870
+    },
+    {
+      "name": "D__wacom-intuos5-m",
+      "iou": 0.6082910321489001,
+      "ref_pixels": 747,
+      "got_pixels": 1154
+    },
+    {
+      "name": "D__wacom-intuos5-s",
+      "iou": 0.5607843137254902,
+      "ref_pixels": 753,
+      "got_pixels": 1237
+    },
+    {
+      "name": "D__wacom-mobilestudio-pro-13",
+      "iou": 0.661345496009122,
+      "ref_pixels": 1202,
+      "got_pixels": 1712
+    },
+    {
+      "name": "D__wacom-mobilestudio-pro-16",
+      "iou": 0.7128712871287128,
+      "ref_pixels": 1250,
+      "got_pixels": 1691
+    },
+    {
+      "name": "D__wacom-movink-13",
+      "iou": 0.9089376053962901,
+      "ref_pixels": 539,
+      "got_pixels": 593
+    },
+    {
+      "name": "D__xp-pen-ack05-remote",
+      "iou": 0.7877786952931461,
+      "ref_pixels": 3968,
+      "got_pixels": 4692
+    },
+    {
+      "name": "D__xp-pen-artist10s",
+      "iou": 0.7855421686746988,
+      "ref_pixels": 326,
+      "got_pixels": 415
+    },
+    {
+      "name": "D__xp-pen-artist12",
+      "iou": 0.7629513343799058,
+      "ref_pixels": 488,
+      "got_pixels": 635
+    },
+    {
+      "name": "D__xp-pen-artist13-3-pro",
+      "iou": 0.7322335025380711,
+      "ref_pixels": 580,
+      "got_pixels": 785
+    },
+    {
+      "name": "D__xp-pen-deco-l",
+      "iou": 0.6538461538461539,
+      "ref_pixels": 635,
+      "got_pixels": 956
+    },
+    {
+      "name": "D__xp-pen-deco-mini4",
+      "iou": 0.7855421686746988,
+      "ref_pixels": 326,
+      "got_pixels": 415
+    },
+    {
+      "name": "D__xp-pen-deco-mw",
+      "iou": 0.6538461538461539,
+      "ref_pixels": 635,
+      "got_pixels": 956
+    },
+    {
+      "name": "D__xp-pen-deco-pro-s-m-sw-mw",
+      "iou": 0.7509677419354839,
+      "ref_pixels": 585,
+      "got_pixels": 772
+    },
+    {
+      "name": "D__xp-pen-deco01-v2",
+      "iou": 0.6538461538461539,
+      "ref_pixels": 635,
+      "got_pixels": 956
+    },
+    {
+      "name": "D__xp-pen-star03",
+      "iou": 0.7071895424836602,
+      "ref_pixels": 546,
+      "got_pixels": 760
+    }
+  ]
+}
