@@ -1,6 +1,5 @@
 <p align="center">
-  <b>gosvg</b><br/>
-  纯 Go 的轻量 SVG 子集渲染器，零 cgo，把常见 SVG 场景渲染成位图<br/><br/>
+  <b>gosvg</b><br/><br/>
   <img src="https://img.shields.io/badge/Go-1.27%2B-00add8" alt="go"/>
   <img src="https://img.shields.io/badge/License-MIT-111827" alt="license"/>
   <img src="https://img.shields.io/badge/deps-x%2Fimage-3b82f6" alt="deps"/>
@@ -11,8 +10,12 @@
   <a href="#特性">特性</a> ·
   <a href="#工作原理">工作原理</a> ·
   <a href="#字体">字体</a> ·
-  <a href="#对账">对账</a> ·
-  <a href="#仓库结构">仓库结构</a>
+  <a href="#抽样对账">抽样对账</a> ·
+  <a href="#仓库结构">仓库结构</a> ·
+  <a href="#开发">开发</a> ·
+  <a href="#性能">性能</a> ·
+  <a href="#真实语料实测">真实语料实测</a> ·
+  <a href="#与-cairosvg-对账">与 cairosvg 对账</a>
 </p>
 
 ---
@@ -165,7 +168,7 @@ gosvg.AddFontDir("/usr/share/fonts/truetype/dejavu")
 
 之后 `font-family`（含 CSS 通用名 `sans-serif`/`serif`/`monospace` 与逗号列表）会命中对应字型，`font-weight`/`font-style` 择优；未命中回退内置字体。不调用 `AddFontDir` 则保持零依赖行为不变。
 
-## 对账
+## 抽样对账
 
 与 cairosvg 在 512×512 下的 IoU（越接近 1 越一致）：
 
@@ -176,6 +179,9 @@ gosvg.AddFontDir("/usr/share/fonts/truetype/dejavu")
 | 年代唱片标签（text） | 目视字形一致（无逐像素基线，字体栅格化差异属已知边界） |
 
 剩余差异为光栅器 AA 与 cairosvg 的亚像素舍入差，肉眼不可辨。
+
+> 上表是 512×512 抽样场景；850 个真实语料的**全量最新口径**见文末
+> [与 cairosvg 对账](#与-cairosvg-对账)。
 
 ## 仓库结构
 
@@ -281,6 +287,10 @@ go run ./cmd/corpus -json <dir>...      # JSON，便于做基线 diff
 
 > **口径**：`CAIROSVG_IOU.md` 的历史表格以 `alpha > 8` 判不透明；仓库外全量对账脚本
 > 用 `alpha > 0`（对极淡 AA 像素更敏感）。两套数字**不可直接横比**。
+>
+> **语料范围**：本节数字来自 850 个能与 cairosvg 参照图配对、可算 alpha IoU 的语料；
+> 上面[真实语料实测](#真实语料实测)的 958 个是 `cmd/corpus` 渲染成功率全量（只判「有没有
+> 画出东西」）。两者语料集与统计口径不同，成功率与 IoU 不可混读。
 
 **复算工具**（v0.2.4 起随仓库提供，取代仓库外一次性脚本）：
 
