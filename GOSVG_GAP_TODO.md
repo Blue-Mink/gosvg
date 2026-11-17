@@ -57,19 +57,19 @@
 | E3 版本发布 | **已打 `v0.1.0`** | PR #1 合并到 main 后打的 annotated tag；Release 待建（见档 3） |
 | 分支策略 | **已改为分支流** | 新建 `chore/close-gaps`，后续改动走分支 + PR，main 不再直推 |
 
-### H-A 逐项决策（五项不实现 / 两项已推翻改为实现）
+### H-A 逐项决策（四项不实现 / 三项已推翻改为实现）
 
 | 特性 | 决策 | 理由 |
 |---|---|---|
 | `clip-rule` | **已推翻原决策，改为实现** | 实测 91 个文件 / 128 次使用；实现只需把它映射到既有 even-odd 路径，成本远低于原估计。**但实测真实影响为 0**（见下） |
 | `vector-effect="non-scaling-stroke"` | **已推翻原决策，改为实现** | 描边管线调整后可支持：设备宽度恒等于 stroke-width（非等比缩放沿用 matrixScale 的 x/y 平均近似）。已加像素级回归测试。 |
 | `<image>` 的 `preserveAspectRatio` | 不实现 | 需把 meet/slice 裁剪逻辑引入 image 缩放路径 |
-| `marker orient="auto-start-reverse"` | 不实现 | 需在起点反转切线，牵动 `renderMarkers` |
+| `marker orient="auto-start-reverse"` | **已推翻原决策，改为实现** | `renderMarker` 加 `atStart` 参数，`orient="auto-start-reverse"` 时起点角度 +π、mid/end 与 auto 一致。已加像素级回归测试（起点重心偏移 7.5px、end 不受影响）。 |
 | CSS `inherit` | 不实现 | CSS 级联层需引入「继承值」概念，超出简单选择器子集 |
 | `use` 的 `width/height` | 不实现 | 需按 symbol/view 语义做视口裁剪，牵动 `renderUse` |
 | 长度单位真换算 / `%` 基准（**元素几何**） | 不实现 | 会改变现有全部含单位样例的渲染字节与 IoU 表；**根 `<svg>` 视口尺寸是例外**，已按 96dpi 换算（v0.2.2） |
 
-> 共同理由：上述标「不实现」的五项都属于**扩大子集**，会改变渲染结果、要求重跑
+> 共同理由：上述标「不实现」的四项都属于**扩大子集**，会改变渲染结果、要求重跑
 > cairosvg 对账与 golden 基线，已超出「零决策、不破坏语义」的补齐范围。需要哪个
 > 请单独点名，单独做。`clip-rule` 是例外：已在档 2 实测后推翻原决策并实现。
 
@@ -283,9 +283,10 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
 >
 > ⚠️ **后续已修（修正 8 / PR #18，v0.2.3）**：`css.go` at-rule 深度扫描后该文件
 > IoU 0.4549 → 0.9990；「仍是待查项」是修正 7 当时的快照，现已失效。
-- **档 2 H-A 清单**：七项里 `clip-rule` 与 `vector-effect="non-scaling-stroke"` 已推翻原决策、
-  改为实现（clip-rule 实测 91 个文件 / 128 次使用但真实影响为 0；vector-effect 已加像素级
-  回归测试），其余 **五项**仍按原决策保持子集边界（用户需单独点名才做）；「元素几何单位
+- **档 2 H-A 清单**：七项里 `clip-rule`、`vector-effect="non-scaling-stroke"`、
+  `marker orient="auto-start-reverse"` 已推翻原决策、改为实现（clip-rule 实测 91 个文件 /
+  128 次使用但真实影响为 0；vector-effect 与 auto-start-reverse 均已加像素级回归测试），
+  其余 **四项**仍按原决策保持子集边界（用户需单独点名才做）；「元素几何单位
   真换算」与已落地的「视口尺寸换算」已在表中区分清楚。
 - **档 3 外部条件项**：推送外部 Git（用户约束未解除）、Gitea SQLite 根治需重启服务（会中断，
   未获授权）、arm64 真机 runner、act_runner 注册（无二进制 / 出站不通）、CI 内 cairosvg 对账。

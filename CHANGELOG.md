@@ -13,6 +13,12 @@
   - 新增 `vector_effect_test.go`：像素级验证 `scale=1/2/0.5` 下描边厚度恒为 10px
     （普通描边 scale2 翻倍到 20px 作对照），`vector-effect:none` 与普通描边一致。
   - 850 语料唯一样本为 `vector-effect:none`（默认值），golden 无此属性 → 既有渲染零变化。
+- **新增 `marker orient="auto-start-reverse"` 支持**：marker 的 `orient` 除 `auto` /
+  显式角度外，支持 `auto-start-reverse`——`marker-start` 方向反转 180°，mid/end 与
+  `auto` 一致。`renderMarker` 加 `atStart bool` 参数实现，仅起点分支受影响。
+  - 新增 `marker_asr_test.go`：起点箭头红色重心 auto=5.75 → reverse=13.25（偏移 7.5px），
+    且 `marker-end` 在两种 orient 下像素完全一致。
+  - 850 语料与 golden 均无 marker 元素 → 既有渲染零变化。
 - **修正 SVG `S`/`T` 简写曲线第一控制点反射判断（渲染修复，2026-11-15）**：
   `parsePathData` 此前把「当前指令」`lastCmd` 同时用于「数字复用上一指令」和
   `S`/`T` 的反射判断；循环顶部 `lastCmd` 已被更新成本段指令，导致 `M` / `H` /

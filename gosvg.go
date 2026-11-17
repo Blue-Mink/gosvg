@@ -37,7 +37,7 @@
 //
 //	元素/特性：filter、textPath、foreignObject、symbol/view、
 //	    switch/requiredFeatures、动画与脚本、mask-type="alpha"、
-//	    marker orient="auto-start-reverse"（vector-effect="non-scaling-stroke" 已支持）、
+//	    （vector-effect="non-scaling-stroke"、marker orient="auto-start-reverse" 均已支持）、
 //	    radialGradient 的 fx/fy/fr、mix-blend-mode/isolation、
 //	    letter-spacing/word-spacing/text-decoration、use 的 width/height、
 //	    （clip-rule 已支持：clipPath 内映射到 fill-rule 的 even-odd 光栅路径）

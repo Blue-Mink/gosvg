@@ -59,7 +59,7 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 
 **元素/特性**：`filter`、`textPath`、`foreignObject`、`symbol` / `view`、
 `switch` / `requiredFeatures`、动画与脚本、`mask-type="alpha"`、
-`marker orient="auto-start-reverse"`、（`vector-effect="non-scaling-stroke"` 已支持）、
+（`vector-effect="non-scaling-stroke"`、`marker orient="auto-start-reverse"` 均已支持）、
 `radialGradient` 的 `fx/fy/fr`、`mix-blend-mode` / `isolation`、
 `letter-spacing` / `word-spacing` / `text-decoration`、`use` 的 `width/height` 语义、
 `<image>` 自身的 `preserveAspectRatio`（按 x/y/w/h 拉伸）。
@@ -125,6 +125,9 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
   （`scale=1/2/0.5` 描边厚度恒定，`none` 与普通描边一致）。
   边界：marker 的 `non-scaling-stroke` 未单独处理，`stroke-dasharray` 在该模式下不随
   缩放精确补偿。
+- **`marker orient="auto-start-reverse"`**：marker 的 `orient` 除 `auto` / 显式角度外，
+  支持 `auto-start-reverse`——用于 `marker-start` 时方向反转 180°，`marker-mid` /
+  `marker-end` 与 `auto` 一致。已加像素级回归测试（起点红色重心偏移 7.5px、end 不受影响）。
 - **CSS 规模上限**：`MaxCSSRules`（10000）、`MaxCSSSelectorLen`（512）、
   `MaxCSSDeclLen`（4096）。与上面的硬失败不同，CSS 超限是**降级**——丢弃超限内容、
   记入 `Diagnostics()`，渲染照常完成。
@@ -158,7 +161,7 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ## 质量基线
 
 > **机器校验锚点**（由 `scripts/check_docs.sh` 读取，数字变化时同步更新本行）：
-> `test=333 example=3 fuzz=6 golden=8`。口径：`test` / `example` 用
+> `test=334 example=3 fuzz=6 golden=8`。口径：`test` / `example` 用
 > `go test -list '^(Test|Example)' ./...` 分别计数，`fuzz` 为 `*_test.go` 中的 `func Fuzz`
 > 定义数，`golden` 为 `testdata/*.svg` 数（须与 `golden.sha256` 行数相等）。
 > 历史章节里的 215 / 6 个样例等是当时快照，不参与此锚点比对。

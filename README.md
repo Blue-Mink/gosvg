@@ -108,7 +108,7 @@ go run ./cmd/render -strict icon.svg out.png                 # 有静默跳过�
 >
 > - **元素/特性**：`filter`、`textPath`、`foreignObject`、`symbol`/`view`、
 >   `switch`/`requiredFeatures`、动画与脚本、`mask-type="alpha"`、
->   `marker orient="auto-start-reverse"`（`vector-effect="non-scaling-stroke"` 已支持）、
+>   （`vector-effect="non-scaling-stroke"`、`marker orient="auto-start-reverse"` 均已支持）、
 >   `radialGradient` 的 `fx/fy/fr`、`mix-blend-mode`/`isolation`、
 >   `letter-spacing`/`word-spacing`/`text-decoration`、`use` 的 `width/height`、
 >   `<image>` 自身的 `preserveAspectRatio`（按 x/y/w/h 拉伸）
