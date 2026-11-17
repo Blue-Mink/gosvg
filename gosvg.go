@@ -13,7 +13,7 @@
 //	属性：viewBox / preserveAspectRatio / transform / fill / fill-rule / fill-opacity /
 //	     stroke / stroke-width / stroke-linecap / stroke-linejoin /
 //	     stroke-miterlimit / stroke-dasharray / stroke-dashoffset /
-//	     stroke-opacity / opacity / gradientUnits / gradientTransform /
+//	     stroke-opacity / vector-effect（non-scaling-stroke）/ opacity / gradientUnits / gradientTransform /
 //	     spreadMethod / offset / stop-color / stop-opacity /
 //	     font-size / font-family / font-weight / font-style /
 //	     text-anchor / dominant-baseline / color / currentColor /
@@ -37,7 +37,7 @@
 //
 //	元素/特性：filter、textPath、foreignObject、symbol/view、
 //	    switch/requiredFeatures、动画与脚本、mask-type="alpha"、
-//	    vector-effect（含 non-scaling-stroke）、marker orient="auto-start-reverse"、
+//	    marker orient="auto-start-reverse"（vector-effect="non-scaling-stroke" 已支持）、
 //	    radialGradient 的 fx/fy/fr、mix-blend-mode/isolation、
 //	    letter-spacing/word-spacing/text-decoration、use 的 width/height、
 //	    （clip-rule 已支持：clipPath 内映射到 fill-rule 的 even-odd 光栅路径）

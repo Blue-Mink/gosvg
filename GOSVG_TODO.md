@@ -59,7 +59,7 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 
 **元素/特性**：`filter`、`textPath`、`foreignObject`、`symbol` / `view`、
 `switch` / `requiredFeatures`、动画与脚本、`mask-type="alpha"`、
-`vector-effect`（含 `non-scaling-stroke`）、`marker orient="auto-start-reverse"`、
+`marker orient="auto-start-reverse"`、（`vector-effect="non-scaling-stroke"` 已支持）、
 `radialGradient` 的 `fx/fy/fr`、`mix-blend-mode` / `isolation`、
 `letter-spacing` / `word-spacing` / `text-decoration`、`use` 的 `width/height` 语义、
 `<image>` 自身的 `preserveAspectRatio`（按 x/y/w/h 拉伸）。
@@ -119,6 +119,12 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 - **`clip-rule`**（SVG 1.1 可继承属性，默认 `nonzero`）：`clipPath` 元素或其子元素上的
   `clip-rule` 映射到内部 `fill-rule`，复用已有的 even-odd winding 光栅路径；
   每个子元素独立计算，兄弟之间不互相污染。CSS 里写 `clip-rule` 同样生效。
+- **`vector-effect="non-scaling-stroke"`**：描边设备宽度恒等于 `stroke-width`，不随
+  元素 `transform` / viewBox 缩放（形状与文字描边均生效）。该属性非继承、默认 `none`；
+  非等比缩放下沿用 `matrixScale` 的 x/y 平均近似。已加像素级回归测试
+  （`scale=1/2/0.5` 描边厚度恒定，`none` 与普通描边一致）。
+  边界：marker 的 `non-scaling-stroke` 未单独处理，`stroke-dasharray` 在该模式下不随
+  缩放精确补偿。
 - **CSS 规模上限**：`MaxCSSRules`（10000）、`MaxCSSSelectorLen`（512）、
   `MaxCSSDeclLen`（4096）。与上面的硬失败不同，CSS 超限是**降级**——丢弃超限内容、
   记入 `Diagnostics()`，渲染照常完成。
@@ -152,7 +158,7 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ## 质量基线
 
 > **机器校验锚点**（由 `scripts/check_docs.sh` 读取，数字变化时同步更新本行）：
-> `test=332 example=3 fuzz=6 golden=8`。口径：`test` / `example` 用
+> `test=333 example=3 fuzz=6 golden=8`。口径：`test` / `example` 用
 > `go test -list '^(Test|Example)' ./...` 分别计数，`fuzz` 为 `*_test.go` 中的 `func Fuzz`
 > 定义数，`golden` 为 `testdata/*.svg` 数（须与 `golden.sha256` 行数相等）。
 > 历史章节里的 215 / 6 个样例等是当时快照，不参与此锚点比对。

@@ -5,6 +5,14 @@
 
 ## [Unreleased]
 
+- **新增 SVG `vector-effect="non-scaling-stroke"` 支持（通用能力补齐）**：描边设备宽度
+  恒等于 `stroke-width`，不随元素 `transform` / viewBox 缩放；形状与文字描边均生效。
+  `vector-effect` 非继承、默认 `none`（不改变既有渲染），非等比缩放沿用 `matrixScale`
+  的 x/y 平均近似。`shapeStyle` 增 `vectorEffect` 字段，描边前经 `nonScalingStrokeWidth`
+  抵消内部 scale；未触碰 `internal/rasterx` / `internal/vector`。
+  - 新增 `vector_effect_test.go`：像素级验证 `scale=1/2/0.5` 下描边厚度恒为 10px
+    （普通描边 scale2 翻倍到 20px 作对照），`vector-effect:none` 与普通描边一致。
+  - 850 语料唯一样本为 `vector-effect:none`（默认值），golden 无此属性 → 既有渲染零变化。
 - **修正 SVG `S`/`T` 简写曲线第一控制点反射判断（渲染修复，2026-11-15）**：
   `parsePathData` 此前把「当前指令」`lastCmd` 同时用于「数字复用上一指令」和
   `S`/`T` 的反射判断；循环顶部 `lastCmd` 已被更新成本段指令，导致 `M` / `H` /
