@@ -310,13 +310,15 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   结论、只补量化证据；`README.md` 开发段新增 IMPORTANT 块，明确「双 CI 配置同源」
   ≠「自动验证已生效」，ALL GREEN / IoU 数字均来自本地手动 `verify.sh`。
   CHANGELOG `[Unreleased]` 与 `GOSVG_TODO.md` 同步。
-- **按代码实测更正一处文档夸大**：全仓无 `paint-order` 解析器，`text.go` 无条件
+- **按代码实测更正两处文档**：①全仓无 `paint-order` 解析器，`text.go` 无条件
   「先描边、后填充」。此前 `GOSVG_TODO.md` / `CHANGELOG` 把 `paint-order: stroke`
-  列为「已支持」属表述不准，已改；未改渲染行为。
-- **新记录（未修，非本轮范围）**：`text.go:30` `parseLengthOr(font-size, 12)` 把
-  `font-size="0"` 当缺失回退默认 12，零字号仍绘制；`font-size=48 / stroke-width=2`
-  时描边轮廓（288px）比字形填充（148px）更大（两条光栅路径不同，不可凭直觉断言
-  「空心比实心小」）。二者都是既有语义，改需重跑全量 IoU。
+  列为「已支持」属表述不准，已改；未改渲染行为。②（复核证伪旧结论）`text.go:30`
+  `parseLengthOr(font-size, 12)` **不会**把 `font-size="0"` 当缺失回退默认 12：
+  `parseLength("0")=(0,true)`→返回 0→`drawTextSpan` 的 `fontSize<=0` 跳过绘制，
+  实测零字号渲染 0 像素（正确）。此前记为「零字号仍绘制」是对 `parseLengthOr`
+  的错误推断，已更正，无需改代码。
+- **既有语义（未改，非 bug）**：`font-size=48 / stroke-width=2` 时描边轮廓（288px）
+  比字形填充（148px）更大（两条光栅路径不同，不可凭直觉断言「空心比实心小」）。
 - **本轮明确未做（档 3 外部条件，需用户授权 / 点名）**：注册 act_runner（动 `.15`
   服务、GitHub 出站不通）、清理 7 个 queued run（写 `.15` Gitea）、Gitea SQLite
   根治（需重启服务，会中断）、arm64 真机测试、CI 内 cairosvg 对账、850 语料入仓、

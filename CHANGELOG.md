@@ -289,9 +289,11 @@
   当前状态见本节首条。
   ⚠️ 按代码实测更正：`paint-order` 属性**未被解析**，实现是无条件「先描边、后填充」；
   `GOSVG_TODO.md` 已改，此前把它列为「已支持」属表述不准。
-  ⚠️ 另记录既有边界（非本轮引入、未改）：`text.go:30` 的
-  `parseLengthOr(font-size, 12)` 会把 `font-size="0"` 当缺失回退到默认 12，
-  故零字号仍会绘制；改它需重跑全量 IoU，属单独议题。
+  ⚠️ 按代码实测更正（曾记载相反结论，今复核证伪）：`text.go:30` 的
+  `parseLengthOr(font-size, 12)` **不会**把 `font-size="0"` 当缺失回退默认 12：
+  `parseLength("0") = (0, true)`，故返回 0，`drawTextSpan` 的 `fontSize<=0`
+  分支跳过绘制——实测 `font-size="0"` 渲染 0 个不透明像素（正确行为）。
+  此前「零字号仍会绘制」的说法源于对 `parseLengthOr` 的错误推断，已更正。
 
 ## [v0.3.0] — 2026-11-15
 
