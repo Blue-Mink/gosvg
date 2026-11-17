@@ -48,9 +48,17 @@ type (
 	}
 )
 
-// ApplyOpacity sets the color's alpha channel to the given value
+// ApplyOpacity sets the color's alpha channel to the given value.
+// opacity is clamped to [0,1] before scaling: a float64→uint8 conversion
+// wraps modulo 256, so out-of-range values (e.g. fill-opacity="2" or "-1",
+// which SVG inputs can legally contain) would otherwise yield a wrong alpha.
 func ApplyOpacity(c color.Color, opacity float64) color.NRGBA {
 	r, g, b, _ := c.RGBA()
+	if opacity < 0 {
+		opacity = 0
+	} else if opacity > 1 {
+		opacity = 1
+	}
 	return color.NRGBA{uint8(r), uint8(g), uint8(b), uint8(opacity * 0xFF)}
 }
 

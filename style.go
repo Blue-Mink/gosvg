@@ -354,11 +354,20 @@ func parseColorComp(s string) (uint8, bool) {
 		}
 		return uint8(clamp01(f/100) * 255), true
 	}
+	// SVG/CSS 规范：rgb() 的无百分号分量是 0..255 整数（如 rgb(128,64,32)），
+	// 而百分比分量是 0%..100%。此前无百分号分支误用 clamp01(f)*255，把 128
+	// 当成 >1 夹到 1 → 255，导致所有中间整数值渲染成白色（只有 0/255 碰巧对）。
 	f, ok := parseFloat(s)
 	if !ok {
 		return 0, false
 	}
-	return uint8(clamp01(f) * 255), true
+	if f < 0 {
+		return 0, true
+	}
+	if f > 255 {
+		return 255, true
+	}
+	return uint8(math.Round(f)), true
 }
 
 func hexv(b byte) uint8 {

@@ -29,7 +29,9 @@ func parseTransform(s string) rasterx.Matrix2D {
 		if nameEnd < 0 {
 			continue
 		}
-		name := strings.TrimSpace(head[:nameEnd])
+		// SVG 函数名大小写敏感，规范写法是 skewX/skewY（大写 X/Y）；
+		// 统一转小写后再匹配，才能接受标准写法（此前只认非标准的小写 skewx/skewy）。
+		name := strings.ToLower(strings.TrimSpace(head[:nameEnd]))
 		args := parseNumList(head[nameEnd+1 : len(head)-1])
 
 		switch name {

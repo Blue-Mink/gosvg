@@ -58,6 +58,25 @@ func TestApplyOpacity(t *testing.T) {
 	}
 }
 
+func TestApplyOpacityClampsOutOfRange(t *testing.T) {
+	// SVG 输入可含越界 opacity（fill-opacity="2" / "-1"）。float64→uint8
+	// 转换是按 256 取模截断而非 clamp，故必须先夹到 [0,1]，否则：
+	//   1.5  -> alpha 126 (应 255),  -0.5 -> alpha 129 (应 0)
+	opaque := color.NRGBA{10, 20, 30, 255}
+	if got := ApplyOpacity(opaque, 1.5); got.A != 255 {
+		t.Errorf("opacity=1.5 alpha=%d, want 255 (clamp to 1)", got.A)
+	}
+	if got := ApplyOpacity(opaque, -0.5); got.A != 0 {
+		t.Errorf("opacity=-0.5 alpha=%d, want 0 (clamp to 0)", got.A)
+	}
+	if got := ApplyOpacity(opaque, 2.0); got.A != 255 {
+		t.Errorf("opacity=2.0 alpha=%d, want 255", got.A)
+	}
+	if got := ApplyOpacity(opaque, -1.0); got.A != 0 {
+		t.Errorf("opacity=-1.0 alpha=%d, want 0", got.A)
+	}
+}
+
 func TestGradientColorFuncStopCounts(t *testing.T) {
 	// 0 / 1 个 stop 返回的是 color.Color（错误色 / 单色），2+ 才是 ColorFunc。
 	for _, tc := range []struct {
