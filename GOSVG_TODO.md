@@ -60,9 +60,9 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 **元素/特性**：`filter`、`textPath`、`foreignObject`、`symbol` / `view`、
 `switch` / `requiredFeatures`、动画与脚本、`mask-type="alpha"`、
 （`vector-effect="non-scaling-stroke"`、`marker orient="auto-start-reverse"`、
-`<image>` 的 `preserveAspectRatio` 均已支持）、
-`radialGradient` 的 `fx/fy/fr`、`mix-blend-mode` / `isolation`、
-`letter-spacing` / `word-spacing` / `text-decoration`、`use` 的 `width/height` 语义。
+`<image>` 的 `preserveAspectRatio`、`radialGradient` 的 `fx/fy` 均已支持）、
+`mix-blend-mode` / `isolation`、`letter-spacing` / `word-spacing` / `text-decoration`、
+`use` 的 `width/height` 语义（`fr` 属 SVG 2，未实现）。
 
 **CSS**：后代/子代/兄弟选择器、伪类/伪元素、`@media` / `@import` / `@supports`、
 `!important`、CSS 自定义属性 `var()` / `calc()`、`inherit` 关键字、CSS4 颜色
@@ -134,6 +134,10 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
   容差内一致时退化为 `none`，消除 pw/ph 取整噪声（语料普遍按原图比例设 width/height）。
   已加像素测试（2:1 src → meet=800 / slice=1600 / none=1600）与 850 语料 9 个 image
   文件 A/B（逐字节一致，零回归）。
+- **`radialGradient` 的 `fx/fy`（焦点偏移）**：此前代码已实现（gradient.go 解析、
+  internal/rasterx 焦点计算）却被误列为不支持，本次仅纠正文档、零渲染改动。已加实证测试
+  `radial_focal_test.go`：同一渐变 fx=0.5 vs fx=0.15 渲染差异 7686/10000 像素，证明焦点
+  偏移端到端生效。`fr` 属 SVG 2，未实现。
 - **CSS 规模上限**：`MaxCSSRules`（10000）、`MaxCSSSelectorLen`（512）、
   `MaxCSSDeclLen`（4096）。与上面的硬失败不同，CSS 超限是**降级**——丢弃超限内容、
   记入 `Diagnostics()`，渲染照常完成。
@@ -167,7 +171,7 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ## 质量基线
 
 > **机器校验锚点**（由 `scripts/check_docs.sh` 读取，数字变化时同步更新本行）：
-> `test=335 example=3 fuzz=6 golden=8`。口径：`test` / `example` 用
+> `test=336 example=3 fuzz=6 golden=8`。口径：`test` / `example` 用
 > `go test -list '^(Test|Example)' ./...` 分别计数，`fuzz` 为 `*_test.go` 中的 `func Fuzz`
 > 定义数，`golden` 为 `testdata/*.svg` 数（须与 `golden.sha256` 行数相等）。
 > 历史章节里的 215 / 6 个样例等是当时快照，不参与此锚点比对。

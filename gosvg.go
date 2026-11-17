@@ -38,9 +38,9 @@
 //	元素/特性：filter、textPath、foreignObject、symbol/view、
 //	    switch/requiredFeatures、动画与脚本、mask-type="alpha"、
 //	    （vector-effect="non-scaling-stroke"、marker orient="auto-start-reverse"、
-//	    <image> 自身的 preserveAspectRatio 均已支持）、
-//	    radialGradient 的 fx/fy/fr、mix-blend-mode/isolation、
-//	    letter-spacing/word-spacing/text-decoration、use 的 width/height、
+//	    <image> 自身的 preserveAspectRatio、radialGradient 的 fx/fy 均已支持）、
+//	    mix-blend-mode/isolation、letter-spacing/word-spacing/text-decoration、
+//	    use 的 width/height（fr 属 SVG 2，未实现）
 //	    （clip-rule 已支持：clipPath 内映射到 fill-rule 的 even-odd 光栅路径）
 //	CSS：后代/子代/兄弟选择器、伪类、@media/@import/@supports、!important、
 //	    var()/calc()、inherit 关键字、CSS4 颜色（lab/lch/color/device-cmyk）

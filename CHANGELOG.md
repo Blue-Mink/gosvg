@@ -26,6 +26,10 @@
     像素，并验证 xMidYMid 垂直居中留白。
   - 850 语料 A/B：9 个含 image 文件（含显式 none 的 D__logo、sprite sheet C__6ab88）
     改前/改后逐字节一致，平均 IoU 0.941101 不变 → 零回归。
+- **纠正文档：`radialGradient` 的 `fx/fy` 其实早已支持**：代码（gradient.go 解析 +
+  internal/rasterx 焦点计算）已端到端实现，此前却被误列在「不支持」清单。本次仅改文档、
+  零渲染改动。新增 `radial_focal_test.go` 实证：同一渐变 fx=0.5 vs fx=0.15 渲染差异
+  7686/10000 像素，证明焦点偏移生效。`fr` 属 SVG 2，仍未实现。锚点 test=335→336。
 - **修正 SVG `S`/`T` 简写曲线第一控制点反射判断（渲染修复，2026-11-15）**：
   `parsePathData` 此前把「当前指令」`lastCmd` 同时用于「数字复用上一指令」和
   `S`/`T` 的反射判断；循环顶部 `lastCmd` 已被更新成本段指令，导致 `M` / `H` /
