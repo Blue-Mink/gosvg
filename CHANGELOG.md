@@ -19,6 +19,13 @@
   - 新增 `marker_asr_test.go`：起点箭头红色重心 auto=5.75 → reverse=13.25（偏移 7.5px），
     且 `marker-end` 在两种 orient 下像素完全一致。
   - 850 语料与 golden 均无 marker 元素 → 既有渲染零变化。
+- **新增 `<image>` 的 `preserveAspectRatio` 支持**：复用 `parsePreserveAspectRatio`，
+  src 按 meet（等比留白）/ slice（覆盖裁剪）/ none（拉伸，历史行为）放入目标矩形，
+  8 种对齐生效；目标与 src 宽高比在 0.2% 容差内一致时退化为 none（消除取整噪声）。
+  - 新增 `image_par_test.go`：2:1 src 放入 1:1 目标，meet=800 / slice=1600 / none=1600
+    像素，并验证 xMidYMid 垂直居中留白。
+  - 850 语料 A/B：9 个含 image 文件（含显式 none 的 D__logo、sprite sheet C__6ab88）
+    改前/改后逐字节一致，平均 IoU 0.941101 不变 → 零回归。
 - **修正 SVG `S`/`T` 简写曲线第一控制点反射判断（渲染修复，2026-11-15）**：
   `parsePathData` 此前把「当前指令」`lastCmd` 同时用于「数字复用上一指令」和
   `S`/`T` 的反射判断；循环顶部 `lastCmd` 已被更新成本段指令，导致 `M` / `H` /

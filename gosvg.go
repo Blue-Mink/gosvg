@@ -37,11 +37,11 @@
 //
 //	元素/特性：filter、textPath、foreignObject、symbol/view、
 //	    switch/requiredFeatures、动画与脚本、mask-type="alpha"、
-//	    （vector-effect="non-scaling-stroke"、marker orient="auto-start-reverse" 均已支持）、
+//	    （vector-effect="non-scaling-stroke"、marker orient="auto-start-reverse"、
+//	    <image> 自身的 preserveAspectRatio 均已支持）、
 //	    radialGradient 的 fx/fy/fr、mix-blend-mode/isolation、
 //	    letter-spacing/word-spacing/text-decoration、use 的 width/height、
 //	    （clip-rule 已支持：clipPath 内映射到 fill-rule 的 even-odd 光栅路径）
-//	    <image> 自身的 preserveAspectRatio
 //	CSS：后代/子代/兄弟选择器、伪类、@media/@import/@supports、!important、
 //	    var()/calc()、inherit 关键字、CSS4 颜色（lab/lch/color/device-cmyk）
 //	长度：根 <svg> 的 width/height 按 96dpi 换算物理单位；其余长度统一剥离后

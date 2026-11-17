@@ -59,10 +59,10 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 
 **元素/特性**：`filter`、`textPath`、`foreignObject`、`symbol` / `view`、
 `switch` / `requiredFeatures`、动画与脚本、`mask-type="alpha"`、
-（`vector-effect="non-scaling-stroke"`、`marker orient="auto-start-reverse"` 均已支持）、
+（`vector-effect="non-scaling-stroke"`、`marker orient="auto-start-reverse"`、
+`<image>` 的 `preserveAspectRatio` 均已支持）、
 `radialGradient` 的 `fx/fy/fr`、`mix-blend-mode` / `isolation`、
-`letter-spacing` / `word-spacing` / `text-decoration`、`use` 的 `width/height` 语义、
-`<image>` 自身的 `preserveAspectRatio`（按 x/y/w/h 拉伸）。
+`letter-spacing` / `word-spacing` / `text-decoration`、`use` 的 `width/height` 语义。
 
 **CSS**：后代/子代/兄弟选择器、伪类/伪元素、`@media` / `@import` / `@supports`、
 `!important`、CSS 自定义属性 `var()` / `calc()`、`inherit` 关键字、CSS4 颜色
@@ -128,6 +128,12 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 - **`marker orient="auto-start-reverse"`**：marker 的 `orient` 除 `auto` / 显式角度外，
   支持 `auto-start-reverse`——用于 `marker-start` 时方向反转 180°，`marker-mid` /
   `marker-end` 与 `auto` 一致。已加像素级回归测试（起点红色重心偏移 7.5px、end 不受影响）。
+- **`<image>` 的 `preserveAspectRatio`**：复用 `parsePreserveAspectRatio`，src 按
+  `meet`（等比放入目标、留白）/ `slice`（覆盖目标、溢出裁剪）/ `none`（拉伸铺满，默认历史
+  行为）放进 x/y/width/height 目标矩形，8 种对齐方向生效。目标与 src 宽高比在 0.2%
+  容差内一致时退化为 `none`，消除 pw/ph 取整噪声（语料普遍按原图比例设 width/height）。
+  已加像素测试（2:1 src → meet=800 / slice=1600 / none=1600）与 850 语料 9 个 image
+  文件 A/B（逐字节一致，零回归）。
 - **CSS 规模上限**：`MaxCSSRules`（10000）、`MaxCSSSelectorLen`（512）、
   `MaxCSSDeclLen`（4096）。与上面的硬失败不同，CSS 超限是**降级**——丢弃超限内容、
   记入 `Diagnostics()`，渲染照常完成。
@@ -161,7 +167,7 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ## 质量基线
 
 > **机器校验锚点**（由 `scripts/check_docs.sh` 读取，数字变化时同步更新本行）：
-> `test=334 example=3 fuzz=6 golden=8`。口径：`test` / `example` 用
+> `test=335 example=3 fuzz=6 golden=8`。口径：`test` / `example` 用
 > `go test -list '^(Test|Example)' ./...` 分别计数，`fuzz` 为 `*_test.go` 中的 `func Fuzz`
 > 定义数，`golden` 为 `testdata/*.svg` 数（须与 `golden.sha256` 行数相等）。
 > 历史章节里的 215 / 6 个样例等是当时快照，不参与此锚点比对。

@@ -108,10 +108,10 @@ go run ./cmd/render -strict icon.svg out.png                 # 有静默跳过�
 >
 > - **元素/特性**：`filter`、`textPath`、`foreignObject`、`symbol`/`view`、
 >   `switch`/`requiredFeatures`、动画与脚本、`mask-type="alpha"`、
->   （`vector-effect="non-scaling-stroke"`、`marker orient="auto-start-reverse"` 均已支持）、
+>   （`vector-effect="non-scaling-stroke"`、`marker orient="auto-start-reverse"`、
+>   `<image>` 的 `preserveAspectRatio` 均已支持）、
 >   `radialGradient` 的 `fx/fy/fr`、`mix-blend-mode`/`isolation`、
->   `letter-spacing`/`word-spacing`/`text-decoration`、`use` 的 `width/height`、
->   `<image>` 自身的 `preserveAspectRatio`（按 x/y/w/h 拉伸）
+>   `letter-spacing`/`word-spacing`/`text-decoration`、`use` 的 `width/height`
 > - **CSS**：后代/子代/兄弟选择器、伪类/伪元素、`@media`/`@import`/`@supports`、
 >   `!important`、`var()`/`calc()`、`inherit`、CSS4 颜色（`lab()`/`lch()`/`color()`）
 > - **长度**：根 `<svg>` 的 `width`/`height` 按 **96dpi 换算物理单位**（mm/cm/in/pt/pc/q）；
