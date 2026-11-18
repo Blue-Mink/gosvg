@@ -5,6 +5,31 @@
 
 ## [Unreleased]
 
+- **新增 SVG `vector-effect="non-scaling-stroke"` 支持（通用能力补齐）**：描边设备宽度
+  恒等于 `stroke-width`，不随元素 `transform` / viewBox 缩放；形状与文字描边均生效。
+  `vector-effect` 非继承、默认 `none`（不改变既有渲染），非等比缩放沿用 `matrixScale`
+  的 x/y 平均近似。`shapeStyle` 增 `vectorEffect` 字段，描边前经 `nonScalingStrokeWidth`
+  抵消内部 scale；未触碰 `internal/rasterx` / `internal/vector`。
+  - 新增 `vector_effect_test.go`：像素级验证 `scale=1/2/0.5` 下描边厚度恒为 10px
+    （普通描边 scale2 翻倍到 20px 作对照），`vector-effect:none` 与普通描边一致。
+  - 850 语料唯一样本为 `vector-effect:none`（默认值），golden 无此属性 → 既有渲染零变化。
+- **新增 `marker orient="auto-start-reverse"` 支持**：marker 的 `orient` 除 `auto` /
+  显式角度外，支持 `auto-start-reverse`——`marker-start` 方向反转 180°，mid/end 与
+  `auto` 一致。`renderMarker` 加 `atStart bool` 参数实现，仅起点分支受影响。
+  - 新增 `marker_asr_test.go`：起点箭头红色重心 auto=5.75 → reverse=13.25（偏移 7.5px），
+    且 `marker-end` 在两种 orient 下像素完全一致。
+  - 850 语料与 golden 均无 marker 元素 → 既有渲染零变化。
+- **新增 `<image>` 的 `preserveAspectRatio` 支持**：复用 `parsePreserveAspectRatio`，
+  src 按 meet（等比留白）/ slice（覆盖裁剪）/ none（拉伸，历史行为）放入目标矩形，
+  8 种对齐生效；目标与 src 宽高比在 0.2% 容差内一致时退化为 none（消除取整噪声）。
+  - 新增 `image_par_test.go`：2:1 src 放入 1:1 目标，meet=800 / slice=1600 / none=1600
+    像素，并验证 xMidYMid 垂直居中留白。
+  - 850 语料 A/B：9 个含 image 文件（含显式 none 的 D__logo、sprite sheet C__6ab88）
+    改前/改后逐字节一致，平均 IoU 0.941101 不变 → 零回归。
+- **纠正文档：`radialGradient` 的 `fx/fy` 其实早已支持**：代码（gradient.go 解析 +
+  internal/rasterx 焦点计算）已端到端实现，此前却被误列在「不支持」清单。本次仅改文档、
+  零渲染改动。新增 `radial_focal_test.go` 实证：同一渐变 fx=0.5 vs fx=0.15 渲染差异
+  7686/10000 像素，证明焦点偏移生效。`fr` 属 SVG 2，仍未实现。锚点 test=335→336。
 - **修正 SVG `S`/`T` 简写曲线第一控制点反射判断（渲染修复，2026-11-15）**：
   `parsePathData` 此前把「当前指令」`lastCmd` 同时用于「数字复用上一指令」和
   `S`/`T` 的反射判断；循环顶部 `lastCmd` 已被更新成本段指令，导致 `M` / `H` /
@@ -289,9 +314,11 @@
   当前状态见本节首条。
   ⚠️ 按代码实测更正：`paint-order` 属性**未被解析**，实现是无条件「先描边、后填充」；
   `GOSVG_TODO.md` 已改，此前把它列为「已支持」属表述不准。
-  ⚠️ 另记录既有边界（非本轮引入、未改）：`text.go:30` 的
-  `parseLengthOr(font-size, 12)` 会把 `font-size="0"` 当缺失回退到默认 12，
-  故零字号仍会绘制；改它需重跑全量 IoU，属单独议题。
+  ⚠️ 按代码实测更正（曾记载相反结论，今复核证伪）：`text.go:30` 的
+  `parseLengthOr(font-size, 12)` **不会**把 `font-size="0"` 当缺失回退默认 12：
+  `parseLength("0") = (0, true)`，故返回 0，`drawTextSpan` 的 `fontSize<=0`
+  分支跳过绘制——实测 `font-size="0"` 渲染 0 个不透明像素（正确行为）。
+  此前「零字号仍会绘制」的说法源于对 `parseLengthOr` 的错误推断，已更正。
 
 ## [v0.3.0] — 2026-11-15
 

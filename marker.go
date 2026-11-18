@@ -39,23 +39,24 @@ func (ctx *renderContext) renderMarkers(n *node, p rasterx.Path, strokeWidth flo
 		}
 		if startRef != "" {
 			a := math.Atan2(pts[1].Y-pts[0].Y, pts[1].X-pts[0].X)
-			ctx.renderMarker(startRef, pts[0].X, pts[0].Y, a, strokeWidth, opacity)
+			ctx.renderMarker(startRef, pts[0].X, pts[0].Y, a, strokeWidth, opacity, true)
 		}
 		if endRef != "" {
 			a := math.Atan2(pts[npts-1].Y-pts[npts-2].Y, pts[npts-1].X-pts[npts-2].X)
-			ctx.renderMarker(endRef, pts[npts-1].X, pts[npts-1].Y, a, strokeWidth, opacity)
+			ctx.renderMarker(endRef, pts[npts-1].X, pts[npts-1].Y, a, strokeWidth, opacity, false)
 		}
 		if midRef != "" {
 			for i := 1; i < npts-1; i++ {
 				a := math.Atan2(pts[i].Y-pts[i-1].Y, pts[i].X-pts[i-1].X)
-				ctx.renderMarker(midRef, pts[i].X, pts[i].Y, a, strokeWidth, opacity)
+				ctx.renderMarker(midRef, pts[i].X, pts[i].Y, a, strokeWidth, opacity, false)
 			}
 		}
 	}
 }
 
 // renderMarker 渲染单个 marker 到 (px,py)（像素坐标），沿 angle 方向对齐。
-func (ctx *renderContext) renderMarker(ref string, px, py, angle, strokeWidth, opacity float64) {
+// atStart 表示此 marker 用于路径起点——orient="auto-start-reverse" 时起点需反转方向。
+func (ctx *renderContext) renderMarker(ref string, px, py, angle, strokeWidth, opacity float64, atStart bool) {
 	// marker 循环引用（marker 内 path 又引用同一 marker）会无限递归，
 	// 用嵌套深度上限截断。
 	if ctx.markerDepth >= maxMarkerDepth {
@@ -95,10 +96,20 @@ func (ctx *renderContext) renderMarker(ref string, px, py, angle, strokeWidth, o
 	}
 	pxScale := unit * scale
 
-	// orient：auto（沿切线）或显式角度（度）。
-	if orient := strings.ToLower(m.attr("orient")); orient != "" && orient != "auto" {
-		if a, ok := parseFloat(orient); ok {
-			angle = a * math.Pi / 180
+	// orient：auto / auto-start-reverse（沿切线，起点可反转）或显式角度（度）。
+	if orient := strings.ToLower(strings.TrimSpace(m.attr("orient"))); orient != "" {
+		switch orient {
+		case "auto":
+			// 保持切线方向。
+		case "auto-start-reverse":
+			// 起点反转 180°，mid/end 与 auto 相同。
+			if atStart {
+				angle += math.Pi
+			}
+		default:
+			if a, ok := parseFloat(orient); ok {
+				angle = a * math.Pi / 180
+			}
 		}
 	}
 

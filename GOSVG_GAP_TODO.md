@@ -57,19 +57,19 @@
 | E3 版本发布 | **已打 `v0.1.0`** | PR #1 合并到 main 后打的 annotated tag；Release 待建（见档 3） |
 | 分支策略 | **已改为分支流** | 新建 `chore/close-gaps`，后续改动走分支 + PR，main 不再直推 |
 
-### H-A 逐项决策（六项不实现 / 一项已推翻改为实现）
+### H-A 逐项决策（三项不实现 / 四项已推翻改为实现）
 
 | 特性 | 决策 | 理由 |
 |---|---|---|
 | `clip-rule` | **已推翻原决策，改为实现** | 实测 91 个文件 / 128 次使用；实现只需把它映射到既有 even-odd 路径，成本远低于原估计。**但实测真实影响为 0**（见下） |
-| `vector-effect="non-scaling-stroke"` | 不实现 | stroke 宽度在 viewBox 变换里统一缩放，单独豁免要改 stroke 管线 |
-| `<image>` 的 `preserveAspectRatio` | 不实现 | 需把 meet/slice 裁剪逻辑引入 image 缩放路径 |
-| `marker orient="auto-start-reverse"` | 不实现 | 需在起点反转切线，牵动 `renderMarkers` |
+| `vector-effect="non-scaling-stroke"` | **已推翻原决策，改为实现** | 描边管线调整后可支持：设备宽度恒等于 stroke-width（非等比缩放沿用 matrixScale 的 x/y 平均近似）。已加像素级回归测试。 |
+| `<image>` 的 `preserveAspectRatio` | **已推翻原决策，改为实现** | 复用 `parsePreserveAspectRatio`：meet 等比留白 / slice 覆盖裁剪 / none 拉伸；目标与 src 宽高比在容差内一致时退化为 none（消除取整噪声）。已加像素测试（meet=800 / slice=1600 / none=1600）与 850 语料 A/B（9 个 image 文件逐字节一致）。 |
+| `marker orient="auto-start-reverse"` | **已推翻原决策，改为实现** | `renderMarker` 加 `atStart` 参数，`orient="auto-start-reverse"` 时起点角度 +π、mid/end 与 auto 一致。已加像素级回归测试（起点重心偏移 7.5px、end 不受影响）。 |
 | CSS `inherit` | 不实现 | CSS 级联层需引入「继承值」概念，超出简单选择器子集 |
 | `use` 的 `width/height` | 不实现 | 需按 symbol/view 语义做视口裁剪，牵动 `renderUse` |
 | 长度单位真换算 / `%` 基准（**元素几何**） | 不实现 | 会改变现有全部含单位样例的渲染字节与 IoU 表；**根 `<svg>` 视口尺寸是例外**，已按 96dpi 换算（v0.2.2） |
 
-> 共同理由：上述标「不实现」的六项都属于**扩大子集**，会改变渲染结果、要求重跑
+> 共同理由：上述标「不实现」的三项都属于**扩大子集**，会改变渲染结果、要求重跑
 > cairosvg 对账与 golden 基线，已超出「零决策、不破坏语义」的补齐范围。需要哪个
 > 请单独点名，单独做。`clip-rule` 是例外：已在档 2 实测后推翻原决策并实现。
 
@@ -283,9 +283,12 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
 >
 > ⚠️ **后续已修（修正 8 / PR #18，v0.2.3）**：`css.go` at-rule 深度扫描后该文件
 > IoU 0.4549 → 0.9990；「仍是待查项」是修正 7 当时的快照，现已失效。
-- **档 2 H-A 清单**：七项里 `clip-rule` 已推翻原决策、改为实现（实测 91 个文件 /
-  128 次使用，但真实影响为 0），其余 **六项**仍按原决策保持子集边界（用户需单独
-  点名才做）；「元素几何单位真换算」与已落地的「视口尺寸换算」已在表中区分清楚。
+- **档 2 H-A 清单**：七项里 `clip-rule`、`vector-effect="non-scaling-stroke"`、
+  `marker orient="auto-start-reverse"`、`<image>` 的 `preserveAspectRatio` 已推翻原决策、
+  改为实现（clip-rule 实测 91 个文件 / 128 次使用但真实影响为 0；后三项均已加像素级
+  回归测试，image PAR 另经 850 语料 A/B 验证 9 个 image 文件逐字节一致），
+  其余 **三项**仍按原决策保持子集边界（用户需单独点名才做）；「元素几何单位
+  真换算」与已落地的「视口尺寸换算」已在表中区分清楚。
 - **档 3 外部条件项**：推送外部 Git（用户约束未解除）、Gitea SQLite 根治需重启服务（会中断，
   未获授权）、arm64 真机 runner、act_runner 注册（无二进制 / 出站不通）、CI 内 cairosvg 对账。
   这些不是代码缺口，**不因「继续修」而自动推进**。
@@ -310,13 +313,15 @@ fnOS FPK 集成、CI runner 安装（需授权）、Gitea SQLite 锁（需授权
   结论、只补量化证据；`README.md` 开发段新增 IMPORTANT 块，明确「双 CI 配置同源」
   ≠「自动验证已生效」，ALL GREEN / IoU 数字均来自本地手动 `verify.sh`。
   CHANGELOG `[Unreleased]` 与 `GOSVG_TODO.md` 同步。
-- **按代码实测更正一处文档夸大**：全仓无 `paint-order` 解析器，`text.go` 无条件
+- **按代码实测更正两处文档**：①全仓无 `paint-order` 解析器，`text.go` 无条件
   「先描边、后填充」。此前 `GOSVG_TODO.md` / `CHANGELOG` 把 `paint-order: stroke`
-  列为「已支持」属表述不准，已改；未改渲染行为。
-- **新记录（未修，非本轮范围）**：`text.go:30` `parseLengthOr(font-size, 12)` 把
-  `font-size="0"` 当缺失回退默认 12，零字号仍绘制；`font-size=48 / stroke-width=2`
-  时描边轮廓（288px）比字形填充（148px）更大（两条光栅路径不同，不可凭直觉断言
-  「空心比实心小」）。二者都是既有语义，改需重跑全量 IoU。
+  列为「已支持」属表述不准，已改；未改渲染行为。②（复核证伪旧结论）`text.go:30`
+  `parseLengthOr(font-size, 12)` **不会**把 `font-size="0"` 当缺失回退默认 12：
+  `parseLength("0")=(0,true)`→返回 0→`drawTextSpan` 的 `fontSize<=0` 跳过绘制，
+  实测零字号渲染 0 像素（正确）。此前记为「零字号仍绘制」是对 `parseLengthOr`
+  的错误推断，已更正，无需改代码。
+- **既有语义（未改，非 bug）**：`font-size=48 / stroke-width=2` 时描边轮廓（288px）
+  比字形填充（148px）更大（两条光栅路径不同，不可凭直觉断言「空心比实心小」）。
 - **本轮明确未做（档 3 外部条件，需用户授权 / 点名）**：注册 act_runner（动 `.15`
   服务、GitHub 出站不通）、清理 7 个 queued run（写 `.15` Gitea）、Gitea SQLite
   根治（需重启服务，会中断）、arm64 真机测试、CI 内 cairosvg 对账、850 语料入仓、

@@ -328,11 +328,12 @@ func (ctx *renderContext) renderShape(n *node, opacity float64) {
 		reportUnresolvedPaintRef(ctx.doc, fillStr)
 	}
 
-	// 描边
+	// 描边（vector-effect=non-scaling-stroke 时按设备空间恒定宽度调整）。
+	strokeW := ctx.nonScalingStrokeWidth(style, style.strokeWidth)
 	if c, ok := parseColor(strokeStr); ok && c.A > 0 && style.strokeWidth > 0 {
-		ctx.stroke(p, c, style.strokeWidth, style.linecap, style.linejoin, style.miterLimit, style.strokeDasharray, style.strokeDashoffset, opacity*style.strokeOpacity)
+		ctx.stroke(p, c, strokeW, style.linecap, style.linejoin, style.miterLimit, style.strokeDasharray, style.strokeDashoffset, opacity*style.strokeOpacity)
 	} else if g := ctx.doc.resolveGradient(strokeStr); g != nil && style.strokeWidth > 0 {
-		ctx.strokeGradient(p, g, style.strokeWidth, style.linecap, style.linejoin, style.miterLimit, style.strokeDasharray, style.strokeDashoffset, opacity*style.strokeOpacity)
+		ctx.strokeGradient(p, g, strokeW, style.linecap, style.linejoin, style.miterLimit, style.strokeDasharray, style.strokeDashoffset, opacity*style.strokeOpacity)
 	} else if pat := ctx.doc.resolvePattern(strokeStr); pat != nil && style.strokeWidth > 0 {
 		// stroke="url(#pattern)"：先按纯色黑描边到掩膜再平铺不划算，
 		// 这里退化为用 pattern 填充描边路径的包围盒不可行，故按规范少见用法记诊断。
@@ -362,7 +363,11 @@ type shapeStyle struct {
 	miterLimit       float64
 	strokeDasharray  []float64
 	strokeDashoffset float64
-	color            string
+	// vectorEffect 是 SVG 的 vector-effect 属性。non-scaling-stroke 表示描边
+	// 宽度不随变换缩放（设备像素宽度 = stroke-width 本身），其余值按默认处理。
+	// 该属性非继承：默认 none，未声明的子元素不沿用父级值。
+	vectorEffect string
+	color        string
 }
 
 // defaultShapeStyle 返回 SVG 规范默认的表现样式。
@@ -376,6 +381,7 @@ func defaultShapeStyle() shapeStyle {
 		linecap:       "butt",
 		linejoin:      "miter",
 		miterLimit:    4,
+		vectorEffect:  "none",
 		color:         "black",
 	}
 }
@@ -422,6 +428,11 @@ func mergeStyle(base shapeStyle, n *node) shapeStyle {
 	}
 	if v, ok := n.attrs["color"]; ok {
 		s.color = v
+	}
+	// vector-effect 非继承：不沿用 base，先复位默认，只看本节点声明。
+	s.vectorEffect = "none"
+	if v, ok := n.attrs["vector-effect"]; ok {
+		s.vectorEffect = strings.ToLower(strings.TrimSpace(v))
 	}
 	return s
 }
@@ -484,6 +495,22 @@ func (ctx *renderContext) fill(p rasterx.Path, c color.NRGBA, opacity float64, n
 }
 
 // stroke 用指定纯色描边路径。
+// nonScalingStrokeWidth 按 vector-effect 调整描边宽度。
+// strokeColor / strokeDevicePath 内部会把用户空间宽度乘 matrixScale 转成设备
+// 像素；non-scaling-stroke 要求设备宽度恒等于 stroke-width，故此处先除以
+// scale 抵消，使最终设备宽度 = width（非等比缩放下沿用 matrixScale 的 x/y
+// 平均近似，与本库既有的 matrixScale 口径一致）。
+func (ctx *renderContext) nonScalingStrokeWidth(style shapeStyle, width float64) float64 {
+	if style.vectorEffect != "non-scaling-stroke" {
+		return width
+	}
+	scale := ctx.matrixScale()
+	if scale > 0 {
+		return width / scale
+	}
+	return width
+}
+
 func (ctx *renderContext) stroke(p rasterx.Path, c color.NRGBA, width float64, linecap, linejoin string, miterLimit float64, dasharray []float64, dashoffset float64, opacity float64) {
 	ctx.strokeColor(p, rasterx.ApplyOpacity(c, opacity), width, linecap, linejoin, miterLimit, dasharray, dashoffset)
 }

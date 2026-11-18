@@ -97,7 +97,7 @@ go run ./cmd/render -strict icon.svg out.png                 # 有静默跳过�
 
 **元素**：`svg` / `g` / `defs` / `use` / `linearGradient` / `radialGradient` / `stop` / `clipPath` / `circle` / `ellipse` / `rect` / `line` / `path` / `polygon` / `polyline` / `text` / `tspan` / `mask` / `marker` / `image` / `pattern` / `style`
 
-**属性**：`viewBox` / `preserveAspectRatio` / `transform` / `fill` / `fill-rule` / `fill-opacity` / `stroke` / `stroke-width` / `stroke-linecap` / `stroke-linejoin` / `stroke-miterlimit` / `stroke-dasharray` / `stroke-dashoffset` / `stroke-opacity` / `opacity` / `gradientUnits` / `gradientTransform` / `spreadMethod` / `offset` / `stop-color` / `stop-opacity` / `mask` / `maskUnits` / `maskContentUnits` / `clip-path` / `clipPathUnits` / `marker-start` / `marker-mid` / `marker-end` / `markerUnits` / `markerWidth` / `markerHeight` / `refX` / `refY` / `orient` / `font-size` / `font-family` / `font-weight` / `font-style` / `text-anchor` / `dominant-baseline` / `x` / `y` / `dx` / `dy` / `color` / `currentColor` / `id` / `class` / `display` / `visibility` / `clip-rule` / 内联 `style`
+**属性**：`viewBox` / `preserveAspectRatio` / `transform` / `fill` / `fill-rule` / `fill-opacity` / `stroke` / `stroke-width` / `stroke-linecap` / `stroke-linejoin` / `stroke-miterlimit` / `stroke-dasharray` / `stroke-dashoffset` / `stroke-opacity` / `opacity` / `gradientUnits` / `gradientTransform` / `spreadMethod` / `offset` / `stop-color` / `stop-opacity` / `mask` / `maskUnits` / `maskContentUnits` / `clip-path` / `clipPathUnits` / `marker-start` / `marker-mid` / `marker-end` / `markerUnits` / `markerWidth` / `markerHeight` / `refX` / `refY` / `orient` / `font-size` / `font-family` / `font-weight` / `font-style` / `text-anchor` / `dominant-baseline` / `x` / `y` / `dx` / `dy` / `color` / `currentColor` / `id` / `class` / `display` / `visibility` / `clip-rule` / `vector-effect`（含 `non-scaling-stroke`）/ 内联 `style`
 
 **CSS**：支持 `<style>` 样式表元素与 class/id/类型选择器（含 `tag.class#id` 组合与逗号分隔），按 CSS 特异性级联；优先级 presentation 属性 < CSS 规则 < 内联 `style`。
 
@@ -108,10 +108,10 @@ go run ./cmd/render -strict icon.svg out.png                 # 有静默跳过�
 >
 > - **元素/特性**：`filter`、`textPath`、`foreignObject`、`symbol`/`view`、
 >   `switch`/`requiredFeatures`、动画与脚本、`mask-type="alpha"`、
->   `vector-effect`（含 `non-scaling-stroke`）、`marker orient="auto-start-reverse"`、
->   `radialGradient` 的 `fx/fy/fr`、`mix-blend-mode`/`isolation`、
->   `letter-spacing`/`word-spacing`/`text-decoration`、`use` 的 `width/height`、
->   `<image>` 自身的 `preserveAspectRatio`（按 x/y/w/h 拉伸）
+>   （`vector-effect="non-scaling-stroke"`、`marker orient="auto-start-reverse"`、
+>   `<image>` 的 `preserveAspectRatio`、`radialGradient` 的 `fx/fy` 均已支持）、
+>   `mix-blend-mode`/`isolation`、`letter-spacing`/`word-spacing`/`text-decoration`、
+>   `use` 的 `width/height`（`fr` 属 SVG 2，未实现）
 > - **CSS**：后代/子代/兄弟选择器、伪类/伪元素、`@media`/`@import`/`@supports`、
 >   `!important`、`var()`/`calc()`、`inherit`、CSS4 颜色（`lab()`/`lch()`/`color()`）
 > - **长度**：根 `<svg>` 的 `width`/`height` 按 **96dpi 换算物理单位**（mm/cm/in/pt/pc/q）；

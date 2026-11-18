@@ -59,10 +59,10 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 
 **元素/特性**：`filter`、`textPath`、`foreignObject`、`symbol` / `view`、
 `switch` / `requiredFeatures`、动画与脚本、`mask-type="alpha"`、
-`vector-effect`（含 `non-scaling-stroke`）、`marker orient="auto-start-reverse"`、
-`radialGradient` 的 `fx/fy/fr`、`mix-blend-mode` / `isolation`、
-`letter-spacing` / `word-spacing` / `text-decoration`、`use` 的 `width/height` 语义、
-`<image>` 自身的 `preserveAspectRatio`（按 x/y/w/h 拉伸）。
+（`vector-effect="non-scaling-stroke"`、`marker orient="auto-start-reverse"`、
+`<image>` 的 `preserveAspectRatio`、`radialGradient` 的 `fx/fy` 均已支持）、
+`mix-blend-mode` / `isolation`、`letter-spacing` / `word-spacing` / `text-decoration`、
+`use` 的 `width/height` 语义（`fr` 属 SVG 2，未实现）。
 
 **CSS**：后代/子代/兄弟选择器、伪类/伪元素、`@media` / `@import` / `@supports`、
 `!important`、CSS 自定义属性 `var()` / `calc()`、`inherit` 关键字、CSS4 颜色
@@ -119,6 +119,25 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 - **`clip-rule`**（SVG 1.1 可继承属性，默认 `nonzero`）：`clipPath` 元素或其子元素上的
   `clip-rule` 映射到内部 `fill-rule`，复用已有的 even-odd winding 光栅路径；
   每个子元素独立计算，兄弟之间不互相污染。CSS 里写 `clip-rule` 同样生效。
+- **`vector-effect="non-scaling-stroke"`**：描边设备宽度恒等于 `stroke-width`，不随
+  元素 `transform` / viewBox 缩放（形状与文字描边均生效）。该属性非继承、默认 `none`；
+  非等比缩放下沿用 `matrixScale` 的 x/y 平均近似。已加像素级回归测试
+  （`scale=1/2/0.5` 描边厚度恒定，`none` 与普通描边一致）。
+  边界：marker 的 `non-scaling-stroke` 未单独处理，`stroke-dasharray` 在该模式下不随
+  缩放精确补偿。
+- **`marker orient="auto-start-reverse"`**：marker 的 `orient` 除 `auto` / 显式角度外，
+  支持 `auto-start-reverse`——用于 `marker-start` 时方向反转 180°，`marker-mid` /
+  `marker-end` 与 `auto` 一致。已加像素级回归测试（起点红色重心偏移 7.5px、end 不受影响）。
+- **`<image>` 的 `preserveAspectRatio`**：复用 `parsePreserveAspectRatio`，src 按
+  `meet`（等比放入目标、留白）/ `slice`（覆盖目标、溢出裁剪）/ `none`（拉伸铺满，默认历史
+  行为）放进 x/y/width/height 目标矩形，8 种对齐方向生效。目标与 src 宽高比在 0.2%
+  容差内一致时退化为 `none`，消除 pw/ph 取整噪声（语料普遍按原图比例设 width/height）。
+  已加像素测试（2:1 src → meet=800 / slice=1600 / none=1600）与 850 语料 9 个 image
+  文件 A/B（逐字节一致，零回归）。
+- **`radialGradient` 的 `fx/fy`（焦点偏移）**：此前代码已实现（gradient.go 解析、
+  internal/rasterx 焦点计算）却被误列为不支持，本次仅纠正文档、零渲染改动。已加实证测试
+  `radial_focal_test.go`：同一渐变 fx=0.5 vs fx=0.15 渲染差异 7686/10000 像素，证明焦点
+  偏移端到端生效。`fr` 属 SVG 2，未实现。
 - **CSS 规模上限**：`MaxCSSRules`（10000）、`MaxCSSSelectorLen`（512）、
   `MaxCSSDeclLen`（4096）。与上面的硬失败不同，CSS 超限是**降级**——丢弃超限内容、
   记入 `Diagnostics()`，渲染照常完成。
@@ -152,7 +171,7 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ## 质量基线
 
 > **机器校验锚点**（由 `scripts/check_docs.sh` 读取，数字变化时同步更新本行）：
-> `test=332 example=3 fuzz=6 golden=8`。口径：`test` / `example` 用
+> `test=336 example=3 fuzz=6 golden=8`。口径：`test` / `example` 用
 > `go test -list '^(Test|Example)' ./...` 分别计数，`fuzz` 为 `*_test.go` 中的 `func Fuzz`
 > 定义数，`golden` 为 `testdata/*.svg` 数（须与 `golden.sha256` 行数相等）。
 > 历史章节里的 215 / 6 个样例等是当时快照，不参与此锚点比对。

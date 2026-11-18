@@ -126,11 +126,11 @@ func TestTextStrokePlusFill(t *testing.T) {
 // TestTextStrokeNoStrokeDoesNotRender 显式 stroke="none" / 空文本 / 零描边宽度
 // 必须不画任何像素，且不应 panic（防 nil geom 回归）。
 //
-// 注意：font-size="0" 不在本用例里 —— text.go:30 用
-// parseLengthOr(n.attr("font-size"), 12)，把 0 当作「无效/缺失」回退到默认
-// 字号 12 而照常绘制。这是 v0.3.0 之前的既有 parseLengthOr 语义，不是
-// text stroke 引入的；改它会动所有含 0 值长度的渲染字节并需重跑全量 IoU，
-// 属单独议题，此处只如实记录、不擅自改。
+// 注：font-size="0" 已实证为正确行为（不在本用例里）——text.go:30 的
+// parseLengthOr(n.attr("font-size"), 12) 在 font-size="0" 时返回 0
+// （parseLength("0")=(0,true)，不回退），drawTextSpan 的 fontSize<=0 分支跳过
+// 绘制，实测渲染 0 个不透明像素。此前注释称「回退默认 12 照常绘制」系对
+// parseLengthOr 的错误推断，已据实更正（纯注释，不改行为）。
 func TestTextStrokeNoStrokeDoesNotRender(t *testing.T) {
 	for _, tc := range []struct {
 		name string

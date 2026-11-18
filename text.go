@@ -189,7 +189,7 @@ func (ctx *renderContext) drawTextSpan(text string, style shapeStyle, opacity fl
 			text:      text,
 			widthUser: widthPx / scale,
 		}
-		ctx.strokeTextSpan(geom, strokeC, style.strokeWidth, style.linecap, style.linejoin, style.miterLimit, style.strokeDasharray, style.strokeDashoffset, opacity*style.strokeOpacity)
+		ctx.strokeTextSpan(geom, strokeC, ctx.nonScalingStrokeWidth(style, style.strokeWidth), style.linecap, style.linejoin, style.miterLimit, style.strokeDasharray, style.strokeDashoffset, opacity*style.strokeOpacity)
 	}
 
 	if wantFill {
