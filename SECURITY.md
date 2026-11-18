@@ -2,8 +2,8 @@
 
 ## 报告
 
-本项目托管在内网 Gitea（`https://github.com/Blue-Mink/gosvg`）。发现问题时请：
-1. 优先在仓库提 **私有** issue，或直接联系维护者 `bluemink`；
+本项目托管在 GitHub（`https://github.com/Blue-Mink/gosvg`，Private 仓库）。发现问题时请：
+1. 优先在仓库提 **私有** issue，或联系维护者 `Blue-Mink`；
 2. 涉及凭据/未授权访问的问题**不要**公开贴复现细节。
 
 ## 威胁模型

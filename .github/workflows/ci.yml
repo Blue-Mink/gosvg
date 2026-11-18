@@ -1,14 +1,13 @@
 name: CI
 
-# 2026-11-15 止血：内网 Gitea Actions 的 runner 注册数长期为 0，
-# 且 GitHub 出站不通（checkout/setup-go 拉不到），自动触发只会持续堆积
-# queued run（实测 113 run / 0 success / 7 queued）。在注册 runner 并解决
-# 出站之前，收窄为「仅手动触发」：保留 workflow 作为将来恢复自动 CI 的
-# 同源配置，但不再让每次 push/PR 产生僵尸 run。
-# 要恢复自动触发：确认 actions/runners total_count > 0 且 GitHub action 可拉取后，
-# 在两份（.gitea / .github）workflow 里同时加回 push / pull_request 段；
-# check_docs.sh 的「双 CI workflow 逐字一致」门禁会校验两边同步。
+# 发布到 GitHub 后恢复自动触发：GitHub Actions 自带 runner，push/PR 均会跑
+# 与 scripts/verify.sh 同源的全套门禁。保留 workflow_dispatch 便于手动重跑。
+# 注：内网 Gitea 若 runner 数仍为 0，其侧自动 run 会 queued；可在 Gitea 侧
+# 单独禁用自动触发，但两份文件须保持逐字一致（check_docs.sh 门禁校验）。
 on:
+  push:
+    branches: [main]
+  pull_request:
   workflow_dispatch:
 
 jobs:
@@ -28,6 +27,6 @@ jobs:
         run: go version
 
       # 与 scripts/verify.sh 同源：fmt / vet / test / race / arm64 / wasm / bench / fuzz
-      # 不覆盖 GOPROXY：由 verify.sh 按环境兜底（内网走 goproxy.cn）。
+      # 不覆盖 GOPROXY：由 verify.sh 按环境兜底（必要时设 goproxy.cn）。
       - name: Verify
         run: sh ./scripts/verify.sh

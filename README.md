@@ -1,5 +1,6 @@
 <p align="center">
   <b>gosvg</b><br/><br/>
+  <a href="https://github.com/Blue-Mink/gosvg/actions/workflows/ci.yml"><img src="https://github.com/Blue-Mink/gosvg/actions/workflows/ci.yml/badge.svg" alt="CI"/></a>
   <img src="https://img.shields.io/badge/Go-1.27%2B-00add8" alt="go"/>
   <img src="https://img.shields.io/badge/License-MIT-111827" alt="license"/>
   <img src="https://img.shields.io/badge/deps-x%2Fimage-3b82f6" alt="deps"/>
@@ -29,10 +30,10 @@ go get github.com/Blue-Mink/gosvg
 ```
 
 > [!NOTE]
-> 当前源码托管在内网 Gitea（`https://github.com/Blue-Mink/gosvg`），
-> module 路径保留 `github.com/Blue-Mink/gosvg` 以便未来开源。内网/本地使用请在
-> 调用方 `go.mod` 里加 `replace github.com/Blue-Mink/gosvg => <本地路径>`，
-> 或配合 `GOPRIVATE` 使用；仓库尚未推送到 GitHub 时 `go get` 不可用。
+> 源码托管在 GitHub（`https://github.com/Blue-Mink/gosvg`，Private 仓库），
+> module 路径为 `github.com/Blue-Mink/gosvg`。私有仓库下 `go get` 需要配置
+> `GOPRIVATE=github.com/Blue-Mink/*` 并具备相应访问权限；本地开发可在调用方
+> `go.mod` 里加 `replace github.com/Blue-Mink/gosvg => <本地路径>`。
 
 ```go
 import "github.com/Blue-Mink/gosvg"
