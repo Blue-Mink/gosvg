@@ -5,6 +5,20 @@
 
 ## [Unreleased]
 
+- **新增 CSS 组合子选择器支持（通用能力补齐）**：`<style>` 里的选择器在原有
+  `tag.class#id` 复合选择器基础上，支持四种组合子——后代（空格 `A B`）、子代
+  （`A > B`）、相邻兄弟（`A + B`）、通用兄弟（`A ~ B`）。`node` 已有 `parent` /
+  `children` 指针，匹配从最右复合段沿组合子链向左回溯，无需改解析数据结构；
+  特异性按各段 `(id, class, tag)` 累加（如 `#g .x` 胜过 `.outer .x`）。伪类 / 伪元素
+  仍不支持（保留为普通段文本，不匹配任何元素）。零 API / 零输出格式改动。
+  - `cssSelector` 从单段复合选择器改为「复合段数组 + 组合子数组」，`parseSelector`
+    一遍扫描产出两者；单段选择器行为与旧版完全一致。
+  - 新增 `css_combinator_test.go` 7 个顶层 Test：四种组合子命中 / 不命中边界、
+    多层后代、组合子特异性累加、单段选择器向后兼容。850 语料 CSS 组合子零触达
+    （19 个含 `<style>` 文件均用单段选择器）→ golden 与既有渲染零变化。
+  - 文档同步：README / 包注释 / `GOSVG_TODO.md` 把组合子从「不支持」移到「支持」，
+    锚点 `test=336→343`；`verify.sh` ALL GREEN（真 `-race` 无 DATA RACE、6 fuzz、
+    docs 门禁全过）。
 - **新增 SVG `vector-effect="non-scaling-stroke"` 支持（通用能力补齐）**：描边设备宽度
   恒等于 `stroke-width`，不随元素 `transform` / viewBox 缩放；形状与文字描边均生效。
   `vector-effect` 非继承、默认 `none`（不改变既有渲染），非等比缩放沿用 `matrixScale`
