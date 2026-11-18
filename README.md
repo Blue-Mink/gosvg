@@ -109,13 +109,10 @@ go run ./cmd/render -strict icon.svg out.png                 # 有静默跳过�
 >
 > - **元素/特性**：`filter`、`textPath`、`foreignObject`、`symbol`/`view`、
 >   `switch`/`requiredFeatures`、动画与脚本、`mask-type="alpha"`、
->   （`vector-effect="non-scaling-stroke"`、`marker orient="auto-start-reverse"`、
->   `<image>` 的 `preserveAspectRatio`、`radialGradient` 的 `fx/fy` 均已支持）、
 >   `mix-blend-mode`/`isolation`、`letter-spacing`/`word-spacing`/`text-decoration`、
 >   `use` 的 `width/height`（`fr` 属 SVG 2，未实现）
 > - **CSS**：伪类/伪元素、`@media`/`@import`/`@supports`、`!important`、
 >   `var()`/`calc()`、`inherit`、CSS4 颜色（`lab()`/`lch()`/`color()`）
->   （后代/子代/兄弟组合子已支持）
 > - **长度**：根 `<svg>` 的 `width`/`height` 按 **96dpi 换算物理单位**（mm/cm/in/pt/pc/q）；
 >   其余长度（元素几何 / font-size / stroke-width 等）仍统一剥离后按数值 **1:1 近似**，
 >   `%` 与相对单位（em/ex/rem）不按父值/视口基准解析
@@ -225,45 +222,28 @@ GOOS=js GOARCH=wasm go build ./...
 go test -run TestGoldenRegression -update .
 ```
 
-> [!IMPORTANT]
-> **上面这套门禁目前是「本地手动」门禁，不是已生效的自动 CI。**
-> 内网 Gitea 仓库的 Actions runner 注册数为 **0**，截至 2026-11-15 共 113 次
-> workflow run 中 **0 次 `success`**（106 次 cancelled、7 次 queued 挂起）；GitHub
-> 侧出站亦不通。因此 `.gitea/workflows/ci.yml` / `.github/workflows/ci.yml` 只是
-> 「配置同源」，**没有一次在服务端真正跑完过**。**2026-11-15 起两份 workflow
-> 已收窄为仅 `workflow_dispatch` 手动触发**（此前 `push` / `pull_request`
-> 会在 runner=0 的情况下持续堆积 queued run）；恢复自动触发的条件见 workflow
-> 文件头注释。合并前请务必本地实跑 `sh ./scripts/verify.sh`，且**发版须在带
-> gcc 的机器跑到不带 SKIPPED 的 `ALL GREEN`**（`-race` 是唯一未由自动门禁
-> 覆盖的项，见 `CONTRIBUTING.md`）；发版数字（IoU / ALL GREEN）均来自本地
-> 手动实跑，不代表 CI 已验证。详见 `CONTRIBUTING.md` 与 `GOSVG_GAP_TODO.md` 档 3。
->
-> ⚠️ **数字更新（PR #32 合并后，2026-11-15）**：上面「113 次 run / 106 cancelled /
-> 7 次 queued 挂起」是止血当时快照，按纪律保留原文；7 个 queued run 现已取消，
-> **113 run 全 `cancelled`、`queued=0`**，收窄后的 push/merge 未再新增 run。
-> **结论不变**：runner 注册数仍为 0、GitHub 出站仍不通、门禁仍只在本地手动生效，
-> 合并前本地实跑 `verify.sh` 与发版 `-race` 硬要求都继续有效。详见
-> `CHANGELOG.md` `[Unreleased]` 首条与 `CONTRIBUTING.md`。
->
-> ✅ **`-race` 状态更新（2026-11-15）**：上面写「`-race` 是唯一未由自动门禁覆盖的
-> 项」指的是**自动 CI 从未跑过它**，此结论至今有效；但本地手动验证侧，现已用一次性
-> `/tmp` gcc 工具链跑出**不带 SKIPPED 的 `ALL GREEN`**、`-race` 全包通过（详见
-> `CHANGELOG.md` `[Unreleased]` 首条）。⚠️ 这不改变本块主旨：**服务端 CI 仍未生效**，
-> runner=0 / 0 次 success 不变，发版数字仍全部来自本地手动实跑。
+> [!NOTE]
+> 门禁由 `.github/workflows/ci.yml`（GitHub Actions，自带 runner）在 push / PR 时
+> 自动运行，与 `scripts/verify.sh` 同源（fmt / vet / test / race / arm64 / wasm /
+> bench / fuzz），`-race` 亦由 GitHub runner 覆盖。两份 workflow（`.gitea/` 与
+> `.github/`）逐字一致，但内网 Gitea 侧 runner 数为 0、其 workflow 仅在
+> `workflow_dispatch` 手动触发。发版前仍建议本地实跑 `sh ./scripts/verify.sh`
+> 拿到不带 SKIPPED 的 `ALL GREEN`；历史与恢复条件见 `CHANGELOG.md` /
+> `CONTRIBUTING.md`。
 
 若 `proxy.golang.org` 不通，用 `GOPROXY=https://goproxy.cn,direct`。
 更多见 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [GOSVG_TODO.md](GOSVG_TODO.md)。
 
 ## 性能
 
-`BenchmarkRender`（512×512，Lucide 线条图标）在 .15 / Go 1.27.3 / Ryzen 7 5825U 上实测
+`BenchmarkRender`（512×512，Lucide 线条图标）在 x86 测试机 / Go 1.27.3 / Ryzen 7 5825U 上实测
 约 **8.9 ms/op**（同机多次 8.9–11.2 ms）、**5.37 MB/op**、**292,168 allocs/op**。
 `Parse` 仅约 3.5 µs，复用 `Document` 收益可忽略；数字与机器强相关，仅作同一台机器上的
 相对基线，详见 [BENCHMARK.md](BENCHMARK.md)。
 
 ## 真实语料实测
 
-用 `cmd/corpus` 对 .15 上 **958 个真实世界 SVG**（fnOS 面板图标、node_modules 图标库、
+用 `cmd/corpus` 对测试机上 **958 个真实世界 SVG**（fnOS 面板图标、node_modules 图标库、
 应用配置、混合来源）批量渲染：
 
 | 语料 | 数量 | 渲染出内容 |
