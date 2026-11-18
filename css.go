@@ -5,12 +5,31 @@ import (
 	"strings"
 )
 
-// cssSelector 表示一个简单选择器：类型、class 列表、id 的任意组合
-// （如 "rect.foo.bar#baz"）。不支持后代/子代/伪类选择器。
+// cssCompound 表示一个复合选择器：类型、class 列表、id、通用选择器的任意组合
+// （如 "rect.foo.bar#baz"、"*"）。
+type cssCompound struct {
+	tag       string
+	classes   []string
+	id        string
+	universal bool // "*" 或空选择器段的通用匹配
+}
+
+// cssCombinator 描述相邻两个复合选择器之间的关系。
+type cssCombinator byte
+
+const (
+	combDescendant cssCombinator = ' ' // 后代：A B（B 是 A 的任意后代）
+	combChild      cssCombinator = '>' // 子代：A > B
+	combAdjacent   cssCombinator = '+' // 相邻兄弟：A + B
+	combSibling    cssCombinator = '~' // 通用兄弟：A ~ B
+)
+
+// cssSelector 表示一条完整选择器：若干复合选择器用组合子连接，
+// 从右往左匹配（最右段是目标元素）。单段即为原来的简单选择器，行为完全兼容。
+// 伪类/伪元素仍不支持（解析时被当作普通段名，不会匹配任何元素）。
 type cssSelector struct {
-	tag     string
-	classes []string
-	id      string
+	compounds   []cssCompound
+	combinators []cssCombinator // len = len(compounds)-1，combinators[i] 连接 compounds[i] 与 compounds[i+1]
 }
 
 // cssRule 表示一条 CSS 规则：选择器（逗号分隔展开）+ 声明。
@@ -192,14 +211,18 @@ func parseCSSLimited(text string) (rules []cssRule, truncated bool) {
 	return rules, truncated
 }
 
-// parseSelector 解析单个简单选择器（tag#id.class 的任意组合）。
-func parseSelector(s string) cssSelector {
-	var sel cssSelector
+// parseCompound 解析一个复合选择器片段（tag#id.class 的任意组合，或 "*"）。
+func parseCompound(s string) cssCompound {
+	var c cssCompound
 	i := 0
 	for i < len(s) && s[i] != '#' && s[i] != '.' {
 		i++
 	}
-	sel.tag = strings.TrimSpace(s[:i])
+	c.tag = strings.TrimSpace(s[:i])
+	if c.tag == "*" {
+		c.tag = ""
+		c.universal = true
+	}
 	for i < len(s) {
 		switch s[i] {
 		case '#':
@@ -208,7 +231,7 @@ func parseSelector(s string) cssSelector {
 			for j < len(s) && s[j] != '#' && s[j] != '.' {
 				j++
 			}
-			sel.id = s[i:j]
+			c.id = s[i:j]
 			i = j
 		case '.':
 			i++
@@ -216,28 +239,83 @@ func parseSelector(s string) cssSelector {
 			for j < len(s) && s[j] != '#' && s[j] != '.' {
 				j++
 			}
-			sel.classes = append(sel.classes, s[i:j])
+			c.classes = append(c.classes, s[i:j])
 			i = j
 		}
 	}
+	return c
+}
+
+// parseSelector 解析一条选择器：按组合子（空格 / > / + / ~）切成若干复合段，
+// 一遍扫描同时产出 compounds 与 combinators（combinators[k] 连接 compounds[k] 与 [k+1]）。
+// 连续空白、组合子两侧空白都被折叠；伪类里的括号内容当前不做特殊处理，
+// 会留在段文本中从而不匹配任何元素（明确不支持伪类，见文档）。
+func parseSelector(s string) cssSelector {
+	var sel cssSelector
+	var buf strings.Builder
+	// flush 收尾当前复合段。pending 是等待确认的组合子（读到下一段时才真正落位）。
+	var pending cssCombinator
+	havePending := false
+	flush := func() {
+		part := strings.TrimSpace(buf.String())
+		buf.Reset()
+		if part == "" {
+			return
+		}
+		if len(sel.compounds) > 0 && havePending {
+			sel.combinators = append(sel.combinators, pending)
+		}
+		sel.compounds = append(sel.compounds, parseCompound(part))
+		havePending = false
+	}
+	for i := 0; i < len(s); i++ {
+		ch := s[i]
+		switch ch {
+		case '>', '+', '~':
+			if strings.TrimSpace(buf.String()) != "" {
+				flush() // 组合子前的段已完整
+			}
+			pending = cssCombinator(ch)
+			havePending = true
+		case ' ', '\t', '\n', '\r':
+			j := i
+			for j < len(s) && (s[j] == ' ' || s[j] == '\t' || s[j] == '\n' || s[j] == '\r') {
+				j++
+			}
+			// 空白后紧跟显式组合子：空白本身不算组合子，交给下一轮处理。
+			if j < len(s) && (s[j] == '>' || s[j] == '+' || s[j] == '~') {
+				i = j - 1
+				continue
+			}
+			if strings.TrimSpace(buf.String()) != "" {
+				flush()
+				pending = combDescendant
+				havePending = true
+			}
+			i = j - 1
+		default:
+			buf.WriteByte(ch)
+		}
+	}
+	flush()
 	return sel
 }
 
-// matches 判断元素 n 是否匹配选择器。
-func (sel cssSelector) matches(n *node) bool {
-	if sel.tag != "" && sel.tag != n.name {
+// compoundMatches 判断复合选择器 c 是否匹配元素 n。
+func compoundMatches(c cssCompound, n *node) bool {
+	if c.tag != "" && c.tag != n.name {
 		return false
 	}
-	if sel.id != "" && n.attr("id") != sel.id {
+	if c.id != "" && n.attr("id") != c.id {
 		return false
 	}
-	if len(sel.classes) > 0 {
+	if len(c.classes) > 0 {
 		classSet := make(map[string]bool, 4)
-		for _, c := range strings.Fields(n.attr("class")) {
-			classSet[c] = true
+		for _, cl := range strings.Fields(n.attr("class")) {
+			classSet[cl] = true
 		}
-		for _, c := range sel.classes {
-			if !classSet[c] {
+		for _, cl := range c.classes {
+			if !classSet[cl] {
 				return false
 			}
 		}
@@ -245,15 +323,82 @@ func (sel cssSelector) matches(n *node) bool {
 	return true
 }
 
-// specificity 返回 (id, class, tag) 三元组，用于 CSS 特异性比较。
+// siblingBefore 返回 n 之前最近的同父元素（忽略非元素节点，这里 children 全是元素）。
+func siblingBefore(n *node) *node {
+	if n == nil || n.parent == nil {
+		return nil
+	}
+	for i, c := range n.parent.children {
+		if c == n {
+			if i == 0 {
+				return nil
+			}
+			return n.parent.children[i-1]
+		}
+	}
+	return nil
+}
+
+// matches 判断元素 n 是否匹配整条选择器。从最右复合段开始，沿组合子链向左回溯。
+func (sel cssSelector) matches(n *node) bool {
+	if len(sel.compounds) == 0 {
+		return false
+	}
+	// 从右往左：cur 是当前要匹配的候选元素，ci 是复合段下标。
+	ci := len(sel.compounds) - 1
+	cur := n
+	if !compoundMatches(sel.compounds[ci], cur) {
+		return false
+	}
+	for ci > 0 {
+		comb := sel.combinators[ci-1]
+		switch comb {
+		case combChild:
+			cur = cur.parent
+		case combDescendant:
+			cur = cur.parent
+			for cur != nil && !compoundMatches(sel.compounds[ci-1], cur) {
+				cur = cur.parent
+			}
+			if cur == nil {
+				return false
+			}
+			ci--
+			continue
+		case combAdjacent:
+			cur = siblingBefore(cur)
+		case combSibling:
+			cur = siblingBefore(cur)
+			for cur != nil && !compoundMatches(sel.compounds[ci-1], cur) {
+				cur = siblingBefore(cur)
+			}
+			if cur == nil {
+				return false
+			}
+			ci--
+			continue
+		default:
+			return false
+		}
+		if cur == nil || !compoundMatches(sel.compounds[ci-1], cur) {
+			return false
+		}
+		ci--
+	}
+	return true
+}
+
+// specificity 返回 (id, class, tag) 三元组，按 CSS 标准累加各复合段。
 func (sel cssSelector) specificity() (id, class, tag int) {
-	if sel.tag != "" {
-		tag = 1
+	for _, c := range sel.compounds {
+		if c.tag != "" {
+			tag++
+		}
+		if c.id != "" {
+			id++
+		}
+		class += len(c.classes)
 	}
-	if sel.id != "" {
-		id = 1
-	}
-	class = len(sel.classes)
 	return
 }
 

@@ -99,7 +99,7 @@ go run ./cmd/render -strict icon.svg out.png                 # 有静默跳过�
 
 **属性**：`viewBox` / `preserveAspectRatio` / `transform` / `fill` / `fill-rule` / `fill-opacity` / `stroke` / `stroke-width` / `stroke-linecap` / `stroke-linejoin` / `stroke-miterlimit` / `stroke-dasharray` / `stroke-dashoffset` / `stroke-opacity` / `opacity` / `gradientUnits` / `gradientTransform` / `spreadMethod` / `offset` / `stop-color` / `stop-opacity` / `mask` / `maskUnits` / `maskContentUnits` / `clip-path` / `clipPathUnits` / `marker-start` / `marker-mid` / `marker-end` / `markerUnits` / `markerWidth` / `markerHeight` / `refX` / `refY` / `orient` / `font-size` / `font-family` / `font-weight` / `font-style` / `text-anchor` / `dominant-baseline` / `x` / `y` / `dx` / `dy` / `color` / `currentColor` / `id` / `class` / `display` / `visibility` / `clip-rule` / `vector-effect`（含 `non-scaling-stroke`）/ 内联 `style`
 
-**CSS**：支持 `<style>` 样式表元素与 class/id/类型选择器（含 `tag.class#id` 组合与逗号分隔），按 CSS 特异性级联；优先级 presentation 属性 < CSS 规则 < 内联 `style`。
+**CSS**：支持 `<style>` 样式表元素与 class/id/类型选择器（含 `tag.class#id` 组合与逗号分隔）、组合子（后代空格 / 子代 `>` / 相邻兄弟 `+` / 通用兄弟 `~`，特异性按各段累加），按 CSS 特异性级联；优先级 presentation 属性 < CSS 规则 < 内联 `style`。
 
 **颜色**：`#rgb` / `#rrggbb` / `#rgba` / `#rrggbbaa`、`rgb()` / `rgba()`、`hsl()` / `hsla()`（逗号或空格分隔，含 `/` 分隔 alpha）、SVG/CSS 命名颜色、`none`、`currentColor`。
 
@@ -112,8 +112,9 @@ go run ./cmd/render -strict icon.svg out.png                 # 有静默跳过�
 >   `<image>` 的 `preserveAspectRatio`、`radialGradient` 的 `fx/fy` 均已支持）、
 >   `mix-blend-mode`/`isolation`、`letter-spacing`/`word-spacing`/`text-decoration`、
 >   `use` 的 `width/height`（`fr` 属 SVG 2，未实现）
-> - **CSS**：后代/子代/兄弟选择器、伪类/伪元素、`@media`/`@import`/`@supports`、
->   `!important`、`var()`/`calc()`、`inherit`、CSS4 颜色（`lab()`/`lch()`/`color()`）
+> - **CSS**：伪类/伪元素、`@media`/`@import`/`@supports`、`!important`、
+>   `var()`/`calc()`、`inherit`、CSS4 颜色（`lab()`/`lch()`/`color()`）
+>   （后代/子代/兄弟组合子已支持）
 > - **长度**：根 `<svg>` 的 `width`/`height` 按 **96dpi 换算物理单位**（mm/cm/in/pt/pc/q）；
 >   其余长度（元素几何 / font-size / stroke-width 等）仍统一剥离后按数值 **1:1 近似**，
 >   `%` 与相对单位（em/ex/rem）不按父值/视口基准解析

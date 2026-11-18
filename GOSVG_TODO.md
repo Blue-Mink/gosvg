@@ -33,7 +33,8 @@
 `text-anchor` / `dominant-baseline` / `x` / `y` / `dx` / `dy` / `color` / `currentColor` /
 `id` / `class` / 内联 `style`
 
-**CSS**：`<style>` 样式表 + class/id/类型选择器（含 `tag.class#id` 组合、逗号分隔），按
+**CSS**：`<style>` 样式表 + class/id/类型选择器（含 `tag.class#id` 组合、逗号分隔）、
+组合子（后代空格 / 子代 `>` / 相邻兄弟 `+` / 通用兄弟 `~`，特异性按各段累加），按
 (id, class, tag) 特异性级联；优先级 presentation 属性 < CSS 规则 < 内联 `style`。
 
 **颜色**：`#rgb` / `#rrggbb` / `#rgba` / `#rrggbbaa`、`rgb()` / `rgba()`、`hsl()` / `hsla()`
@@ -64,9 +65,11 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 `mix-blend-mode` / `isolation`、`letter-spacing` / `word-spacing` / `text-decoration`、
 `use` 的 `width/height` 语义（`fr` 属 SVG 2，未实现）。
 
-**CSS**：后代/子代/兄弟选择器、伪类/伪元素、`@media` / `@import` / `@supports`、
-`!important`、CSS 自定义属性 `var()` / `calc()`、`inherit` 关键字、CSS4 颜色
+**CSS**：伪类/伪元素、`@media` / `@import` / `@supports`、`!important`、
+CSS 自定义属性 `var()` / `calc()`、`inherit` 关键字、CSS4 颜色
 （`lab()` / `lch()` / `color()` / `device-cmyk()`）。
+> 注：后代 / 子代 / 兄弟组合子自本版起已支持（见上「当前支持范围」）；
+> 早期 v0.4.0 及以前「组合子不支持」的表述已作废。
 
 **长度**：根 `<svg>` 的 `width`/`height` 例外——按 96dpi 换算物理单位
 （`px/mm/cm/in/pt/pc/q`，见 `viewport.go`），与浏览器 / cairosvg 的视口建立语义一致。
@@ -171,7 +174,7 @@ stroke 采用「每条 flatten 线段独立生成胶囊体（偏移矩形 + 两�
 ## 质量基线
 
 > **机器校验锚点**（由 `scripts/check_docs.sh` 读取，数字变化时同步更新本行）：
-> `test=336 example=3 fuzz=6 golden=8`。口径：`test` / `example` 用
+> `test=343 example=3 fuzz=6 golden=8`。口径：`test` / `example` 用
 > `go test -list '^(Test|Example)' ./...` 分别计数，`fuzz` 为 `*_test.go` 中的 `func Fuzz`
 > 定义数，`golden` 为 `testdata/*.svg` 数（须与 `golden.sha256` 行数相等）。
 > 历史章节里的 215 / 6 个样例等是当时快照，不参与此锚点比对。

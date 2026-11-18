@@ -42,8 +42,9 @@
 //	    mix-blend-mode/isolation、letter-spacing/word-spacing/text-decoration、
 //	    use 的 width/height（fr 属 SVG 2，未实现）
 //	    （clip-rule 已支持：clipPath 内映射到 fill-rule 的 even-odd 光栅路径）
-//	CSS：后代/子代/兄弟选择器、伪类、@media/@import/@supports、!important、
-//	    var()/calc()、inherit 关键字、CSS4 颜色（lab/lch/color/device-cmyk）
+//	CSS：伪类、@media/@import/@supports、!important、var()/calc()、
+//	    inherit 关键字、CSS4 颜色（lab/lch/color/device-cmyk）
+//	    （后代/子代/兄弟组合子已支持）
 //	长度：根 <svg> 的 width/height 按 96dpi 换算物理单位；其余长度统一剥离后
 //	    按数值 1:1 近似，不做物理换算，% 不按基准解析
 //	字体：.ttc 集合；未调用 AddFontDir 时 font-family 一律回退 Go Regular
