@@ -30,10 +30,9 @@ go get github.com/Blue-Mink/gosvg
 ```
 
 > [!NOTE]
-> 源码托管在 GitHub（`https://github.com/Blue-Mink/gosvg`，Private 仓库），
-> module 路径为 `github.com/Blue-Mink/gosvg`。私有仓库下 `go get` 需要配置
-> `GOPRIVATE=github.com/Blue-Mink/*` 并具备相应访问权限；本地开发可在调用方
-> `go.mod` 里加 `replace github.com/Blue-Mink/gosvg => <本地路径>`。
+> module 路径为 `github.com/Blue-Mink/gosvg`，`go get github.com/Blue-Mink/gosvg`
+> 即可引入。若仓库尚未公开或需本地改动调试，可在调用方 `go.mod` 加
+> `replace github.com/Blue-Mink/gosvg => <本地路径>` 指向本地副本。
 
 ```go
 import "github.com/Blue-Mink/gosvg"
@@ -223,13 +222,10 @@ go test -run TestGoldenRegression -update .
 ```
 
 > [!NOTE]
-> 门禁由 `.github/workflows/ci.yml`（GitHub Actions，自带 runner）在 push / PR 时
-> 自动运行，与 `scripts/verify.sh` 同源（fmt / vet / test / race / arm64 / wasm /
-> bench / fuzz），`-race` 亦由 GitHub runner 覆盖。两份 workflow（`.gitea/` 与
-> `.github/`）逐字一致，但内网 Gitea 侧 runner 数为 0、其 workflow 仅在
-> `workflow_dispatch` 手动触发。发版前仍建议本地实跑 `sh ./scripts/verify.sh`
-> 拿到不带 SKIPPED 的 `ALL GREEN`；历史与恢复条件见 `CHANGELOG.md` /
-> `CONTRIBUTING.md`。
+> 门禁由 `.github/workflows/ci.yml`（GitHub Actions）在 push / PR 时自动运行，
+> 与 `scripts/verify.sh` 同源（fmt / vet / test / race / arm64 / wasm / bench /
+> fuzz），`-race` 亦由 GitHub runner 覆盖。发版前仍建议本地实跑
+> `sh ./scripts/verify.sh` 拿到不带 SKIPPED 的 `ALL GREEN`。
 
 若 `proxy.golang.org` 不通，用 `GOPROXY=https://goproxy.cn,direct`。
 更多见 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [GOSVG_TODO.md](GOSVG_TODO.md)。
