@@ -3,7 +3,7 @@
 所有 notable 变更记录在此。提交信息沿用 Conventional Commits
 （`feat:` / `fix:` / `docs:` / `chore:` / `test:`）。
 
-## [Unreleased]
+## [v0.4.1] — 2026-11-18
 
 - **新增 CSS 组合子选择器支持（通用能力补齐）**：`<style>` 里的选择器在原有
   `tag.class#id` 复合选择器基础上，支持四种组合子——后代（空格 `A B`）、子代
@@ -19,6 +19,18 @@
   - 文档同步：README / 包注释 / `GOSVG_TODO.md` 把组合子从「不支持」移到「支持」，
     锚点 `test=336→343`；`verify.sh` ALL GREEN（真 `-race` 无 DATA RACE、6 fuzz、
     docs 门禁全过）。
+
+## [Unreleased]
+
+- **发布前彻底脱敏 + CI 恢复 + 文档一致性收口（纯文档/配置/历史改写，零渲染改动，2026-11-18）**：
+  为发布 GitHub Private 仓做准备。① 全历史 `git filter-branch`：46 个早期提交作者邮箱
+  （私人 QQ 邮箱，此处不具名）→ `Blue-Mink@users.noreply.github.com`，`--tree-filter` 清除
+  README/SECURITY/OPEN_SOURCE_CHECKLIST 历史版本里的内网地址（50 处）→ GitHub 公开 URL；
+  `git gc --prune=now` 清除旧对象。复扫全历史内网 IP / 私人邮箱 / 私钥 / token 全 0 命中。
+  ② 两份 CI workflow 恢复 `push`/`pull_request` 自动触发（逐字一致），README 加 GitHub
+  Actions 徽章。③ CHANGELOG 补 v0.4.1 正式段、CAIROSVG_IOU 文首版本状态更新到 v0.4.1，
+  修复 docs 门禁版本一致性。注：历史改写后所有 commit/tag hash 变化，GitHub 侧须按改写后
+  历史重新推送；内网 Gitea 保持原样不受影响。
 - **新增 SVG `vector-effect="non-scaling-stroke"` 支持（通用能力补齐）**：描边设备宽度
   恒等于 `stroke-width`，不随元素 `transform` / viewBox 缩放；形状与文字描边均生效。
   `vector-effect` 非继承、默认 `none`（不改变既有渲染），非等比缩放沿用 `matrixScale`
