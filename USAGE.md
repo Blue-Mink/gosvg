@@ -186,5 +186,3 @@ $ $B/gosvg-verify
 ---
 
 *GoSvg · 由 Blue-Mink 构建 · 文档随 v0.4.1 打包 · 示例均为真实运行结果*
-
-<!-- E2E_LIVE_UPDATE_MARK_1795476270 -->
