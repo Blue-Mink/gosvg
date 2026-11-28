@@ -1,6 +1,6 @@
 # cairosvg 批量对账报告
 
-> **版本状态（2026-11-18）**：最新 release 为 **v0.4.1**（以 `git describe --tags
+> **版本状态（2026-11-28）**：最新 release 为 **v0.5.0**（以 `git describe --tags
 > --abbrev=0` 为准）；tag 由 Release API 自建（发布当时 = main）；main 此后若继续前移，
 > 当前值以 `git rev-parse HEAD` / `git log` 为准，tag 不随之移动。
 > 本报告按时间顺序累积「修正 1–11」，各节末尾的「未打 tag、未发 release」均为**当时快照**，

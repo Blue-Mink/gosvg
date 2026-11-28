@@ -3,6 +3,17 @@
 所有 notable 变更记录在此。提交信息沿用 Conventional Commits
 （`feat:` / `fix:` / `docs:` / `chore:` / `test:`）。
 
+## [v0.5.0] — 2026-11-28
+
+- **发布前脱敏 + 公开仓适配 + 文档版本收口（纯文档/配置，零渲染改动）**：为公开发布
+  做准备。① 全历史 `git filter-branch` 清除早期提交里的私人邮箱与内网地址（作者邮箱
+  统一为 `Blue-Mink@users.noreply.github.com`，README/SECURITY/OPEN_SOURCE_CHECKLIST
+  历史版本里的内网地址改为 GitHub 公开 URL），复扫全历史内网 IP / 私人邮箱 / 私钥 /
+  token 零命中。② 两份 CI workflow 恢复 `push`/`pull_request` 自动触发并逐字对齐，
+  README 加 GitHub Actions 徽章并适配公开仓库。③ CHANGELOG 头版本与 CAIROSVG_IOU
+  文首版本状态收口到 v0.5.0，docs 版本门禁一致。本期无渲染/解析代码改动，光栅输出
+  与 v0.4.1 完全一致。
+
 ## [v0.4.1] — 2026-11-18
 
 - **新增 CSS 组合子选择器支持（通用能力补齐）**：`<style>` 里的选择器在原有
