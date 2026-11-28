@@ -1,0 +1,12 @@
+appname        = gosvg
+version        = 0.5.0
+display_name   = GoSvg
+desc           = <b>GoSvg — 纯 Go 实现的通用 SVG 渲染命令行工具集</b>（上游 <a href="https://github.com/Blue-Mink/gosvg" target="_blank">Blue-Mink/gosvg</a>）。本应用为纯 CLI 工具，无 Web 界面，通过 SSH 调用。<br><br><b>包含工具</b>（位于安装目录 bin/）：<br>• <code>gosvg-render</code>：把 SVG 文件渲染为 PNG/JPEG，可指定宽高与输出路径<br>• <code>gosvg-verify</code>：运行完整验证门禁（go 测试、竞态、交叉编译、fuzz、golden 基线）<br>• <code>gosvg-corpus</code>：批量处理 SVG 语料库<br>• <code>gosvg-iou</code>：计算两张图的 IoU 相似度，用于渲染对账<br><br><b>调用示例</b>（SSH 登录 NAS 后）：<br><code>/vol1/@appcenter/gosvg/bin/gosvg-render -h</code> 查看参数<br><code>/vol1/@appcenter/gosvg/bin/gosvg-render -size 256 in.svg out.png</code> 渲染 256×256 图片<br><br>后台运行一个轻量哨兵进程仅用于维持应用中心的启动/停止状态，不影响工具使用。
+platform       = x86
+source         = thirdparty
+desktop_uidir         = ui
+desktop_applaunchname = gosvg.Application
+maintainer     = Blue-Mink
+maintainer_url = https://github.com/Blue-Mink/gosvg
+distributor    = Blue-Mink
+distributor_url = https://github.com/Blue-Mink/FnDepot

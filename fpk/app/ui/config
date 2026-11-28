@@ -1,0 +1,12 @@
+{
+    ".url": {
+        "gosvg.Application": {
+            "title": "GoSvg 使用文档",
+            "icon": "images/icon_{0}.png",
+            "type": "iframe",
+            "protocol": "http",
+            "url": "/cgi/ThirdParty/gosvg/index.cgi/",
+            "allUsers": true
+        }
+    }
+}
